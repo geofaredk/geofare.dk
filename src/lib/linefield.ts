@@ -52,9 +52,9 @@ const STEP_SOFTNESS = 0.46;
 /** Gaps alternate between (1 + PAIRING) and (1 - PAIRING) spacings: the logo's bands. */
 const PAIRING = 0.29;
 /** Mean distance along the band from one step to the next. The logo's is 4.9. */
-const STEP_PERIOD = 7;
+const STEP_PERIOD = 8;
 /** Where the steps sit within one repeat of the pattern, in step periods. */
-const STEPS = [0, 1.2, 2.05];
+const STEPS = [0, 1.1, 2];
 /** How far a step's position wanders along the band, and over how many lines. */
 const MEANDER = { amplitude: 1.5, wavelength: 60 };
 /** [amplitude, wavelength across the bands, wavelength along them, cycles per CYCLE_SECONDS]. */
@@ -104,10 +104,13 @@ export function fieldLines(o: FieldOptions): Polyline[] {
   const drift = repeat * (phase + hash(seed, 0));
   const shift = s * (TIDE * Math.sin(TAU * phase) - LEVEL_SHIFT * level);
 
-  // How far a line can stray from its mean course v = c + tilt * u: steps, meander, swells,
-  // tide and level, plus one sample so that a line always ends outside the area.
-  let reach = s * (1.7 + tilt * MEANDER.amplitude + TIDE + LEVEL_SHIFT) + SAMPLE;
-  for (const swell of SWELLS) reach += swell[0] * s;
+  // How far a line can stray from its mean course v = c + tilt * u, plus one sample so that
+  // it always ends outside the area. Evenly spaced steps stray by one spacing; uneven ones
+  // by a little more, as do the meander, the swells, the tide and the level.
+  let reach = 1 + tilt * MEANDER.amplitude + TIDE + LEVEL_SHIFT;
+  STEPS.forEach((at, i) => (reach += (2 * Math.abs(at - i)) / steps));
+  SWELLS.forEach((swell) => (reach += swell[0]));
+  reach = reach * s + SAMPLE;
 
   // Lines sit on a lattice of pairs across the bands. Each passing step carries a line one
   // pair along it, so the lattice is slid back by a whole pair whenever one has passed.

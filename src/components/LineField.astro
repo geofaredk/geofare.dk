@@ -1,0 +1,77 @@
+---
+// A static crop of the line field, drawn at build time: the same lines the hero canvas animates.
+// Decorative only. Size and place it from the outside; the viewBox is sliced to fill its box.
+import { fieldLines, toSvgPath, type FieldOptions, type Polyline } from '../lib/linefield';
+
+interface Props extends FieldOptions {
+  class?: string;
+}
+
+const { width, height, time, level, spacing, seed, class: className, ...rest } = Astro.props;
+
+/** Px beyond the viewBox that are kept, so no stroke ends inside it. */
+const MARGIN = 2;
+/** Px a dropped point may lie off the drawn line: invisible, and it halves the markup. */
+const TOLERANCE = 0.3;
+
+/** The part of a line from just before it first enters the viewBox to just after it last leaves. */
+function crop(line: Polyline): Polyline {
+  const points = line.length / 2;
+  const inside = (i: number) =>
+    line[2 * i] >= -MARGIN && line[2 * i] <= width + MARGIN && line[2 * i + 1] >= -MARGIN && line[2 * i + 1] <= height + MARGIN;
+  let first = 0;
+  let last = points - 1;
+  while (first < points && !inside(first)) first++;
+  while (last > first && !inside(last)) last--;
+  return line.subarray(2 * Math.max(first - 1, 0), 2 * Math.min(last + 2, points));
+}
+
+/** Drops every point that lies within TOLERANCE of the straight line between the points kept around it. */
+function thin(line: Polyline): Polyline {
+  const points = line.length / 2;
+  const kept = [0];
+  let anchor = 0;
+  for (let end = 2; end < points; end++) {
+    const dx = line[2 * end] - line[2 * anchor];
+    const dy = line[2 * end + 1] - line[2 * anchor + 1];
+    const chord = Math.hypot(dx, dy);
+    for (let i = anchor + 1; i < end; i++) {
+      const off = Math.abs(dx * (line[2 * i + 1] - line[2 * anchor + 1]) - dy * (line[2 * i] - line[2 * anchor])) / chord;
+      if (off > TOLERANCE) {
+        anchor = end - 1;
+        kept.push(anchor);
+        break;
+      }
+    }
+  }
+  kept.push(points - 1);
+  return Float32Array.from(kept.flatMap((i) => [line[2 * i], line[2 * i + 1]]));
+}
+
+const paths = fieldLines({ width, height, time, level, spacing, seed })
+  .map(crop)
+  .filter((line) => line.length >= 4)
+  .map((line) => toSvgPath(thin(line)));
+---
+
+<svg
+  class:list={['line-field', className]}
+  viewBox={`0 0 ${width} ${height}`}
+  preserveAspectRatio="xMidYMid slice"
+  aria-hidden="true"
+  focusable="false"
+  {...rest}
+>
+  {paths.map((d) => <path d={d} fill="none" stroke="currentColor" vector-effect="non-scaling-stroke" />)}
+</svg>
+
+<style>
+  /* Defaults in the base layer, so any style from the place that uses the field wins. */
+  @layer base {
+    .line-field {
+      color: var(--field-line);
+      opacity: var(--field-opacity);
+      stroke-width: 1.25px;
+    }
+  }
+</style>

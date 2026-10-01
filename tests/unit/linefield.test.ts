@@ -17,6 +17,22 @@ function maxMove(a: Polyline[], b: Polyline[]): number {
   return max;
 }
 
+/** The cells of a 160 px grid over the area that no line passes through, as "column,row". */
+function uncrossedCells(lines: Polyline[], area: { width: number; height: number }): string[] {
+  const cell = 160;
+  const empty = new Set<string>();
+  for (let x = 0; x < area.width; x += cell) for (let y = 0; y < area.height; y += cell) empty.add(`${x / cell},${y / cell}`);
+  for (const line of lines) {
+    for (let j = 0; j < line.length; j += 2) {
+      const x = line[j];
+      const y = line[j + 1];
+      expect(Number.isFinite(x) && Number.isFinite(y)).toBe(true);
+      if (x >= 0 && x < area.width && y >= 0 && y < area.height) empty.delete(`${Math.floor(x / cell)},${Math.floor(y / cell)}`);
+    }
+  }
+  return [...empty];
+}
+
 describe('fieldLines', () => {
   it('is deterministic', () => {
     const options = { ...desktop, time: 7.3, level: 0.4, seed: 5 };
@@ -30,6 +46,12 @@ describe('fieldLines', () => {
 
   it('moves slowly: no point travels more than 1.5 px in one frame', () => {
     expect(maxMove(fieldLines({ ...desktop, time: 0 }), fieldLines({ ...desktop, time: 1 / 30 }))).toBeLessThan(1.5);
+    // Nor later in the cycle, nor on a phone, where the wider spacing makes the steps travel faster.
+    for (const area of [desktop, phone]) {
+      for (const time of [9.5, 31, 52.25]) {
+        expect(maxMove(fieldLines({ ...area, time }), fieldLines({ ...area, time: time + 1 / 30 }))).toBeLessThan(1.5);
+      }
+    }
   });
 
   it('actually moves', () => {
@@ -37,21 +59,7 @@ describe('fieldLines', () => {
   });
 
   it('covers the whole area with finite coordinates', () => {
-    const cell = 160;
-    const cols = desktop.width / cell;
-    const rows = desktop.height / cell;
-    const crossed = new Set<number>();
-    for (const line of fieldLines(desktop)) {
-      for (let j = 0; j < line.length; j += 2) {
-        const x = line[j];
-        const y = line[j + 1];
-        expect(Number.isFinite(x) && Number.isFinite(y)).toBe(true);
-        if (x >= 0 && x < desktop.width && y >= 0 && y < desktop.height) {
-          crossed.add(Math.floor(y / cell) * cols + Math.floor(x / cell));
-        }
-      }
-    }
-    expect(crossed.size).toBe(cols * rows);
+    expect(uncrossedCells(fieldLines(desktop), desktop)).toEqual([]);
   });
 
   it('is continuous: no segment is longer than 24 px', () => {
@@ -105,13 +113,18 @@ describe('fieldLines', () => {
   });
 
   // What the canvas and the static crops rely on, at any time, level and size.
-  describe.each([0, 11.7, CYCLE_SECONDS / 2, CYCLE_SECONDS - 0.01])('at time %d', (time) => {
+  // The times include the moments just before and after line indices are handed on (see fieldLines).
+  describe.each([0, 11.7, CYCLE_SECONDS / 3 - 0.01, CYCLE_SECONDS / 3 + 0.01, CYCLE_SECONDS - 0.01])('at time %s', (time) => {
     describe.each([desktop, phone, { width: 1440, height: 240 }])('covering $width × $height', (area) => {
       const lines = fieldLines({ ...area, time, level: -1, seed: 3 });
 
       it('keeps the same structure, so only coordinates change between frames', () => {
         const base = fieldLines({ ...area, time: 0, seed: 3 });
         expect(lines.map((line) => line.length)).toEqual(base.map((line) => line.length));
+      });
+
+      it('covers the whole area', () => {
+        expect(uncrossedCells(lines, area)).toEqual([]);
       });
 
       it('never ends a line inside the area', () => {
