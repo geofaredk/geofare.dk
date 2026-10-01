@@ -3,6 +3,7 @@ import type { Lang } from '../../config/site';
 import { contactCta, mainNav } from '../../config/navigation';
 import { getUi } from '../../lib/content';
 import { localizePath } from '../../lib/i18n';
+import Button from '../Button.astro';
 import Logo from '../Logo.astro';
 
 interface Props {
@@ -18,8 +19,17 @@ const ui = await getUi(lang);
     <a href={localizePath('/', lang)} class="site-header__home">
       <Logo alt={ui.home} />
     </a>
-    <nav aria-label={ui.nav.label}>
-      <ul class="site-header__nav">
+    <button
+      type="button"
+      class="site-header__toggle"
+      aria-expanded="false"
+      aria-controls="site-menu"
+      data-menu-toggle
+      data-open={ui.nav.menuOpen}
+      data-close={ui.nav.menuClose}>{ui.nav.menuOpen}</button
+    >
+    <nav id="site-menu" class="site-header__menu" aria-label={ui.nav.label}>
+      <ul class="site-header__links">
         {
           mainNav.map((item) => (
             <li>
@@ -28,30 +38,137 @@ const ui = await getUi(lang);
           ))
         }
       </ul>
+      <Button href={localizePath(contactCta.href, lang)}>{ui.nav[contactCta.id]}</Button>
     </nav>
-    <a href={localizePath(contactCta.href, lang)} class="button button--primary">{ui.nav[contactCta.id]}</a>
   </div>
 </header>
 
+<script>
+  import '../../scripts/menu';
+</script>
+
 <style>
+  /* Exactly --header-h tall, so anchors and focus can be kept clear of it (scroll-padding-top). */
+  .site-header {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 10;
+    height: var(--header-h);
+    background-color: var(--bg);
+  }
+
   .site-header__inner {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
+    justify-content: space-between;
     gap: 1rem 2rem;
-    padding-block: 1rem;
+    height: 100%;
+  }
+
+  .site-header__home {
+    display: flex;
+    flex: none;
+    align-items: center;
+    min-height: 2.75rem;
   }
 
   .site-header__home :global(.logo) {
     width: auto;
-    height: 2.5rem;
+    height: 2.75rem;
   }
 
-  .site-header__nav {
+  .site-header__menu,
+  .site-header__links {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1.5rem;
+    align-items: center;
+    gap: 0.5rem clamp(1.25rem, 2.6vw, 2.5rem);
+  }
+
+  .site-header__links {
     padding: 0;
     list-style: none;
+  }
+
+  .site-header__links a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    color: var(--ink);
+    font-weight: var(--weight-medium);
+    text-decoration: none;
+    transition: color 120ms;
+  }
+
+  .site-header__links a:hover {
+    color: var(--accent);
+  }
+
+  .site-header__toggle {
+    display: none;
+  }
+
+  /* Small screens: the links wait behind a text button, on a cream sheet below the header. */
+  @media (scripting: enabled) and (width < 60rem) {
+    .site-header__toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      min-width: 2.75rem;
+      min-height: 2.75rem;
+      padding: 0;
+      border: 0;
+      background: none;
+      color: var(--ink);
+      font-weight: var(--weight-medium);
+      cursor: pointer;
+      transition: color 120ms;
+    }
+
+    .site-header__toggle:hover {
+      color: var(--accent);
+    }
+
+    .site-header__menu {
+      display: none;
+      position: absolute;
+      inset: 100% 0 auto;
+      height: calc(100dvh - var(--header-h));
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2rem;
+      padding: 1.5rem var(--gutter) 2rem;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      background-color: var(--bg);
+    }
+
+    .site-header__toggle[aria-expanded='true'] + .site-header__menu {
+      display: flex;
+    }
+
+    .site-header__links {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.25rem;
+      font-size: var(--step-title);
+    }
+  }
+
+  /* Small screens without JavaScript: no button; the links simply wrap under the logo. */
+  @media (scripting: none) and (width < 60rem) {
+    .site-header {
+      position: static;
+      height: auto;
+    }
+
+    .site-header__inner {
+      flex-wrap: wrap;
+      padding-block: 0.875rem 1rem;
+    }
+
+    .site-header__menu,
+    .site-header__links {
+      flex-wrap: wrap;
+    }
   }
 </style>

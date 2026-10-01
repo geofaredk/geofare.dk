@@ -1,0 +1,56 @@
+---
+// A link that looks like a button. Rectangular, no arrow, no icon; colour is the only thing that moves.
+interface Props {
+  href: string;
+  variant?: 'primary' | 'secondary';
+  class?: string;
+}
+
+const { href, variant = 'primary', class: className, ...rest } = Astro.props;
+---
+
+<a href={href} class:list={['button', `button--${variant}`, className]} {...rest}><slot /></a>
+
+<style>
+  /* In the base layer, so a style from the place that uses the button wins. */
+  @layer base {
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 3rem;
+      padding: 0.5rem 1.25rem;
+      border: 1.5px solid var(--accent);
+      border-radius: var(--radius);
+      font-weight: var(--weight-medium);
+      line-height: 1.2;
+      text-align: center;
+      text-decoration: none;
+      transition:
+        background-color 120ms,
+        border-color 120ms,
+        color 120ms;
+    }
+
+    .button--primary {
+      background-color: var(--accent);
+      color: var(--on-accent);
+    }
+
+    .button--primary:hover,
+    .button--primary:active {
+      border-color: var(--ink);
+      background-color: var(--ink);
+    }
+
+    .button--secondary {
+      color: var(--accent);
+    }
+
+    .button--secondary:hover,
+    .button--secondary:active {
+      background-color: var(--accent);
+      color: var(--on-accent);
+    }
+  }
+</style>

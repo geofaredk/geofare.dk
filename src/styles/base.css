@@ -85,31 +85,15 @@
     padding-block: var(--section-space);
   }
 
-  /* Links styled as buttons (Tasks 3–4 give them their final design) */
-  .button {
-    display: inline-flex;
-    align-items: center;
-    min-height: 3rem;
-    padding-inline: 1.25rem;
-    border: 1.5px solid var(--accent);
-    border-radius: var(--radius);
-    font-weight: var(--weight-medium);
-    text-decoration: none;
-  }
-
-  .button--primary {
-    background: var(--accent);
-    color: var(--on-accent);
-  }
-
-  .button--secondary {
-    color: var(--accent);
-  }
-
   /* Focus */
   :focus-visible {
     outline: var(--focus-ring);
     outline-offset: 3px;
+  }
+
+  /* A skip-link target takes focus without showing a ring around the whole region */
+  [tabindex='-1']:focus {
+    outline: none;
   }
 
   /* Visually hidden, still read by assistive tech */

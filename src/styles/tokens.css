@@ -11,7 +11,7 @@
   --rule-accent: color-mix(in srgb, var(--accent) 35%, var(--bg));
   --rule-on-accent: color-mix(in srgb, var(--on-accent) 40%, var(--accent));
   --field-line: var(--accent);        /* drawn at --field-opacity */
-  --field-opacity: 0.16;              /* brief: 10 to 20 percent */
+  --field-opacity: 0.2;               /* brief: 10 to 20 percent */
 
   /* Type */
   --font-sans: "Figtree", "Figtree Fallback", system-ui, sans-serif;

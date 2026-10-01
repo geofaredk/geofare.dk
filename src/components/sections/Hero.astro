@@ -2,52 +2,285 @@
 import { render } from 'astro:content';
 import type { Lang } from '../../config/site';
 import { contactCta, mainNav } from '../../config/navigation';
-import { getSection } from '../../lib/content';
+import { getSection, getUi } from '../../lib/content';
 import { localizePath } from '../../lib/i18n';
+import Button from '../Button.astro';
+import LineField from '../LineField.astro';
 
 interface Props {
   lang: Lang;
 }
 
 const { lang } = Astro.props;
+const ui = await getUi(lang);
 const hero = await getSection(lang, 'hero');
 const { fixed, endings, primaryCta, secondaryCta } = hero.data;
 if (!fixed || !endings || !primaryCta || !secondaryCta) {
   throw new Error(`sections/${lang}/hero.md needs fixed, endings, primaryCta and secondaryCta`);
 }
-// The h1 always holds the final sentence; the rotation (Task 3) is an aria-hidden layer on top.
-const finalEnding = endings.at(-1);
 const servicesHref = mainNav.find((item) => item.id === 'services')!.href;
 const { Content } = await render(hero);
 ---
 
 <section id="top" class="hero">
-  <div class="container">
-    <h1>{fixed} <span class="hero__ending">{finalEnding}</span></h1>
-    <div class="hero__sub">
-      <Content />
+  <canvas class="hero__field" aria-hidden="true"></canvas>
+
+  <div class="container hero__head">
+    {/* The h1 always reads the final sentence; the rotation is a hidden layer in its place. */}
+    <h1 class="hero__title">
+      <span class="hero__fixed">{fixed}</span>{' '}
+      <span class="hero__final">{endings.at(-1)}</span>
+      <span class="hero__rotator" aria-hidden="true">
+        {endings.map((ending, i) => <span class="hero__ending" data-active={i === 0 ? '' : undefined}>{ending}</span>)}
+      </span>
+    </h1>
+  </div>
+
+  {/* Without JavaScript the free middle of the hero shows the same field, standing still. */}
+  <noscript><LineField width={1440} height={320} class="hero__still" /></noscript>
+
+  <div class="container hero__foot">
+    <div class="hero__lede">
+      <div class="hero__sub"><Content /></div>
+      <p class="hero__actions">
+        <Button href={localizePath(contactCta.href, lang)}>{primaryCta}</Button>
+        <Button href={localizePath(servicesHref, lang)} variant="secondary">{secondaryCta}</Button>
+      </p>
     </div>
-    <p class="hero__actions">
-      <a href={localizePath(contactCta.href, lang)} class="button button--primary">{primaryCta}</a>
-      <a href={localizePath(servicesHref, lang)} class="button button--secondary">{secondaryCta}</a>
-    </p>
+    <button type="button" class="hero__pause" data-pause={ui.hero.pause} data-play={ui.hero.play}>
+      <svg class="hero__pause-glyph" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+        <path class="hero__glyph-pause" d="M2 1h3v10H2zM7 1h3v10H7z"></path>
+        <path class="hero__glyph-play" d="M3 1l8 5-8 5z"></path>
+      </svg>
+      <span class="hero__pause-label">{ui.hero.pause}</span>
+    </button>
   </div>
 </section>
 
+<script>
+  import '../../scripts/hero';
+</script>
+
 <style>
-  .hero h1 {
+  /* Three rows: the headline, free space where the field is densest, then sub-line and buttons. */
+  .hero {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-rows: auto minmax(2.5rem, 1fr) auto;
+    min-height: calc(100svh - var(--header-h));
+    padding-block: clamp(1.5rem, 5svh, 3.5rem) clamp(1.5rem, 4.5svh, 3rem);
+  }
+
+  /* The field covers the whole hero, behind everything in it. */
+  .hero__field {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* A centred container is a grid item with auto margins, which would otherwise shrink to its content. */
+  .hero__head,
+  .hero__foot {
+    width: 100%;
+  }
+
+  .hero__head {
+    grid-row: 1;
+  }
+
+  /* Headline */
+  .hero__title {
     font-size: var(--step-hero);
     line-height: var(--leading-hero);
     letter-spacing: var(--tracking-hero);
   }
 
-  .hero__ending {
+  .hero__fixed,
+  .hero__final {
     display: block;
+  }
+
+  .hero__rotator {
+    display: none;
+  }
+
+  @media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+    /* Out of sight but still the h1's text, as with .sr-only. */
+    .hero__final {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
+    /* All endings share one cell, so the slot is always as tall as the tallest and nothing below moves. */
+    .hero__rotator {
+      display: grid;
+    }
+
+    /* An ending leaves upwards as it fades; the next one rises into its place. 500 ms in all. */
+    .hero__ending {
+      grid-area: 1 / 1;
+      visibility: hidden;
+      opacity: 0;
+      transform: translateY(-0.2em);
+      transition:
+        opacity 260ms ease-in,
+        transform 260ms ease-in,
+        visibility 0s 260ms;
+    }
+
+    .hero__ending[data-active] {
+      visibility: visible;
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    /* The first ending is simply there when the page loads. */
+    .hero__ending[data-active]:not(:first-child) {
+      animation: hero-ending-in 300ms ease-out 200ms backwards;
+    }
+
+    @keyframes hero-ending-in {
+      from {
+        opacity: 0;
+        transform: translateY(0.2em);
+      }
+    }
+  }
+
+  /* Without JavaScript: the same field as a still, in the free middle row only, never behind text. */
+  @media (scripting: none) {
+    .hero > :global(noscript) {
+      position: relative;
+      display: block;
+      grid-row: 2;
+      min-height: 9rem;
+      margin-block: 2rem;
+    }
+
+    .hero__still {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  /* Sub-line and buttons bottom left, pause control bottom right */
+  .hero__foot {
+    display: grid;
+    grid-row: 3;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 0.25rem 2rem;
+  }
+
+  .hero__lede {
+    justify-self: start;
+  }
+
+  .hero__sub {
+    max-width: 38ch;
+    font-size: var(--step-lead);
+    line-height: 1.45;
+    text-wrap: pretty;
   }
 
   .hero__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 1rem;
+    gap: 0.75rem;
+    margin-block-start: 1.75rem;
+  }
+
+  /* Pause control: only where there is motion to pause */
+  .hero__pause {
+    display: none;
+  }
+
+  @media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+    .hero__pause:not([hidden]) {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.625rem;
+      min-width: 2.75rem;
+      min-height: 2.75rem;
+      padding: 0;
+      border: 0;
+      background: none;
+      color: var(--accent);
+      font-size: var(--step-small);
+      font-weight: var(--weight-medium);
+      cursor: pointer;
+      transition: color 120ms;
+    }
+
+    .hero__pause:hover {
+      color: var(--ink);
+    }
+  }
+
+  .hero__pause-glyph {
+    flex: none;
+    width: 0.75rem;
+    height: 0.75rem;
+    fill: currentColor;
+  }
+
+  .hero__pause:not([data-paused]) .hero__glyph-play,
+  .hero__pause[data-paused] .hero__glyph-pause {
+    display: none;
+  }
+
+  /* Icon only where the label would squeeze the sub-line; it stays the button's accessible name. */
+  @media (width < 40rem) {
+    .hero__pause-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+
+  /* Phones: one column, with the pause control in the bottom corner on a row of its own. */
+  @media (width < 30rem) {
+    .hero__foot {
+      grid-template-columns: 1fr;
+    }
+
+    .hero__lede {
+      justify-self: stretch;
+    }
+
+    /* Both buttons share one row and fill it; where even that is too narrow they stack, full width. */
+    .hero__actions {
+      gap: 0.5rem;
+    }
+
+    .hero__actions > :global(.button) {
+      flex: 1 1 auto;
+      padding-inline: 1rem;
+    }
+
+    .hero__pause {
+      justify-self: end;
+    }
+  }
+
+  /* Where that row exists, the control's own height serves as the hero's bottom space. */
+  @media (scripting: enabled) and (prefers-reduced-motion: no-preference) and (width < 30rem) {
+    .hero {
+      padding-block-end: 0.75rem;
+    }
   }
 </style>

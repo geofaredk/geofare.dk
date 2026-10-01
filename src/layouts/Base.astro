@@ -78,7 +78,7 @@ const jsonLd = JSON.stringify(structuredData).replace(/</g, '\\u003c');
   <body>
     <a href="#main" class="skip-link">{ui.skip}</a>
     <Header lang={lang} />
-    <main id="main">
+    <main id="main" tabindex="-1">
       <slot />
     </main>
     <Footer lang={lang} />

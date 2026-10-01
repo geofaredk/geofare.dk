@@ -24,8 +24,10 @@ const MAX_PIXEL_RATIO = 2;
 /** CSS px. */
 const LINE_WIDTH = 1.25;
 const LEVEL_SECONDS = 2.5;
-/** CSS px over which the lines fade out around a quiet zone. */
+/** CSS px over which the lines fade out around a quiet zone … */
 const FEATHER = 80;
+/** … but no more than this share of the canvas width, or a phone would have no field left between its zones. */
+const FEATHER_SHARE = 0.08;
 /** CSS px per pixel of the erase mask; it is soft, so it can be coarse. */
 const MASK_CELL = 8;
 
@@ -100,16 +102,17 @@ export function mountHeroField(canvas: HTMLCanvasElement, opts: { quietZones?: (
       mask.width = Math.ceil(width / MASK_CELL);
       mask.height = Math.ceil(height / MASK_CELL);
       const image = maskCtx.createImageData(mask.width, mask.height);
+      const feather = Math.min(FEATHER, width * FEATHER_SHARE);
       for (let row = 0, i = 3; row < mask.height; row++) {
         const y = (row + 0.5) * MASK_CELL;
         for (let column = 0; column < mask.width; column++, i += 4) {
           const x = (column + 0.5) * MASK_CELL;
-          let nearest = FEATHER + MASK_CELL;
+          let nearest = feather + MASK_CELL;
           for (const [left, top, right, bottom] of rects) {
             nearest = Math.min(nearest, Math.hypot(Math.max(left - x, 0, x - right), Math.max(top - y, 0, y - bottom)));
           }
           // Opaque to one cell beyond the zone, so scaling the mask up leaves nothing inside it.
-          image.data[i] = 255 * smooth(1 - Math.max(0, nearest - MASK_CELL) / FEATHER);
+          image.data[i] = 255 * smooth(1 - Math.max(0, nearest - MASK_CELL) / feather);
         }
       }
       maskCtx.putImageData(image, 0, 0);
@@ -199,6 +202,8 @@ export function mountHeroField(canvas: HTMLCanvasElement, opts: { quietZones?: (
       if (still) return;
       playing = false;
       sync();
+      // No more frames will come, so leave the picture matching the quiet zones as they are now.
+      refresh();
     },
     get running() {
       return playing;
