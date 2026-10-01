@@ -1,4 +1,8 @@
+import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
+
+const copy = JSON.parse(readFileSync(new URL('../fixtures/copy.en.json', import.meta.url), 'utf8'));
+const sectors: { title: string; lead: string; bullets: string[] }[] = copy.sectors.items;
 
 test.use({ javaScriptEnabled: false });
 
@@ -47,6 +51,35 @@ for (const viewport of [
         const apart = text.y + text.height <= box.y || box.y + box.height <= text.y;
         expect(apart, `${selector} is clear of the line field`).toBe(true);
       }
+    });
+
+    test('every sector row opens by click and shows its sentence and bullets', async ({ page }) => {
+      await page.goto('/');
+      const rows = page.locator('#sectors details');
+      await expect(rows).toHaveCount(7);
+      for (const [i, sector] of sectors.entries()) {
+        const row = rows.nth(i);
+        if (i === 0) await expect(row).toHaveAttribute('open');
+        else {
+          await expect(row.locator('li').first()).toBeHidden();
+          await row.locator('summary').click();
+          await expect(row).toHaveAttribute('open');
+          // Let the row finish growing: with scripting off, Playwright cannot click a page that is still moving.
+          let height = -1;
+          await expect
+            .poll(async () => {
+              const last = height;
+              height = (await row.boundingBox())!.height;
+              return height === last;
+            })
+            .toBe(true);
+        }
+        await expect(row.locator('summary')).toHaveText(sector.title);
+        await expect(row.getByText(sector.lead, { exact: true })).toBeVisible();
+        await expect(row.locator('li')).toHaveText(sector.bullets);
+        for (const bullet of await row.locator('li').all()) await expect(bullet).toBeVisible();
+      }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     });
 
     test('there is no pause button for an animation that is not running', async ({ page }) => {
