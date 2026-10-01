@@ -3,29 +3,37 @@ import { checkList, checkSection } from '../../src/lib/content-rules';
 
 describe('checkSection', () => {
   it('passes a section with its title and text', () => {
-    expect(() => checkSection('en', 'services', 'Services', '')).not.toThrow();
-    expect(() => checkSection('en', 'contact', 'Have a decision coming up?', 'Tell us.')).not.toThrow();
+    expect(() => checkSection('en', 'services', { title: 'Services' }, '')).not.toThrow();
+    expect(() => checkSection('en', 'contact', { title: 'Have a decision coming up?' }, 'Tell us.')).not.toThrow();
   });
 
   it('names the file of a section whose title is missing or empty', () => {
-    expect(() => checkSection('en', 'about-mission', undefined, 'Text.')).toThrow('src/content/sections/en/about-mission.md needs a title');
-    expect(() => checkSection('da', 'services', '  ', '')).toThrow('src/content/sections/da/services.md needs a title');
+    expect(() => checkSection('en', 'about-mission', { title: undefined }, 'Text.')).toThrow('src/content/sections/en/about-mission.md needs a title');
+    expect(() => checkSection('da', 'services', { title: '  ' }, '')).toThrow('src/content/sections/da/services.md needs a title');
   });
 
   it('needs no title for the hero and the quote', () => {
-    expect(() => checkSection('en', 'hero', undefined, 'Sub-line.')).not.toThrow();
-    expect(() => checkSection('en', 'about-quote', undefined, 'Quote.')).not.toThrow();
+    expect(() => checkSection('en', 'hero', { title: undefined }, 'Sub-line.')).not.toThrow();
+    expect(() => checkSection('en', 'about-quote', { title: undefined }, 'Quote.')).not.toThrow();
   });
 
   it('names the file of a section whose rendered text is empty', () => {
-    expect(() => checkSection('en', 'contact', 'Have a decision coming up?', '\n  \n')).toThrow(
+    expect(() => checkSection('en', 'contact', { title: 'Have a decision coming up?' }, '\n  \n')).toThrow(
       'src/content/sections/en/contact.md needs text below the front matter',
     );
-    expect(() => checkSection('en', 'about-quote', undefined, undefined)).toThrow('src/content/sections/en/about-quote.md needs text');
+    expect(() => checkSection('en', 'about-quote', { title: undefined }, undefined)).toThrow('src/content/sections/en/about-quote.md needs text');
   });
 
   it('needs no text for the sections that show only their title', () => {
-    expect(() => checkSection('en', 'approach', 'How we work', '')).not.toThrow();
+    expect(() => checkSection('en', 'approach', { title: 'How we work' }, '')).not.toThrow();
+  });
+});
+
+describe('checkSection, other fields', () => {
+  it('needs the 404 page\'s button text, so the button never renders empty', () => {
+    expect(() => checkSection('en', 'not-found', { title: 'Page not found', back: 'Back to the home page' }, 'Text.')).not.toThrow();
+    expect(() => checkSection('en', 'not-found', { title: 'Page not found' }, 'Text.')).toThrow('src/content/sections/en/not-found.md needs back');
+    expect(() => checkSection('en', 'not-found', { title: 'Page not found', back: ' ' }, 'Text.')).toThrow('src/content/sections/en/not-found.md needs back');
   });
 });
 

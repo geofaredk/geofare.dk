@@ -7,7 +7,7 @@ import { z } from 'astro/zod';
 const byLanguage = (base: string, pattern = '*/*.md') =>
   glob({ base: `./src/content/${base}`, pattern, generateId: ({ entry }) => entry.replace(/\.[^.]+$/, '') });
 
-const listEntry = z.object({
+const listEntry = z.strictObject({
   title: z.string(),
   order: z.number().int().positive(),
   slug: z.string().regex(/^[a-z0-9-]+$/),

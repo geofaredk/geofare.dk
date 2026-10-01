@@ -26,7 +26,7 @@ export async function getUi(lang: Lang): Promise<CollectionEntry<'ui'>['data']> 
 export async function getSection(lang: Lang, id: SectionId): Promise<CollectionEntry<'sections'>> {
   const entry = await getEntry('sections', `${lang}/${id}`);
   if (!entry) throw new Error(`Missing section: src/content/sections/${lang}/${id}.md`);
-  checkSection(lang, id, entry.data.title, entry.body);
+  checkSection(lang, id, entry.data, entry.body);
   return entry;
 }
 

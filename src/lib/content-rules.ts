@@ -10,10 +10,22 @@ const NO_BODY = new Set(['services', 'approach']);
 
 const isBlank = (value: string | undefined | null) => !value?.trim();
 
-/** Throws if a section lacks the title or the text that its component renders. */
-export function checkSection(lang: string, id: string, title: string | undefined, body: string | undefined): void {
+/** Other front-matter fields a section renders, which must not be empty either. */
+const REQUIRED: Record<string, string[]> = { 'not-found': ['back'] };
+
+/** Throws if a section lacks the title, the text or another field that its page renders. */
+export function checkSection(
+  lang: string,
+  id: string,
+  data: { title?: string } & Record<string, unknown>,
+  body: string | undefined,
+): void {
   const file = `src/content/sections/${lang}/${id}.md`;
-  if (!UNTITLED.has(id) && isBlank(title)) throw new Error(`${file} needs a title`);
+  if (!UNTITLED.has(id) && isBlank(data.title)) throw new Error(`${file} needs a title`);
+  for (const key of REQUIRED[id] ?? []) {
+    const value = data[key];
+    if (typeof value !== 'string' || isBlank(value)) throw new Error(`${file} needs ${key}`);
+  }
   if (!NO_BODY.has(id) && isBlank(body)) throw new Error(`${file} needs text below the front matter`);
 }
 

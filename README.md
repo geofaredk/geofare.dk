@@ -90,7 +90,8 @@ docker compose down
     ports:
       - "127.0.0.1:${GEOFARE_PORT:-8080}:8080"
 ```
- The container sends no HSTS header, so set it in the proxy once HTTPS works. The container sets a strict Content Security Policy (scripts, styles, fonts and images from the site itself only). If you add a third-party script or embed later, change the policy in `docker/security-headers.conf`.
+
+The container sends no HSTS header, so set it in the proxy once HTTPS works. The container sets a strict Content Security Policy (scripts, styles, fonts and images from the site itself only). If you add a third-party script or embed later, change the policy in `docker/security-headers.conf`.
 
 **What the container does.** It runs as a non-root user (uid 101), with a read-only root filesystem and no extra Linux capabilities. Hashed files in `/_astro/` are cached for a year, other files for a day, and HTML is revalidated on every visit. Missing pages return the custom 404 page with status 404.
 
@@ -117,7 +118,7 @@ The favicon, the Apple touch icon and the share image in `public/` are made from
 
 ## Add things
 
-**A service or a sector.** Add one Markdown file to `src/content/services/en/` or `src/content/sectors/en/`. Copy an existing file and change it. The front matter needs `title`, `order` and `slug` (lower case, digits and hyphens). Services also need `tags`. No two files in one folder may have the same `order` or `slug`; the build stops and names both files if they do. It also stops, naming the file, if a section file has a misspelt key, lacks the title its section shows, or has no text where its section shows text. The site picks the file up on the next build, with no code change. The slug is not used in a link yet; it is there so the detail page can be added later.
+**A service or a sector.** Add one Markdown file to `src/content/services/en/` or `src/content/sectors/en/`. Copy an existing file and change it. The front matter needs `title`, `order` and `slug` (lower case, digits and hyphens). Services also need `tags`. No two files in one folder may have the same `order` or `slug`; the build stops and names both files if they do. It also stops, naming the file, if any content file has a misspelt front-matter key, if a section file lacks the title its section shows (or, for the 404 page, the button text `back`), or if a file has no text where its section shows text. The site picks the file up on the next build, with no code change. The slug is not used in a link yet; it is there so the detail page can be added later.
 
 **A section on the home page.**
 
