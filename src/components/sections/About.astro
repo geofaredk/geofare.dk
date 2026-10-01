@@ -2,6 +2,7 @@
 import { render } from 'astro:content';
 import type { Lang } from '../../config/site';
 import { getSection } from '../../lib/content';
+import Portrait from '../Portrait.astro';
 
 interface Props {
   lang: Lang;
@@ -17,14 +18,20 @@ const [mission, founder, quote, team] = await Promise.all(
 ---
 
 <section id="about" class="section" aria-labelledby="about-title">
-  <div class="container">
-    <h2 id="about-title">{mission.title}</h2>
-    <div class="about__mission">
+  <div class="container cols">
+    <h2 id="about-title" class="claim about__claim">{mission.title}</h2>
+    <div class="lead about__mission">
       <mission.Content />
     </div>
 
-    <h3>{founder.title}</h3>
-    <founder.Content />
+    {/* The founder's photo goes here: <Portrait src={photo} alt="…" />. */}
+    <div class="about__portrait">
+      <Portrait />
+    </div>
+    <div class="about__text about__founder">
+      <h3>{founder.title}</h3>
+      <founder.Content />
+    </div>
 
     <figure class="about__quote">
       <blockquote>
@@ -32,16 +39,95 @@ const [mission, founder, quote, team] = await Promise.all(
       </blockquote>
     </figure>
 
-    <h3>{team.title}</h3>
-    <team.Content />
+    <div class="about__text about__team">
+      <h3>{team.title}</h3>
+      <team.Content />
+    </div>
   </div>
 </section>
 
 <style>
+  .about__mission {
+    margin-block-start: 1.75rem;
+  }
+
+  .about__portrait {
+    margin-block-start: calc(var(--section-space) * 0.6);
+  }
+
+  .about__founder {
+    margin-block-start: 2rem;
+  }
+
+  .about__text {
+    max-width: var(--measure);
+    text-wrap: pretty;
+  }
+
+  .about__text h3 {
+    margin-block-end: 0.75rem;
+    color: var(--ink);
+    font-size: var(--step-title);
+    line-height: 1.2;
+  }
+
+  /*
+   * The founder's own words, set apart by size, colour and space. The opening mark hangs
+   * in the margin, so the words themselves start on the edge everything else starts on:
+   * the first line is pulled out by the width of that mark, a third of an em in Figtree.
+   */
   .about__quote {
-    margin-block: 3rem;
+    margin-block: calc(var(--section-space) * 0.7);
     color: var(--accent);
     font-size: var(--step-claim-s);
-    line-height: var(--leading-claim);
+    font-weight: var(--weight-medium);
+    line-height: 1.18;
+    letter-spacing: var(--tracking-claim);
+    text-wrap: balance;
+  }
+
+  .about__quote :global(p) {
+    text-indent: -0.33em;
+  }
+
+  /*
+   * From here the section has two edges: claims and pictures start on the left one,
+   * reading text on the one in the middle.
+   */
+  @media (width >= 48rem) {
+    .about__claim {
+      grid-column: 1 / span 10;
+    }
+
+    .about__mission,
+    .about__text {
+      grid-column: 7 / -1;
+    }
+
+    .about__mission {
+      margin-block-start: 2.5rem;
+    }
+
+    .about__portrait {
+      grid-column: 1 / span 4;
+    }
+
+    .about__founder {
+      margin-block-start: calc(var(--section-space) * 0.6);
+    }
+
+    .about__quote {
+      grid-column: 1 / span 11;
+    }
+  }
+
+  @media (width >= 64rem) {
+    .about__claim {
+      grid-column: 1 / span 9;
+    }
+
+    .about__quote {
+      grid-column: 1 / span 10;
+    }
   }
 </style>
