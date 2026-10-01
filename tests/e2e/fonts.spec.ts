@@ -48,6 +48,26 @@ const boxes = (page: Page) =>
     return found;
   }, FIRST_SCREEN);
 
+/** The boxes once two animation frames in a row have drawn them in the same place. */
+async function settledBoxes(page: Page) {
+  let last = '';
+  let found: Awaited<ReturnType<typeof boxes>> = {};
+  await expect
+    .poll(
+      async () => {
+        await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+        found = await boxes(page);
+        const now = JSON.stringify(found);
+        const stable = now === last && Object.keys(found).length > 0;
+        last = now;
+        return stable;
+      },
+      { intervals: [50] },
+    )
+    .toBe(true);
+  return found;
+}
+
 const figtree = (page: Page) =>
   page.evaluate(() => [...document.fonts].filter((face) => face.family.replace(/"/g, '') === 'Figtree').map((face) => face.status));
 
@@ -56,12 +76,6 @@ for (const viewport of [
   { width: 1280, height: 800 },
 ]) {
   test(`nothing on the first screen moves when Figtree replaces the fallback at ${viewport.width}`, async ({ page, browserName }) => {
-    // Firefox does not use "Figtree Fallback" while Figtree is loading: it draws with its default
-    // sans-serif, because it only loads a fallback face that something uses first-hand. So in
-    // Firefox the first screen does move when a late Figtree arrives (measured on Linux Firefox
-    // 155; see docs/quality-report.md). Marked as an expected failure so it is visible, and so
-    // the run reports it if a Firefox version starts to pass.
-    test.fail(browserName === 'firefox', 'Firefox draws with its default sans-serif, not the fallback face, while Figtree loads');
     await page.setViewportSize(viewport);
     // The final headline, so the rotation does not change the text between the two measurements.
     await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -83,15 +97,13 @@ for (const viewport of [
 
     // The load event waits for the font, so go only as far as the parsed page, then let it draw.
     await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.waitForTimeout(500);
+    const before = await settledBoxes(page);
     // Still on its way ('loading'; WebKit reports 'error' until it arrives): the fallback is on screen.
     expect(await figtree(page)).not.toContain('loaded');
-    const before = await boxes(page);
 
     release();
     await expect.poll(() => figtree(page)).toEqual(['loaded']);
-    await page.evaluate(() => new Promise(requestAnimationFrame));
-    const after = await boxes(page);
+    const after = await settledBoxes(page);
 
     expect(Object.keys(after)).toEqual(Object.keys(before));
     expect(Object.keys(after).length).toBeGreaterThanOrEqual(9);
@@ -107,7 +119,17 @@ for (const viewport of [
       if (Math.abs(delta.x) > SIDEWAYS) problems.push(`${selector} moved sideways by ${delta.x.toFixed(1)}, more than ${SIDEWAYS}`);
     }
     console.log(`[fonts] ${browserName} ${viewport.width}: ${report.length ? report.join('; ') : 'all boxes within 1 px'}`);
-    expect(problems).toEqual([]);
+    if (browserName === 'firefox') {
+      // Known and expected: Firefox does not use "Figtree Fallback" while Figtree is loading. It
+      // draws with its default sans-serif, because it only loads a fallback face that something
+      // uses first-hand, so the first screen moves when a late Figtree arrives (measured on Linux
+      // Firefox 155; docs/quality-report.md, known limitation 6). Only this comparison is
+      // inverted: if it starts failing, Firefox has started to use the fallback, and this branch
+      // should go.
+      expect(problems.length, 'Firefox now keeps the first screen still: remove the Firefox branch').toBeGreaterThan(0);
+    } else {
+      expect(problems).toEqual([]);
+    }
 
     if (browserName === 'chromium') {
       // Chrome's own layout-shift measurement, as Lighthouse uses it.

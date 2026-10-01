@@ -49,8 +49,10 @@ started=1
 (cd "$repo" && GEOFARE_IMAGE=$image GEOFARE_PORT=$port docker compose -p "$project" up -d --build --wait)
 
 echo "Running the Firefox tests in $playwright_image"
-docker run --rm --name "$runner" --ipc=host \
-  -v "$repo":/work -w /work \
+# The repository is mounted read-only: the list reporter writes to the terminal, results go to
+# /tmp/results inside the container, and Playwright's transform cache lives in the container's /tmp.
+docker run --rm --name "$runner" \
+  -v "$repo":/work:ro -w /work \
   -e E2E_BASE_URL="http://host.docker.internal:$port" \
   --add-host=host.docker.internal:host-gateway \
   "$playwright_image" \
