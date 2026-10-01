@@ -22,9 +22,11 @@ const sectors = defineCollection({ loader: byLanguage('sectors'), schema: listEn
 
 const principles = defineCollection({ loader: byLanguage('principles'), schema: listEntry });
 
+// Strict: a misspelt key (`tittle:`) stops the build instead of being dropped. Which sections
+// need a title or text is checked in src/lib/content-rules.ts, when a page asks for the section.
 const sections = defineCollection({
   loader: byLanguage('sections'),
-  schema: z.object({
+  schema: z.strictObject({
     title: z.string().optional(),
     // hero
     fixed: z.string().optional(),

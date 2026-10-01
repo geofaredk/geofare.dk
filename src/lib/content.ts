@@ -1,5 +1,6 @@
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
 import type { Lang } from '../config/site';
+import { checkList, checkSection } from './content-rules';
 
 export type SectionId =
   | 'hero'
@@ -25,11 +26,13 @@ export async function getUi(lang: Lang): Promise<CollectionEntry<'ui'>['data']> 
 export async function getSection(lang: Lang, id: SectionId): Promise<CollectionEntry<'sections'>> {
   const entry = await getEntry('sections', `${lang}/${id}`);
   if (!entry) throw new Error(`Missing section: src/content/sections/${lang}/${id}.md`);
+  checkSection(lang, id, entry.data.title, entry.body);
   return entry;
 }
 
 async function getList<C extends ListCollection>(collection: C, lang: Lang): Promise<CollectionEntry<C>[]> {
   const entries = await getCollection(collection, (entry) => entry.id.startsWith(`${lang}/`));
+  checkList(collection, lang, entries);
   return entries.sort((a, b) => a.data.order - b.data.order);
 }
 
