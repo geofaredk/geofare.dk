@@ -26,7 +26,10 @@
     }
   }
 
+  /* A column, so the footer stands at the foot of the window on a page with little on it */
   body {
+    display: flex;
+    flex-direction: column;
     min-height: 100svh;
     background: var(--bg);
     color: var(--ink);
@@ -75,6 +78,10 @@
   }
 
   /* Layout */
+  main {
+    flex: 1 0 auto;
+  }
+
   .container {
     max-width: var(--content-max);
     margin-inline: auto;
@@ -85,14 +92,63 @@
     padding-block: var(--section-space);
   }
 
+  /*
+   * The 12-column grid. A child fills the row until the component that uses the grid gives it
+   * a place, which each does from the width where its parts stop stacking.
+   */
+  .cols {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    column-gap: var(--grid-gap);
+  }
+
+  .cols > * {
+    grid-column: 1 / -1;
+  }
+
+  /* Type roles shared by the sections */
+
+  /* A claim: the h2 of a section that has one, and the h1 of a plain page */
+  .claim {
+    font-size: var(--step-claim);
+    letter-spacing: var(--tracking-claim);
+  }
+
+  /* A section name where the brief gives no claim: says where you are, quietly */
+  .signpost {
+    font-size: var(--step-lead);
+    font-weight: var(--weight-medium);
+    line-height: 1.3;
+  }
+
+  /* The opening lines of a section, a size above body text */
+  .lead {
+    font-size: var(--step-lead);
+    line-height: 1.45;
+    text-wrap: pretty;
+  }
+
+  /* Running text from a Markdown file: one column at a readable measure */
+  .prose {
+    max-width: var(--measure);
+  }
+
+  .prose > * + * {
+    margin-block-start: 1em;
+  }
+
+  .claim + .prose {
+    margin-block-start: 1.75rem;
+  }
+
   /* Focus */
   :focus-visible {
     outline: var(--focus-ring);
     outline-offset: 3px;
   }
 
-  /* A skip-link target takes focus without showing a ring around the whole region */
-  [tabindex='-1']:focus {
+  /* The skip link's target takes focus without showing a ring around the whole page */
+  main:focus {
     outline: none;
   }
 

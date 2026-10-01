@@ -34,6 +34,7 @@
   /* Space and shape */
   --gutter: clamp(1.25rem, 5.5vw, 5rem);
   --content-max: 86rem;
+  --grid-gap: clamp(1.25rem, 2.5vw, 2.5rem);   /* between the 12 columns */
   --section-space: clamp(5rem, 11vw, 10rem);
   --measure: 62ch;
   --radius: 4px;
