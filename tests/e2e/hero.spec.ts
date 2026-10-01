@@ -187,7 +187,9 @@ test.describe('headline rotation', () => {
       if (i) await page.clock.runFor(INTERVAL);
       await expectEnding(page, ending);
       const box = (await activeEnding(page).boundingBox())!;
-      expect({ x: box.x, y: box.y }).toEqual({ x: before.x, y: before.y + before.height });
+      // To a hundredth of a pixel: Firefox's layout units round the sum differently in the last float digits.
+      expect(box.x).toBeCloseTo(before.x, 2);
+      expect(box.y).toBeCloseTo(before.y + before.height, 2);
       expect(await fixed.boundingBox()).toEqual(before);
     }
     await expect(fixed).toHaveText(copy.hero.fixed);

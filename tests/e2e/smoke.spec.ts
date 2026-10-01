@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-test('the home page loads cleanly, privately and in Figtree', async ({ page }) => {
+test('the home page loads cleanly, privately and in Figtree', async ({ page, baseURL }) => {
   const consoleErrors: string[] = [];
   const failed: string[] = [];
   const requested: string[] = [];
@@ -27,7 +27,7 @@ test('the home page loads cleanly, privately and in Figtree', async ({ page }) =
   expect(consoleErrors).toEqual([]);
   expect(failed).toEqual([]);
   expect(requested.length).toBeGreaterThan(0);
-  expect(requested.filter((url) => new URL(url).hostname !== 'localhost')).toEqual([]);
+  expect(requested.filter((url) => new URL(url).origin !== new URL(baseURL!).origin)).toEqual([]);
   expect(await page.evaluate(() => document.cookie)).toBe('');
   expect(fonts).toEqual({ check: true, loaded: true });
 });

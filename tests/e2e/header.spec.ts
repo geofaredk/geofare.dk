@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { tabKey } from './support/keyboard';
 
 const links = [
   { name: 'Services', anchor: '#services' },
@@ -37,20 +38,20 @@ test.describe('at 1280', () => {
     expect(await page.evaluate(() => document.querySelector('header')!.getBoundingClientRect().top)).toBe(0);
   });
 
-  test('Tab runs skip link, logo, links, call to action; the skip link moves focus to the content', async ({ page }) => {
+  test('Tab runs skip link, logo, links, call to action; the skip link moves focus to the content', async ({ page, browserName }) => {
     await page.goto('/');
-    await page.keyboard.press('Tab');
+    await page.keyboard.press(tabKey(browserName));
     const skip = page.getByRole('link', { name: 'Skip to content' });
     await expect(skip).toBeFocused();
     await expect(skip).toBeInViewport();
 
-    await page.keyboard.press('Tab');
+    await page.keyboard.press(tabKey(browserName));
     await expect(page.getByRole('link', { name: 'geofare home' }).first()).toBeFocused();
     for (const { name } of links) {
-      await page.keyboard.press('Tab');
+      await page.keyboard.press(tabKey(browserName));
       await expect(nav(page).getByRole('link', { name, exact: true })).toBeFocused();
     }
-    await page.keyboard.press('Tab');
+    await page.keyboard.press(tabKey(browserName));
     await expect(page.locator('header').getByRole('link', { name: 'Get in touch' })).toBeFocused();
 
     await skip.focus();
@@ -117,14 +118,14 @@ test.describe('at 360', () => {
     expect(await top()).toBeGreaterThanOrEqual(await headerBottom(page));
   });
 
-  test('tabbing out of the open menu closes it, so focus is never hidden behind it', async ({ page }) => {
+  test('tabbing out of the open menu closes it, so focus is never hidden behind it', async ({ page, browserName }) => {
     await page.goto('/');
     const button = page.locator('header').getByRole('button');
     await button.focus();
     await page.keyboard.press('Enter');
     await expect(button).toHaveAttribute('aria-expanded', 'true');
     // Four links and the call to action, then out into the page.
-    for (let i = 0; i < 6; i++) await page.keyboard.press('Tab');
+    for (let i = 0; i < 6; i++) await page.keyboard.press(tabKey(browserName));
     await expect(button).toHaveAttribute('aria-expanded', 'false');
     await expect(page.locator('#top').getByRole('link', { name: 'Get in touch' })).toBeFocused();
   });

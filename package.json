@@ -12,8 +12,10 @@
     "preview": "astro preview --port 4321",
     "check": "astro check",
     "test": "astro build && vitest run",
+    "pretest:e2e": "astro build",
     "test:e2e": "playwright test",
     "test:docker": "bash tests/docker/smoke.sh",
+    "lighthouse": "node scripts/lighthouse.mjs",
     "brand-assets": "node scripts/generate-brand-assets.mjs"
   },
   "dependencies": {

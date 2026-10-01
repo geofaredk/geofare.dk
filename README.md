@@ -23,11 +23,16 @@ npm run build        # writes the site to dist/
 npm run preview      # serves dist/ at http://localhost:4321
 npm run check        # type-checks the code and the content
 npm test             # builds, then runs the unit and build tests (Vitest)
-npm run test:e2e     # browser tests (Playwright, needs Google Chrome); run npm run build first
+npm run test:e2e     # builds, then runs the browser tests in Chrome, Firefox and WebKit (Playwright)
 npm run test:docker  # builds the image from the last commit and checks the running container
+npm run lighthouse -- http://localhost:8080   # Lighthouse (mobile) three times against a running site
 ```
 
+`npm run test:e2e` needs Google Chrome, plus Playwright's own Firefox and WebKit: install them once with `npx playwright install firefox webkit`. It starts its own server on port 4321 and stops if that port is taken, so it never tests an old build by mistake. Run one browser with `npm run test:e2e -- --project=chrome` (or `firefox`, `webkit`). To test a site that is already running, such as the container, skip the build and set the address: `E2E_BASE_URL=http://localhost:8080 npx playwright test`.
+
 `npm run test:docker` uses what is committed, not your working files, and needs port 18080 to be free. It removes everything it starts.
+
+`npm run lighthouse` needs Google Chrome and a running site; point it at the container, because compression and cache headers count. It prints the four scores of the median run, layout shift, load times and page weight, keeps the reports in `.lighthouse/`, and fails if a score is below 95. `docs/quality-report.md` has the latest measurements against the brief's quality bar.
 
 ## Deploy and update
 
