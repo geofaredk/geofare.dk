@@ -96,6 +96,18 @@ const links = [emailLink(site.company.email), linkedinLink(site.company.linkedin
     background-color: var(--accent);
   }
 
+  /* Forced colours paint backgrounds as Canvas, which would erase the rule: draw it in a system colour. */
+  @media (forced-colors: active) {
+    .contact__block::after {
+      background-color: CanvasText;
+      forced-color-adjust: none;
+    }
+
+    a.contact__block::after {
+      background-color: LinkText;
+    }
+  }
+
   /* A real address is a link and answers the pointer; a placeholder is plain text in the same shape. */
   a.contact__block {
     color: var(--accent);

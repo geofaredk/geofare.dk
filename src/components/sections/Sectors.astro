@@ -111,6 +111,15 @@ const sectors = await Promise.all(
     display: none;
   }
 
+  /* Forced colours paint backgrounds as Canvas, which would erase the bars: draw them in the text colour. */
+  @media (forced-colors: active) {
+    .sector__sign::before,
+    .sector__sign::after {
+      background-color: CanvasText;
+      forced-color-adjust: none;
+    }
+  }
+
   .sector__summary:hover > *,
   .sector[open] > .sector__summary > * {
     color: var(--accent);
