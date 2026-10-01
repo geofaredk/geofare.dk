@@ -2,6 +2,7 @@
 import { render } from 'astro:content';
 import type { Lang } from '../../config/site';
 import { getPrinciples, getSection } from '../../lib/content';
+import LineField from '../LineField.astro';
 
 interface Props {
   lang: Lang;
@@ -14,13 +15,14 @@ const principles = await Promise.all(
 );
 ---
 
-<section id="approach" class="section approach" aria-labelledby="approach-title">
+<section id="approach" class="approach" aria-labelledby="approach-title">
   <div class="container">
-    <h2 id="approach-title">{section.data.title}</h2>
-    <ul class="principles">
+    <h2 id="approach-title" class="signpost">{section.data.title}</h2>
+    {/* role="list": Safari drops list semantics once the markers are styled away. */}
+    <ul class="principles" role="list">
       {
         principles.map(({ entry, Content }) => (
-          <li>
+          <li class="principle">
             <h3>{entry.data.title}</h3>
             <Content />
           </li>
@@ -28,11 +30,15 @@ const principles = await Promise.all(
       }
     </ul>
   </div>
+  {/* The field runs along the foot of the section, below the text, never behind it. */}
+  <LineField width={1440} height={176} time={41} class="approach__field" />
 </section>
 
 <style>
+  /* The one blue section. Everything on it is --on-accent, the focus ring included. */
   .approach {
-    background: var(--accent);
+    padding-block-start: var(--section-space);
+    background-color: var(--accent);
     color: var(--on-accent);
   }
 
@@ -47,8 +53,61 @@ const principles = await Promise.all(
 
   .principles {
     display: grid;
-    gap: 2rem;
+    row-gap: 2.5rem;
+    margin-block-start: calc(var(--section-space) / 2);
     padding: 0;
     list-style: none;
+  }
+
+  .principle h3 {
+    align-self: end;
+    margin-block-end: 0.75rem;
+    font-size: var(--step-claim-s);
+    letter-spacing: var(--tracking-claim);
+  }
+
+  .principle :global(p) {
+    max-width: 30ch;
+    text-wrap: pretty;
+  }
+
+  /*
+   * Side by side, each principle lends its two rows to the grid, so the sentences start
+   * on one line however the names above them wrap.
+   */
+  @media (width >= 40rem) {
+    .principles {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: var(--grid-gap);
+      row-gap: 0;
+    }
+
+    .principle {
+      display: grid;
+      grid-row: span 2;
+      grid-template-rows: subgrid;
+    }
+
+    .principle:nth-child(n + 3) {
+      margin-block-start: 3.5rem;
+    }
+  }
+
+  @media (width >= 64rem) {
+    .principles {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .principle:nth-child(n + 3) {
+      margin-block-start: 0;
+    }
+  }
+
+  .approach__field {
+    width: 100%;
+    height: clamp(6.5rem, 13vw, 11rem);
+    margin-block-start: calc(var(--section-space) * 0.6);
+    color: var(--on-accent);
+    opacity: 0.3;
   }
 </style>
