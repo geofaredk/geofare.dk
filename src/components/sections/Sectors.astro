@@ -17,18 +17,22 @@ const sectors = await Promise.all(
 
 <section id="sectors" class="section" aria-labelledby="sectors-title">
   <div class="container">
-    <h2 id="sectors-title">{section.data.title}</h2>
-    <div class="sectors__intro">
+    <h2 id="sectors-title" class="claim">{section.data.title}</h2>
+    <div class="lead sectors__intro">
       <Intro />
     </div>
+    {/* Plain <details>: every sector's text is in the HTML and opens without JavaScript. The first starts open. */}
     <div class="sectors">
       {
-        sectors.map(({ entry, Content }) => (
-          <details class="sector">
-            <summary>
-              <h3>{entry.data.title}</h3>
+        sectors.map(({ entry, Content }, i) => (
+          <details class="sector" open={i === 0}>
+            <summary class="sector__summary">
+              <h3 class="sector__name">{entry.data.title}</h3>
+              <span class="sector__sign" aria-hidden="true" />
             </summary>
-            <Content />
+            <div class="cols sector__panel">
+              <Content />
+            </div>
           </details>
         ))
       }
@@ -37,11 +41,145 @@ const sectors = await Promise.all(
 </section>
 
 <style>
-  .sector summary {
+  .sectors__intro {
+    max-width: var(--measure);
+    margin-block-start: 1.75rem;
+  }
+
+  /* The hairlines are the rows' edges: they show what opens. One above each row, one below the last. */
+  .sectors {
+    margin-block-start: calc(var(--section-space) / 2);
+    border-block-end: 1px solid var(--rule);
+  }
+
+  .sector {
+    border-block-start: 1px solid var(--rule);
+  }
+
+  /* The whole row is the target. `display: flex` also removes the browser's own marker. */
+  .sector__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    min-height: 4.5rem;
+    padding-block: clamp(1rem, 2vw, 1.5rem);
+    list-style: none;
     cursor: pointer;
   }
 
-  .sector summary h3 {
-    display: inline;
+  .sector__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .sector__name {
+    color: var(--ink);
+    font-size: var(--step-claim-s);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-claim);
+    transition: color 120ms;
+  }
+
+  /* A plus drawn with two bars; the upright one goes when the row is open, leaving a minus. */
+  .sector__sign {
+    position: relative;
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--ink);
+    transition: color 120ms;
+  }
+
+  .sector__sign::before,
+  .sector__sign::after {
+    content: '';
+    position: absolute;
+    background-color: currentColor;
+  }
+
+  .sector__sign::before {
+    inset: calc(50% - 1px) 0 auto;
+    height: 2px;
+  }
+
+  .sector__sign::after {
+    inset: 0 auto 0 calc(50% - 1px);
+    width: 2px;
+  }
+
+  .sector[open] .sector__sign::after {
+    display: none;
+  }
+
+  .sector__summary:hover > *,
+  .sector[open] > .sector__summary > * {
+    color: var(--accent);
+  }
+
+  /* Open: the sentence that names the sector's problem, then what we do about it. */
+  .sector__panel {
+    row-gap: 1.5rem;
+    padding-block: 0.5rem clamp(2.5rem, 5vw, 4rem);
+  }
+
+  .sector__panel :global(p) {
+    max-width: 34ch;
+    font-size: var(--step-lead);
+    line-height: 1.45;
+    text-wrap: pretty;
+  }
+
+  /*
+   * A string marker, not `none`, so the list stays a list for assistive tech in every browser.
+   * The indent is the marker's own width (a dash and an en space), so the dashes stand on the list's edge.
+   */
+  .sector__panel :global(ul) {
+    padding-inline-start: 1.05em;
+    list-style: '–\2002';
+  }
+
+  .sector__panel :global(li) {
+    text-wrap: pretty;
+  }
+
+  .sector__panel :global(li + li) {
+    margin-block-start: 0.5rem;
+  }
+
+  .sector__panel :global(li::marker) {
+    color: var(--accent);
+  }
+
+  @media (width >= 56rem) {
+    .sector__panel :global(p) {
+      grid-column: 1 / span 5;
+    }
+
+    .sector__panel :global(ul) {
+      grid-column: 7 / -1;
+      /* The first bullet's text shares a baseline with the larger sentence beside it. */
+      padding-block-start: 0.15em;
+    }
+  }
+
+  /* Where the browser can animate to a height it works out itself, an opening row grows; elsewhere it just opens. */
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (interpolate-size: allow-keywords) and selector(::details-content) {
+      .sector {
+        interpolate-size: allow-keywords;
+      }
+
+      .sector::details-content {
+        block-size: 0;
+        overflow: clip;
+        transition:
+          block-size 240ms ease-out,
+          content-visibility 240ms allow-discrete;
+      }
+
+      .sector[open]::details-content {
+        block-size: auto;
+      }
+    }
   }
 </style>
