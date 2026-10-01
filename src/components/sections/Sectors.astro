@@ -1,0 +1,47 @@
+---
+import { render } from 'astro:content';
+import type { Lang } from '../../config/site';
+import { getSection, getSectors } from '../../lib/content';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const section = await getSection(lang, 'sectors');
+const { Content: Intro } = await render(section);
+const sectors = await Promise.all(
+  (await getSectors(lang)).map(async (entry) => ({ entry, ...(await render(entry)) })),
+);
+---
+
+<section id="sectors" class="section" aria-labelledby="sectors-title">
+  <div class="container">
+    <h2 id="sectors-title">{section.data.title}</h2>
+    <div class="sectors__intro">
+      <Intro />
+    </div>
+    <div class="sectors">
+      {
+        sectors.map(({ entry, Content }) => (
+          <details class="sector">
+            <summary>
+              <h3>{entry.data.title}</h3>
+            </summary>
+            <Content />
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .sector summary {
+    cursor: pointer;
+  }
+
+  .sector summary h3 {
+    display: inline;
+  }
+</style>

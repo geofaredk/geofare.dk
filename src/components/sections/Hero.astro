@@ -1,0 +1,53 @@
+---
+import { render } from 'astro:content';
+import type { Lang } from '../../config/site';
+import { contactCta, mainNav } from '../../config/navigation';
+import { getSection } from '../../lib/content';
+import { localizePath } from '../../lib/i18n';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const hero = await getSection(lang, 'hero');
+const { fixed, endings, primaryCta, secondaryCta } = hero.data;
+if (!fixed || !endings || !primaryCta || !secondaryCta) {
+  throw new Error(`sections/${lang}/hero.md needs fixed, endings, primaryCta and secondaryCta`);
+}
+// The h1 always holds the final sentence; the rotation (Task 3) is an aria-hidden layer on top.
+const finalEnding = endings.at(-1);
+const servicesHref = mainNav.find((item) => item.id === 'services')!.href;
+const { Content } = await render(hero);
+---
+
+<section id="top" class="hero">
+  <div class="container">
+    <h1>{fixed} <span class="hero__ending">{finalEnding}</span></h1>
+    <div class="hero__sub">
+      <Content />
+    </div>
+    <p class="hero__actions">
+      <a href={localizePath(contactCta.href, lang)} class="button button--primary">{primaryCta}</a>
+      <a href={localizePath(servicesHref, lang)} class="button button--secondary">{secondaryCta}</a>
+    </p>
+  </div>
+</section>
+
+<style>
+  .hero h1 {
+    font-size: var(--step-hero);
+    line-height: var(--leading-hero);
+    letter-spacing: var(--tracking-hero);
+  }
+
+  .hero__ending {
+    display: block;
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+</style>

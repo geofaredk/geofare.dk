@@ -1,0 +1,22 @@
+meta:
+  title: geofare | Natural hazard and climate risk, clear enough to act on
+  description: geofare helps municipalities, planners and asset owners make good decisions about flood risk, physical climate risk and other natural hazards.
+  imageAlt: The geofare mark
+nav:
+  label: Main navigation
+  services: Services
+  about: About
+  approach: How we work
+  sectors: Who we work with
+  contact: Get in touch
+  menuOpen: Menu
+  menuClose: Close
+skip: Skip to content
+home: geofare home
+hero:
+  pause: Pause animation
+  play: Play animation
+footer:
+  country: Denmark
+  cvr: CVR
+  privacy: Privacy

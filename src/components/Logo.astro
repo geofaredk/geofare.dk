@@ -1,0 +1,20 @@
+---
+// The supplied logo, used as-is: never redrawn, recoloured or distorted.
+import brandWithName from '../assets/brand-with-name.svg';
+
+interface Props {
+  /** Empty when the surrounding text already names geofare. */
+  alt: string;
+  class?: string;
+}
+
+const { alt, class: className } = Astro.props;
+---
+
+<img
+  src={brandWithName.src}
+  width={brandWithName.width}
+  height={brandWithName.height}
+  alt={alt}
+  class:list={['logo', className]}
+/>

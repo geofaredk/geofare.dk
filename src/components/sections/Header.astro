@@ -1,0 +1,57 @@
+---
+import type { Lang } from '../../config/site';
+import { contactCta, mainNav } from '../../config/navigation';
+import { getUi } from '../../lib/content';
+import { localizePath } from '../../lib/i18n';
+import Logo from '../Logo.astro';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const ui = await getUi(lang);
+---
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a href={localizePath('/', lang)} class="site-header__home">
+      <Logo alt={ui.home} />
+    </a>
+    <nav aria-label={ui.nav.label}>
+      <ul class="site-header__nav">
+        {
+          mainNav.map((item) => (
+            <li>
+              <a href={localizePath(item.href, lang)}>{ui.nav[item.id]}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <a href={localizePath(contactCta.href, lang)} class="button button--primary">{ui.nav[contactCta.id]}</a>
+  </div>
+</header>
+
+<style>
+  .site-header__inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 2rem;
+    padding-block: 1rem;
+  }
+
+  .site-header__home :global(.logo) {
+    width: auto;
+    height: 2.5rem;
+  }
+
+  .site-header__nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    padding: 0;
+    list-style: none;
+  }
+</style>

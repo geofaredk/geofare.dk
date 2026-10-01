@@ -1,0 +1,21 @@
+---
+import { render } from 'astro:content';
+import { site } from '../config/site';
+import Base from '../layouts/Base.astro';
+import { getSection } from '../lib/content';
+import { localizePath } from '../lib/i18n';
+
+const lang = 'en';
+const page = await getSection(lang, 'not-found');
+const { Content } = await render(page);
+---
+
+<Base lang={lang} title={`${page.data.title} | ${site.name}`} noindex>
+  <section class="section">
+    <div class="container">
+      <h1>{page.data.title}</h1>
+      <Content />
+      <p><a href={localizePath('/', lang)}>{page.data.back}</a></p>
+    </div>
+  </section>
+</Base>

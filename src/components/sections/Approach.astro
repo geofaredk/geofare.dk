@@ -1,0 +1,54 @@
+---
+import { render } from 'astro:content';
+import type { Lang } from '../../config/site';
+import { getPrinciples, getSection } from '../../lib/content';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const section = await getSection(lang, 'approach');
+const principles = await Promise.all(
+  (await getPrinciples(lang)).map(async (entry) => ({ entry, ...(await render(entry)) })),
+);
+---
+
+<section id="approach" class="section approach" aria-labelledby="approach-title">
+  <div class="container">
+    <h2 id="approach-title">{section.data.title}</h2>
+    <ul class="principles">
+      {
+        principles.map(({ entry, Content }) => (
+          <li>
+            <h3>{entry.data.title}</h3>
+            <Content />
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .approach {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  .approach h2,
+  .approach h3 {
+    color: var(--on-accent);
+  }
+
+  .approach :global(:focus-visible) {
+    outline-color: var(--on-accent);
+  }
+
+  .principles {
+    display: grid;
+    gap: 2rem;
+    padding: 0;
+    list-style: none;
+  }
+</style>

@@ -1,0 +1,144 @@
+/*
+ * Global base styles, in a cascade layer so that any unlayered component style wins
+ * regardless of the order in which Astro emits the stylesheets.
+ */
+@layer base {
+  /* Reset */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  * {
+    margin: 0;
+  }
+
+  html {
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
+    scroll-padding-top: calc(var(--header-h) + 1rem);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  body {
+    min-height: 100svh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: var(--step-body);
+    font-weight: var(--weight-regular);
+    line-height: var(--leading-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  img,
+  svg,
+  canvas {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  input,
+  button,
+  textarea,
+  select {
+    font: inherit;
+  }
+
+  p,
+  h1,
+  h2,
+  h3,
+  li,
+  blockquote {
+    overflow-wrap: break-word;
+  }
+
+  h1,
+  h2,
+  h3 {
+    color: var(--accent);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-claim);
+    text-wrap: balance;
+  }
+
+  a {
+    color: var(--accent);
+  }
+
+  /* Layout */
+  .container {
+    max-width: var(--content-max);
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+
+  .section {
+    padding-block: var(--section-space);
+  }
+
+  /* Links styled as buttons (Tasks 3–4 give them their final design) */
+  .button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 3rem;
+    padding-inline: 1.25rem;
+    border: 1.5px solid var(--accent);
+    border-radius: var(--radius);
+    font-weight: var(--weight-medium);
+    text-decoration: none;
+  }
+
+  .button--primary {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+
+  .button--secondary {
+    color: var(--accent);
+  }
+
+  /* Focus */
+  :focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: 3px;
+  }
+
+  /* Visually hidden, still read by assistive tech */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Skip link: hidden until focused */
+  .skip-link {
+    position: absolute;
+    inset-block-start: 0.5rem;
+    inset-inline-start: 0.5rem;
+    z-index: 100;
+    padding: 0.75rem 1rem;
+    background: var(--accent);
+    color: var(--on-accent);
+    border-radius: var(--radius);
+    transform: translateY(-200%);
+  }
+
+  .skip-link:focus {
+    transform: none;
+  }
+}

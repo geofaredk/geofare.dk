@@ -1,0 +1,86 @@
+---
+import '../styles/tokens.css';
+import '../styles/fonts.css';
+import '../styles/base.css';
+import figtreeLatin from '@fontsource-variable/figtree/files/figtree-latin-wght-normal.woff2?url';
+import { site, type Lang } from '../config/site';
+import { getUi } from '../lib/content';
+import { emailLink, linkedinLink } from '../lib/contact';
+import { alternates, localizePath } from '../lib/i18n';
+import Header from '../components/sections/Header.astro';
+import Footer from '../components/sections/Footer.astro';
+
+interface Props {
+  lang: Lang;
+  title?: string;
+  description?: string;
+  noindex?: boolean;
+}
+
+const { lang, noindex = false } = Astro.props;
+const ui = await getUi(lang);
+const title = Astro.props.title ?? ui.meta.title;
+const description = Astro.props.description ?? ui.meta.description;
+const locale = site.locales[lang];
+const absolute = (path: string) => new URL(path, site.url).href;
+const canonical = absolute(Astro.url.pathname);
+const ogImage = { url: absolute('/og-image.png'), width: 1200, height: 630 };
+
+// Placeholders never reach structured data: a field appears once it has a real value.
+const email = emailLink(site.company.email);
+const linkedin = linkedinLink(site.company.linkedin);
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfessionalService',
+  name: site.name,
+  url: absolute(localizePath('/', lang)),
+  description: ui.meta.description,
+  logo: absolute('/apple-touch-icon.png'),
+  image: ogImage.url,
+  address: { '@type': 'PostalAddress', addressCountry: 'DK' },
+  areaServed: { '@type': 'Country', name: ui.footer.country },
+  ...(email.href && { email: email.label }),
+  ...(linkedin.href && { sameAs: [linkedin.href] }),
+};
+// Escape `<` so the JSON can never close the script element.
+const jsonLd = JSON.stringify(structuredData).replace(/</g, '\\u003c');
+---
+
+<!doctype html>
+<html lang={locale.htmlLang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
+    {!noindex && <link rel="canonical" href={canonical} />}
+    {!noindex && alternates(Astro.url.pathname).map((alt) => <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />)}
+    <link rel="preload" href={figtreeLatin} as="font" type="font/woff2" crossorigin />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:locale" content={locale.htmlLang.replace('-', '_')} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage.url} />
+    <meta property="og:image:width" content={String(ogImage.width)} />
+    <meta property="og:image:height" content={String(ogImage.height)} />
+    <meta property="og:image:alt" content={ui.meta.imageAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <script type="application/ld+json" set:html={jsonLd} />
+  </head>
+  <body>
+    <a href="#main" class="skip-link">{ui.skip}</a>
+    <Header lang={lang} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer lang={lang} />
+  </body>
+</html>

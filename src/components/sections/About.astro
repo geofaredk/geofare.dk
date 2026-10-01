@@ -1,0 +1,47 @@
+---
+import { render } from 'astro:content';
+import type { Lang } from '../../config/site';
+import { getSection } from '../../lib/content';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const [mission, founder, quote, team] = await Promise.all(
+  (['about-mission', 'about-founder', 'about-quote', 'about-team'] as const).map(async (id) => {
+    const entry = await getSection(lang, id);
+    return { title: entry.data.title, ...(await render(entry)) };
+  }),
+);
+---
+
+<section id="about" class="section" aria-labelledby="about-title">
+  <div class="container">
+    <h2 id="about-title">{mission.title}</h2>
+    <div class="about__mission">
+      <mission.Content />
+    </div>
+
+    <h3>{founder.title}</h3>
+    <founder.Content />
+
+    <figure class="about__quote">
+      <blockquote>
+        <quote.Content />
+      </blockquote>
+    </figure>
+
+    <h3>{team.title}</h3>
+    <team.Content />
+  </div>
+</section>
+
+<style>
+  .about__quote {
+    margin-block: 3rem;
+    color: var(--accent);
+    font-size: var(--step-claim-s);
+    line-height: var(--leading-claim);
+  }
+</style>

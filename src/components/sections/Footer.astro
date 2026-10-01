@@ -1,0 +1,45 @@
+---
+import { site, type Lang } from '../../config/site';
+import { getUi } from '../../lib/content';
+import { localizePath } from '../../lib/i18n';
+import Logo from '../Logo.astro';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const ui = await getUi(lang);
+const { street, postalTown, cvr } = site.company;
+const year = new Date().getFullYear();
+---
+
+<footer class="site-footer">
+  <div class="container site-footer__inner">
+    <Logo alt="" class="site-footer__logo" />
+    <div>
+      <p>{site.name}, {street}, {postalTown}, {ui.footer.country}. {ui.footer.cvr} {cvr}.</p>
+      <p><a href={localizePath('/privacy', lang)}>{ui.footer.privacy}</a>. © {year} {site.name}.</p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    border-top: 1px solid var(--rule);
+    padding-block: 3rem;
+    font-size: var(--step-small);
+    color: var(--ink-muted);
+  }
+
+  .site-footer__inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem 3rem;
+  }
+
+  .site-footer__inner :global(.site-footer__logo) {
+    width: auto;
+    height: 2rem;
+  }
+</style>

@@ -1,0 +1,58 @@
+---
+import { render } from 'astro:content';
+import type { Lang } from '../../config/site';
+import { getSection, getServices } from '../../lib/content';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const section = await getSection(lang, 'services');
+const services = await Promise.all(
+  (await getServices(lang)).map(async (entry) => ({ entry, ...(await render(entry)) })),
+);
+const number = (order: number) => String(order).padStart(2, '0');
+---
+
+<section id="services" class="section" aria-labelledby="services-title">
+  <div class="container">
+    <h2 id="services-title">{section.data.title}</h2>
+    <ol class="services">
+      {
+        services.map(({ entry, Content }) => (
+          <li>
+            <article class="service">
+              <p class="service__number">{number(entry.data.order)}</p>
+              <h3>{entry.data.title}</h3>
+              <Content />
+              <ul class="service__tags">
+                {entry.data.tags.map((tag) => (
+                  <li>{tag}</li>
+                ))}
+              </ul>
+            </article>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .services {
+    display: grid;
+    gap: 3rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .service__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0;
+    list-style: none;
+    font-size: var(--step-small);
+  }
+</style>

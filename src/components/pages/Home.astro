@@ -1,0 +1,25 @@
+---
+import type { Lang } from '../../config/site';
+import Base from '../../layouts/Base.astro';
+import Hero from '../sections/Hero.astro';
+import Services from '../sections/Services.astro';
+import About from '../sections/About.astro';
+import Approach from '../sections/Approach.astro';
+import Sectors from '../sections/Sectors.astro';
+import Contact from '../sections/Contact.astro';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+---
+
+<Base lang={lang}>
+  <Hero lang={lang} />
+  <Services lang={lang} />
+  <About lang={lang} />
+  <Approach lang={lang} />
+  <Sectors lang={lang} />
+  <Contact lang={lang} />
+</Base>

@@ -1,0 +1,42 @@
+:root {
+  /* Brand: the only colour literals in the project */
+  --bg: #FCF2EB;
+  --accent: #0047FF;
+  --ink: #0B1220;
+  --on-accent: #FCF2EB;
+
+  /* Derived tints */
+  --ink-muted: color-mix(in srgb, var(--ink) 78%, var(--bg));
+  --rule: color-mix(in srgb, var(--ink) 18%, var(--bg));
+  --rule-accent: color-mix(in srgb, var(--accent) 35%, var(--bg));
+  --rule-on-accent: color-mix(in srgb, var(--on-accent) 40%, var(--accent));
+  --field-line: var(--accent);        /* drawn at --field-opacity */
+  --field-opacity: 0.16;              /* brief: 10 to 20 percent */
+
+  /* Type */
+  --font-sans: "Figtree", "Figtree Fallback", system-ui, sans-serif;
+  --step-hero: clamp(2.75rem, 7vw, 6rem);
+  --step-claim: clamp(2rem, 4.5vw, 3.75rem);
+  --step-claim-s: clamp(1.75rem, 3.2vw, 2.75rem);
+  --step-title: clamp(1.375rem, 2vw, 1.75rem);
+  --step-lead: clamp(1.25rem, 1.6vw, 1.5rem);
+  --step-body: 1.125rem;
+  --step-small: 0.9375rem;
+  --leading-hero: 1.02;
+  --leading-claim: 1.1;
+  --leading-body: 1.6;
+  --tracking-hero: -0.025em;
+  --tracking-claim: -0.02em;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+
+  /* Space and shape */
+  --gutter: clamp(1.25rem, 5.5vw, 5rem);
+  --content-max: 86rem;
+  --section-space: clamp(5rem, 11vw, 10rem);
+  --measure: 62ch;
+  --radius: 4px;
+  --header-h: 4.5rem;
+  --focus-ring: 3px solid var(--accent);
+}
