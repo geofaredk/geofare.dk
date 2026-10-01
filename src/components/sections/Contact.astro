@@ -3,6 +3,7 @@ import { render } from 'astro:content';
 import { site, type Lang } from '../../config/site';
 import { getSection } from '../../lib/content';
 import { emailLink, linkedinLink } from '../../lib/contact';
+import LineField from '../LineField.astro';
 
 interface Props {
   lang: Lang;
@@ -14,20 +15,26 @@ const { Content } = await render(section);
 const links = [emailLink(site.company.email), linkedinLink(site.company.linkedin)];
 ---
 
+{/* A band of the line field marks the turn from "who we work with" to "talk to us". */}
+<LineField width={1440} height={192} time={8} class="contact__band" />
+
 <section id="contact" class="section" aria-labelledby="contact-title">
   <div class="container">
-    <h2 id="contact-title">{section.data.title}</h2>
-    <Content />
-    <ul class="contact__links">
+    <h2 id="contact-title" class="claim">{section.data.title}</h2>
+    <div class="lead contact__body">
+      <Content />
+    </div>
+    {/* role="list": Safari drops list semantics once the markers are styled away. */}
+    <ul class="contact__links" role="list">
       {
         links.map((link) => (
           <li>
             {link.href ? (
-              <a href={link.href} rel={link.external ? 'external' : undefined}>
+              <a class="contact__block" href={link.href} rel={link.external ? 'external' : undefined}>
                 {link.label}
               </a>
             ) : (
-              <span>{link.label}</span>
+              <span class="contact__block">{link.label}</span>
             )}
           </li>
         ))
@@ -37,9 +44,70 @@ const links = [emailLink(site.company.email), linkedinLink(site.company.linkedin
 </section>
 
 <style>
+  /* It stands inside the space between the two sections rather than adding to it. */
+  .contact__band {
+    width: 100%;
+    height: clamp(8rem, 15vw, 12rem);
+    margin-block: calc(var(--section-space) * -0.35);
+  }
+
+  .contact__body {
+    max-width: var(--measure);
+    margin-block-start: 1.75rem;
+  }
+
   .contact__links {
+    margin-block-start: calc(var(--section-space) / 2);
     padding: 0;
     list-style: none;
-    font-size: var(--step-lead);
+  }
+
+  /* Room for the focus ring of one block to clear the rule of the block above */
+  .contact__links li + li {
+    margin-block-start: 0.5rem;
+  }
+
+  /*
+   * A link block: one full row, large type, a thick rule beneath. The block reaches a little
+   * into the margins, so its text stands on the page's edge at rest and has room around it
+   * when the block fills with colour.
+   */
+  .contact__block {
+    --reach: 1rem;
+
+    position: relative;
+    display: block;
+    margin-inline: calc(-1 * var(--reach));
+    padding: clamp(1.25rem, 2.5vw, 1.75rem) var(--reach);
+    border-radius: var(--radius);
+    color: var(--ink-muted);
+    font-size: var(--step-claim-s);
+    font-weight: var(--weight-medium);
+    line-height: var(--leading-claim);
+    letter-spacing: var(--tracking-claim);
+    overflow-wrap: anywhere;
+  }
+
+  .contact__block::after {
+    content: '';
+    position: absolute;
+    inset: auto var(--reach) 0;
+    height: 2px;
+    background-color: var(--accent);
+  }
+
+  /* A real address is a link and answers the pointer; a placeholder is plain text in the same shape. */
+  a.contact__block {
+    color: var(--accent);
+    text-decoration: none;
+    transition:
+      background-color 120ms,
+      color 120ms;
+  }
+
+  a.contact__block:hover,
+  a.contact__block:focus-visible {
+    background-color: var(--accent);
+    color: var(--on-accent);
   }
 </style>

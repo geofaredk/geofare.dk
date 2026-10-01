@@ -15,31 +15,61 @@ const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer">
-  <div class="container site-footer__inner">
-    <Logo alt="" class="site-footer__logo" />
-    <div>
-      <p>{site.name}, {street}, {postalTown}, {ui.footer.country}. {ui.footer.cvr} {cvr}.</p>
-      <p><a href={localizePath('/privacy', lang)}>{ui.footer.privacy}</a>. © {year} {site.name}.</p>
+  <div class="container">
+    <div class="cols site-footer__inner">
+      <Logo alt="" class="site-footer__logo" />
+      <div class="site-footer__text">
+        <p>{site.name}, {street}, {postalTown}, {ui.footer.country}. {ui.footer.cvr} {cvr}.</p>
+        <p><a href={localizePath('/privacy', lang)}>{ui.footer.privacy}</a>. © {year} {site.name}.</p>
+      </div>
     </div>
   </div>
 </footer>
 
 <style>
   .site-footer {
-    border-top: 1px solid var(--rule);
-    padding-block: 3rem;
-    font-size: var(--step-small);
     color: var(--ink-muted);
+    font-size: var(--step-small);
   }
 
+  /* The hairline is the page's lower edge, as wide as the text column above it. */
   .site-footer__inner {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.5rem 3rem;
+    row-gap: 1.5rem;
+    padding-block: 2rem 3rem;
+    border-block-start: 1px solid var(--rule);
   }
 
   .site-footer__inner :global(.site-footer__logo) {
     width: auto;
-    height: 2rem;
+    height: 2.25rem;
+  }
+
+  /* Underlined, so it reads as a link without leaning on colour. */
+  .site-footer a {
+    position: relative;
+    color: inherit;
+    text-underline-offset: 0.2em;
+    transition: color 120ms;
+  }
+
+  /* The target is 44 px tall; the focus ring stays close around the word. */
+  .site-footer a::after {
+    content: '';
+    position: absolute;
+    inset: -0.625rem 0;
+  }
+
+  .site-footer a:hover {
+    color: var(--accent);
+  }
+
+  @media (width >= 48rem) {
+    .site-footer__inner :global(.site-footer__logo) {
+      grid-column: 1 / span 6;
+    }
+
+    .site-footer__text {
+      grid-column: 7 / -1;
+    }
   }
 </style>

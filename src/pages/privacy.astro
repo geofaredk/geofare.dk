@@ -12,8 +12,10 @@ const { Content } = await render(page);
 <Base lang={lang} title={`${page.data.title} | ${site.name}`} noindex>
   <section class="section">
     <div class="container">
-      <h1>{page.data.title}</h1>
-      <Content />
+      <h1 class="claim">{page.data.title}</h1>
+      <div class="prose">
+        <Content />
+      </div>
     </div>
   </section>
 </Base>

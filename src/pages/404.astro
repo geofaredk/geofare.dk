@@ -2,6 +2,7 @@
 import { render } from 'astro:content';
 import { site } from '../config/site';
 import Base from '../layouts/Base.astro';
+import Button from '../components/Button.astro';
 import { getSection } from '../lib/content';
 import { localizePath } from '../lib/i18n';
 
@@ -13,9 +14,19 @@ const { Content } = await render(page);
 <Base lang={lang} title={`${page.data.title} | ${site.name}`} noindex>
   <section class="section">
     <div class="container">
-      <h1>{page.data.title}</h1>
-      <Content />
-      <p><a href={localizePath('/', lang)}>{page.data.back}</a></p>
+      <h1 class="claim">{page.data.title}</h1>
+      <div class="prose">
+        <Content />
+      </div>
+      <p class="not-found__back">
+        <Button href={localizePath('/', lang)}>{page.data.back}</Button>
+      </p>
     </div>
   </section>
 </Base>
+
+<style>
+  .not-found__back {
+    margin-block-start: 2rem;
+  }
+</style>
