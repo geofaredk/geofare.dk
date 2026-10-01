@@ -36,6 +36,8 @@ npm run lighthouse -- http://localhost:8080   # Lighthouse (mobile) three times 
 
 `npm run test:docker` uses what is committed, not your working files, and needs port 18080 to be free. It removes everything it starts.
 
+If port 18080 or 18082 is taken, choose another: `SMOKE_PORT=18090 npm run test:docker` and `E2E_PORT=18092 npm run test:e2e:firefox:docker`.
+
 `npm run lighthouse` needs Google Chrome and a running site; point it at the container, because compression and cache headers count. It prints the four scores of the median run, layout shift, load times and page weight, keeps the reports in `.lighthouse/`, and fails if a score is below 95. `docs/quality-report.md` has the latest measurements against the brief's quality bar and the commands to repeat them.
 
 ## Deploy and update
@@ -70,7 +72,11 @@ curl http://localhost:8081/healthz    # prints: ok
 docker compose up -d --build
 ```
 
-That rebuilds the image and replaces the running container. Nothing else is needed.
+That rebuilds the image and replaces the running container. Nothing else is needed to publish.
+
+The tests check the page text against `tests/fixtures/copy.en.json`, which holds the wording of the brief. Filling in a placeholder such as `[surname]` or `[email address]` needs no change to the tests. If you change the wording on purpose, change the same text in that file in the same commit, or `npm test` and `npm run test:e2e` will fail.
+
+Titles in the front matter (between the `---` lines) are used as typed: type the typographic apostrophe (’) yourself, as in `title: See what’s there.`. In the text below the front matter, straight quotes and apostrophes are turned into typographic ones automatically.
 
 **Stop it.**
 
@@ -78,7 +84,13 @@ That rebuilds the image and replaces the running container. Nothing else is need
 docker compose down
 ```
 
-**Reverse proxy.** The container serves plain HTTP only. Your proxy on the server handles HTTPS and forwards to the host port. The container sends no HSTS header, so set it in the proxy once HTTPS works. The container sets a strict Content Security Policy (scripts, styles, fonts and images from the site itself only). If you add a third-party script or embed later, change the policy in `docker/security-headers.conf`.
+**Reverse proxy.** The container serves plain HTTP only. Your proxy on the server handles HTTPS and forwards to the host port. By default Docker publishes that port on every network interface of the server, so the plain-HTTP site can also be reached directly on it from outside unless a firewall blocks it. If the proxy runs on the same server, you can publish the port to the server itself only, by changing the `ports` line in `compose.yaml` to:
+
+```yaml
+    ports:
+      - "127.0.0.1:${GEOFARE_PORT:-8080}:8080"
+```
+ The container sends no HSTS header, so set it in the proxy once HTTPS works. The container sets a strict Content Security Policy (scripts, styles, fonts and images from the site itself only). If you add a third-party script or embed later, change the policy in `docker/security-headers.conf`.
 
 **What the container does.** It runs as a non-root user (uid 101), with a read-only root filesystem and no extra Linux capabilities. Hashed files in `/_astro/` are cached for a year, other files for a day, and HTML is revalidated on every visit. Missing pages return the custom 404 page with status 404.
 
@@ -105,7 +117,7 @@ The favicon, the Apple touch icon and the share image in `public/` are made from
 
 ## Add things
 
-**A service or a sector.** Add one Markdown file to `src/content/services/en/` or `src/content/sectors/en/`. Copy an existing file and change it. The front matter needs `title`, `order` and `slug` (lower case, digits and hyphens). Services also need `tags`. The site picks the file up on the next build, with no code change. The slug is not used in a link yet; it is there so the detail page can be added later.
+**A service or a sector.** Add one Markdown file to `src/content/services/en/` or `src/content/sectors/en/`. Copy an existing file and change it. The front matter needs `title`, `order` and `slug` (lower case, digits and hyphens). Services also need `tags`. No two files in one folder may have the same `order` or `slug`; the build stops and names both files if they do. It also stops, naming the file, if a section file has a misspelt key, lacks the title its section shows, or has no text where its section shows text. The site picks the file up on the next build, with no code change. The slug is not used in a link yet; it is there so the detail page can be added later.
 
 **A section on the home page.**
 
@@ -141,6 +153,8 @@ To turn a menu anchor into a page link, change its `href` in `src/config/navigat
 
 Run `npm run build`. If a Danish section or interface file is missing, the build stops and names it. A missing service, sector or principle file does not stop the build, so check the page. The 404 page stays English; nginx serves one 404 page for the whole site.
 
+What this gives you: the Danish home page at `/da/` and privacy page at `/da/privacy`, the menu and buttons in Danish, `lang="da-DK"`, the `hreflang` links between the English and Danish pages, and `/da/` in the sitemap. What it does not give you: there is no link on the page to switch language yet, so add one to the header (`src/components/sections/Header.astro`, with its label in `src/content/ui/`) if visitors should be able to switch; and the copy tests check the English text only.
+
 ## Open points
 
 These still hold placeholders in square brackets. They stay visible on the site until you replace them.
@@ -156,9 +170,27 @@ These still hold placeholders in square brackets. They stay visible on the site 
 | Privacy text | `src/content/sections/en/privacy.md` (`[privacy text]`) |
 | Domain for the canonical URL and sitemap | `SITE_URL` in `.env` (see Deploy) |
 
-A real email address becomes a `mailto:` link, and a real LinkedIn URL becomes a link, on the next build. Both are also added to the structured data in the page head. The copyright year is the year of the build.
+A real email address becomes a `mailto:` link, and a real LinkedIn URL becomes a link, on the next build. Both are also added to the structured data (JSON-LD) in the page head. So are a real street address (`streetAddress`) and postcode and town: written the Danish way, "8000 Aarhus C", they become `postalCode` and `addressLocality`; written any other way, the whole value becomes `addressLocality`. A value still in square brackets never reaches the structured data. The copyright year is the year of the build.
+
+Filling in these points needs no change to the tests: they accept either the placeholder or a real value in its place (see "Change the text and publish it").
+
+**The privacy page** is kept out of search engines until its text is written: it carries `noindex`, and it is left out of the sitemap. When the text is in, change both: remove `noindex` from `<Base … noindex>` in `src/pages/privacy.astro`, and remove `'/privacy'` from `excludedFromSitemap` in `astro.config.mjs`. Then update the two checks in `tests/build/seo.test.ts` that expect it to be left out.
 
 To confirm with the team, not fill in: the four "How we work" principles (`src/content/principles/en/`), the word "our network" in the team paragraph (`src/content/sections/en/about-team.md`), the new contact text (`src/content/sections/en/contact.md`) and the page metadata (`meta` in `src/content/ui/en.yaml`).
+
+### To confirm: wording written for the build
+
+The brief does not give these words; they were written so the site works. Change them where listed if the team prefers other wording.
+
+| Wording | Where it is shown | File |
+| --- | --- | --- |
+| "The geofare mark" | Description of the share image (`meta.imageAlt`) | `src/content/ui/en.yaml` |
+| "Page not found", "This page does not exist.", "Back to the home page" | The 404 page | `src/content/sections/en/not-found.md` |
+| "Skip to content" | Skip link, shown on the first Tab | `src/content/ui/en.yaml` (`skip`) |
+| "Menu", "Close" | Menu button on small screens | `src/content/ui/en.yaml` (`nav.menuOpen`, `nav.menuClose`) |
+| "Pause animation", "Play animation" | Button that stops the hero animation | `src/content/ui/en.yaml` (`hero.pause`, `hero.play`) |
+| "Main navigation" | Name of the menu for screen readers | `src/content/ui/en.yaml` (`nav.label`) |
+| "geofare home" | Name of the header logo link for screen readers | `src/content/ui/en.yaml` (`home`) |
 
 ## Replace the portrait
 
