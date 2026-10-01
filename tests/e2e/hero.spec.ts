@@ -33,7 +33,10 @@ const draws = (page: Page) => page.evaluate(() => (window as unknown as { draws:
 const canvas = (page: Page) => page.locator('#top canvas');
 const activeEnding = (page: Page) => page.locator('.hero__ending[data-active]');
 const shownEndings = (page: Page) => page.locator('.hero__ending').filter({ visible: true });
-const finalHeading = (page: Page) => page.getByRole('heading', { level: 1, name: `${copy.hero.fixed} ${FINAL}`, exact: true });
+const SENTENCE = `${copy.hero.fixed} ${FINAL}`;
+const finalHeading = (page: Page) => page.getByRole('heading', { level: 1, name: SENTENCE, exact: true });
+/** The h1's whole text content in the live DOM (whitespace collapsed), as a crawler that ignores ARIA and CSS reads it. */
+const expectHeadlineText = (page: Page) => expect(page.locator('h1')).toHaveText(SENTENCE, { useInnerText: false });
 
 async function expectEnding(page: Page, ending: string) {
   await expect(activeEnding(page)).toHaveText(ending);
@@ -93,17 +96,30 @@ test.describe('headline rotation', () => {
   test('endings appear in the order of the brief and stop on the last one', async ({ page }) => {
     await openWithClock(page);
     await expect(finalHeading(page)).toBeVisible();
+    await expectHeadlineText(page);
     for (const [i, ending] of endings.entries()) {
       if (i) await page.clock.runFor(INTERVAL);
+      // Mid-change, and again once the new ending has settled.
+      await expectHeadlineText(page);
       await expectEnding(page, ending);
       await expect(finalHeading(page)).toBeVisible();
+      await expectHeadlineText(page);
     }
     expect(await activeEnding(page).textContent()).toBe(FINAL);
 
     await page.clock.runFor(20_000);
     await expectEnding(page, FINAL);
     await expect(finalHeading(page)).toBeVisible();
+    await expectHeadlineText(page);
     await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+  });
+
+  test('the rotating endings live beside the h1, hidden from assistive tech, all five in order', async ({ page }) => {
+    await openWithClock(page);
+    const rotator = page.locator('#top .hero__rotator');
+    await expect(rotator).toHaveAttribute('aria-hidden', 'true');
+    await expect(rotator.locator('.hero__ending')).toHaveText(endings);
+    await expect(page.locator('h1 .hero__rotator, h1 .hero__ending, h1 [aria-hidden]')).toHaveCount(0);
   });
 
   for (const viewport of [
@@ -115,8 +131,8 @@ test.describe('headline rotation', () => {
       await openWithClock(page);
       const rects = () =>
         page.evaluate(() =>
-          // The headline box itself (its ending slot must not change size), then everything after it.
-          ['.hero__title', '.hero__sub', '.hero__actions a:nth-of-type(1)', '.hero__actions a:nth-of-type(2)', '#services'].map((selector) => {
+          // The headline and its ending slot (neither may change size), then everything after them.
+          ['.hero__title', '.hero__rotator', '.hero__sub', '.hero__actions a:nth-of-type(1)', '.hero__actions a:nth-of-type(2)', '#services'].map((selector) => {
             const { x, y, width, height } = document.querySelector(selector)!.getBoundingClientRect();
             return { selector, x, y, width, height };
           }),
@@ -128,6 +144,38 @@ test.describe('headline rotation', () => {
         await expectEnding(page, ending);
         expect(await rects()).toEqual(before);
       }
+    });
+  }
+
+  for (const viewport of [
+    { width: 360, height: 740 },
+    { width: 1280, height: 800 },
+  ]) {
+    test(`the rotating layer stands exactly where the h1's final line stands at ${viewport.width}`, async ({ page }) => {
+      await page.setViewportSize(viewport);
+      await openWithClock(page);
+      await page.clock.runFor(INTERVAL * 4);
+      await expectEnding(page, FINAL);
+
+      /** Where a piece of headline text is drawn, and in what type. */
+      const drawn = (selector: string) =>
+        page.evaluate((selector) => {
+          const element = document.querySelector(selector)!;
+          const range = document.createRange();
+          range.selectNodeContents(element);
+          const { x, y, width, height } = range.getBoundingClientRect();
+          const style = getComputedStyle(element);
+          const type = [style.fontFamily, style.fontSize, style.fontWeight, style.letterSpacing, style.lineHeight, style.color, style.textWrap];
+          return { text: element.textContent, x, y, width, height, type };
+        }, selector);
+
+      const rotating = await drawn('.hero__ending[data-active]');
+      // The same page as a reduced-motion visitor gets it: the h1's own final line, no rotator.
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await expect(page.locator('.hero__final')).toBeVisible();
+      await expect(shownEndings(page)).toHaveCount(0);
+      expect(rotating).toEqual(await drawn('.hero__final'));
+      expect(rotating.width).toBeGreaterThan(100);
     });
   }
 
@@ -158,7 +206,9 @@ test.describe('pause control', () => {
     await expect(canvas(page)).toHaveAttribute('data-state', 'paused');
     await expect(page.getByRole('button', { name: 'Play animation' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Pause animation' })).toHaveCount(0);
+    await expectHeadlineText(page);
     await expectEnding(page, FINAL);
+    await expectHeadlineText(page);
 
     await page.getByRole('button', { name: 'Play animation' }).click();
     await expect(canvas(page)).toHaveAttribute('data-state', 'running');
@@ -270,6 +320,7 @@ test.describe('reduced motion', () => {
     await expect(page.locator('.hero__final')).toHaveText(FINAL);
     await expect(shownEndings(page)).toHaveCount(0);
     await expect(finalHeading(page)).toBeVisible();
+    await expectHeadlineText(page);
     await expect(canvas(page)).toHaveAttribute('data-state', 'static');
     await expect(page.locator('.hero__pause')).toBeHidden();
 

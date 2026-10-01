@@ -60,10 +60,17 @@ describe('copy matches the brief word for word', () => {
 });
 
 describe('document outline', () => {
-  it('has one h1 that reads the final sentence to assistive tech', () => {
+  it('has one h1 whose whole text is the final sentence, for crawlers as much as for assistive tech', () => {
     const h1s = root.querySelectorAll('h1'); expect(h1s).toHaveLength(1);
-    const clone = parse(h1s[0].outerHTML); clone.querySelectorAll('[aria-hidden="true"]').forEach((e) => e.remove());
-    expect(norm(clone.textContent)).toBe('Make good decisions when it matters.');
+    // The full text content, not only the part outside aria-hidden: most crawlers ignore ARIA.
+    expect(norm(h1s[0].textContent)).toBe(`${copy.hero.fixed} ${copy.hero.endings.at(-1)}`);
+    expect(norm(h1s[0].textContent)).toBe('Make good decisions when it matters.');
+  });
+  it('keeps the rotating endings beside the h1, hidden from assistive tech, all five in order', () => {
+    const rotators = root.querySelectorAll('#top [aria-hidden="true"]').filter((e) => copy.hero.endings.every((ending) => e.textContent.includes(ending)));
+    expect(rotators).toHaveLength(1);
+    expect(rotators[0].closest('h1')).toBeNull();
+    expect(norm(rotators[0].textContent)).toBe(copy.hero.endings.join(' '));
   });
   it('never skips a heading level', () => {
     let prev = 0;

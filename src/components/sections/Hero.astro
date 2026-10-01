@@ -26,14 +26,23 @@ const { Content } = await render(hero);
   <canvas class="hero__field" aria-hidden="true"></canvas>
 
   <div class="container hero__head">
-    {/* The h1 always reads the final sentence; the rotation is a hidden layer in its place. */}
+    {/* The h1 holds the final sentence and nothing else, so that is what every reader and crawler gets. */}
     <h1 class="hero__title">
       <span class="hero__fixed">{fixed}</span>{' '}
       <span class="hero__final">{endings.at(-1)}</span>
-      <span class="hero__rotator" aria-hidden="true">
-        {endings.map((ending, i) => <span class="hero__ending" data-active={i === 0 ? '' : undefined}>{ending}</span>)}
-      </span>
     </h1>
+    {/* The rotation is a hidden layer beside it, set in the same type, standing where the final line stands. */}
+    <div class="hero__rotator" aria-hidden="true">
+      {
+        endings.map((ending, i) => (
+          <>
+            <span class="hero__ending" data-active={i === 0 ? '' : undefined}>
+              {ending}
+            </span>{' '}
+          </>
+        ))
+      }
+    </div>
   </div>
 
   {/* Without JavaScript the free middle of the hero shows the same field, standing still. */}
@@ -91,11 +100,16 @@ const { Content } = await render(hero);
     grid-row: 1;
   }
 
-  /* Headline */
-  .hero__title {
+  /* Headline: the h1 and the rotating layer below it are set as one piece of type. */
+  .hero__title,
+  .hero__rotator {
+    color: var(--accent);
     font-size: var(--step-hero);
+    font-weight: var(--weight-semibold);
     line-height: var(--leading-hero);
     letter-spacing: var(--tracking-hero);
+    overflow-wrap: break-word;
+    text-wrap: balance;
   }
 
   .hero__fixed,
@@ -108,7 +122,7 @@ const { Content } = await render(hero);
   }
 
   @media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
-    /* Out of sight but still the h1's text, as with .sr-only. */
+    /* Out of sight but still the h1's text, as with .sr-only; the rotator takes its place on the next line. */
     .hero__final {
       position: absolute;
       width: 1px;

@@ -16,6 +16,8 @@ for (const viewport of [
       const h1 = page.getByRole('heading', { level: 1 });
       await expect(h1).toHaveCount(1);
       await expect(h1).toHaveAccessibleName('Make good decisions when it matters.');
+      // The whole text content too, which is what a crawler that ignores ARIA reads.
+      await expect(h1).toHaveText('Make good decisions when it matters.');
       await expect(page.locator('.hero__fixed')).toBeVisible();
       await expect(page.locator('.hero__final')).toBeVisible();
       await expect(page.locator('.hero__final')).toHaveText('when it matters.');
