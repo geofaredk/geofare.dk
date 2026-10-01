@@ -42,6 +42,53 @@ async function expectEnding(page: Page, ending: string) {
   await expect(activeEnding(page)).toHaveCSS('opacity', '1');
 }
 
+/** The strongest line pixel (alpha 0..255) behind each piece of hero text and each control, and anywhere at all. */
+const strongestLines = (page: Page) =>
+  page.evaluate(() => {
+    const field = document.querySelector<HTMLCanvasElement>('#top canvas')!;
+    const box = field.getBoundingClientRect();
+    const scale = field.width / box.width;
+    const ctx = field.getContext('2d')!;
+    const maxAlpha = (left: number, top: number, right: number, bottom: number) => {
+      const x = Math.max(0, Math.floor((left - box.left) * scale));
+      const y = Math.max(0, Math.floor((top - box.top) * scale));
+      const w = Math.min(field.width, Math.ceil((right - box.left) * scale)) - x;
+      const h = Math.min(field.height, Math.ceil((bottom - box.top) * scale)) - y;
+      if (w <= 0 || h <= 0) throw new Error('nothing to sample');
+      const { data } = ctx.getImageData(x, y, w, h);
+      let max = 0;
+      for (let i = 3; i < data.length; i += 4) max = Math.max(max, data[i]);
+      return max;
+    };
+    const textRect = (element: Element) => {
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      return range.getBoundingClientRect();
+    };
+    const visible = (element: Element) => getComputedStyle(element).visibility !== 'hidden';
+    const areas: Record<string, DOMRect> = {
+      fixed: textRect(document.querySelector('.hero__fixed')!),
+      sub: document.querySelector('.hero__sub')!.getBoundingClientRect(),
+      primary: document.querySelector('.hero__actions a:nth-of-type(1)')!.getBoundingClientRect(),
+      secondary: document.querySelector('.hero__actions a:nth-of-type(2)')!.getBoundingClientRect(),
+      pause: document.querySelector('.hero__pause')!.getBoundingClientRect(),
+    };
+    [...document.querySelectorAll('.hero__ending')].filter(visible).forEach((ending, i) => (areas[`ending ${i}`] = textRect(ending)));
+    const behind: Record<string, number> = {};
+    // Inset by 4 px: the outermost pixels of a box hold no glyphs.
+    for (const [name, r] of Object.entries(areas)) behind[name] = maxAlpha(r.left + 4, r.top + 4, r.right - 4, r.bottom - 4);
+    return { behind, anywhere: maxAlpha(box.left, box.top, box.right, box.bottom) };
+  });
+
+async function expectClear(page: Page) {
+  const { behind, anywhere } = await strongestLines(page);
+  // The field is there …
+  expect(anywhere).toBeGreaterThan(0);
+  // … but not behind anything that is read or pressed.
+  expect(Object.keys(behind)).toEqual(expect.arrayContaining(['fixed', 'sub', 'primary', 'secondary', 'pause', 'ending 0']));
+  expect(Object.entries(behind).filter(([, alpha]) => alpha > 0)).toEqual([]);
+}
+
 test.describe('headline rotation', () => {
   test('endings appear in the order of the brief and stop on the last one', async ({ page }) => {
     await openWithClock(page);
@@ -180,68 +227,37 @@ test.describe('line field', () => {
       await page.setViewportSize(viewport);
       await openWithClock(page);
 
-      /** The strongest line pixel behind each piece of hero text and each control, and anywhere at all. */
-      const strongest = () =>
-        page.evaluate(() => {
-          const field = document.querySelector<HTMLCanvasElement>('#top canvas')!;
-          const box = field.getBoundingClientRect();
-          const scale = field.width / box.width;
-          const ctx = field.getContext('2d')!;
-          const maxAlpha = (left: number, top: number, right: number, bottom: number) => {
-            const x = Math.max(0, Math.floor((left - box.left) * scale));
-            const y = Math.max(0, Math.floor((top - box.top) * scale));
-            const w = Math.min(field.width, Math.ceil((right - box.left) * scale)) - x;
-            const h = Math.min(field.height, Math.ceil((bottom - box.top) * scale)) - y;
-            if (w <= 0 || h <= 0) throw new Error('nothing to sample');
-            const { data } = ctx.getImageData(x, y, w, h);
-            let max = 0;
-            for (let i = 3; i < data.length; i += 4) max = Math.max(max, data[i]);
-            return max;
-          };
-          const textRect = (element: Element) => {
-            const range = document.createRange();
-            range.selectNodeContents(element);
-            return range.getBoundingClientRect();
-          };
-          const visible = (element: Element) => getComputedStyle(element).visibility !== 'hidden';
-          const areas: Record<string, DOMRect> = {
-            fixed: textRect(document.querySelector('.hero__fixed')!),
-            sub: document.querySelector('.hero__sub')!.getBoundingClientRect(),
-            primary: document.querySelector('.hero__actions a:nth-of-type(1)')!.getBoundingClientRect(),
-            secondary: document.querySelector('.hero__actions a:nth-of-type(2)')!.getBoundingClientRect(),
-            pause: document.querySelector('.hero__pause')!.getBoundingClientRect(),
-          };
-          [...document.querySelectorAll('.hero__ending')].filter(visible).forEach((ending, i) => (areas[`ending ${i}`] = textRect(ending)));
-          const behind: Record<string, number> = {};
-          // Inset by 4 px: the outermost pixels of a box hold no glyphs.
-          for (const [name, r] of Object.entries(areas)) behind[name] = maxAlpha(r.left + 4, r.top + 4, r.right - 4, r.bottom - 4);
-          return { behind, anywhere: maxAlpha(box.left, box.top, box.right, box.bottom) };
-        });
-
-      const expectClear = async () => {
-        const { behind, anywhere } = await strongest();
-        // The field is there …
-        expect(anywhere).toBeGreaterThan(0);
-        // … but not behind anything that is read or pressed.
-        expect(Object.keys(behind)).toEqual(expect.arrayContaining(['fixed', 'sub', 'primary', 'secondary', 'pause', 'ending 0']));
-        expect(Object.entries(behind).filter(([, alpha]) => alpha > 0)).toEqual([]);
-      };
-
       await page.clock.runFor(100);
-      await expectClear();
+      await expectClear(page);
       for (const ending of endings.slice(1)) {
         await page.clock.runFor(INTERVAL);
         // Mid-change both endings are on show; both must be clear.
-        await expectClear();
+        await expectClear(page);
         await expectEnding(page, ending);
         await page.clock.runFor(100);
-        await expectClear();
+        await expectClear(page);
       }
       // Long after the rotation, when the quiet zone has settled around the final sentence.
       await page.clock.runFor(5000);
-      await expectClear();
+      await expectClear(page);
     });
   }
+
+  test('pausing mid-rotation leaves no line behind the final sentence', async ({ page }) => {
+    // On a phone "when it matters." is wider than "when rivers / overflow.", so the zone has to grow.
+    await page.setViewportSize({ width: 360, height: 740 });
+    await openWithClock(page);
+    await page.clock.runFor(INTERVAL);
+    await expectEnding(page, endings[1]);
+    await page.clock.runFor(2000);
+    await expectClear(page);
+
+    await page.getByRole('button', { name: 'Pause animation' }).click();
+    await expect(canvas(page)).toHaveAttribute('data-state', 'paused');
+    await expectClear(page);
+    await expectEnding(page, FINAL);
+    await expectClear(page);
+  });
 });
 
 test.describe('reduced motion', () => {
