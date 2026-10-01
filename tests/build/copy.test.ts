@@ -6,6 +6,24 @@ import copy from '../fixtures/copy.en.json';
 export const norm = (s: string) =>
   s.replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/ /g, ' ').replace(/\s+/g, ' ').trim();
 
+const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * A fixture string as a pattern. The brief leaves some values open as `[like this]`; each may
+ * still be the placeholder or have been filled in with a real value (any non-empty text), so
+ * filling in an open point needs no change here. Every other word must match exactly.
+ */
+export const copyPattern = (s: string) =>
+  new RegExp(
+    s
+      .split(/(\[[^\]]+\])/)
+      .map((part, i) => (i % 2 ? `(?:${escape(part)}|\\S(?:.*?\\S)?)` : escape(part)))
+      .join(''),
+  );
+
+/** The page text contains the fixture string, with its placeholders either kept or filled in. */
+const expectCopy = (text: string, s: string) => expect(text).toMatch(copyPattern(s));
+
 const html = readFileSync('dist/index.html', 'utf8');
 const root = parse(html);
 const text = norm(root.querySelector('body')!.textContent);
@@ -26,7 +44,7 @@ describe('copy matches the brief word for word', () => {
   });
   it('about', () => {
     const t = sectionText('about'); const a = copy.about;
-    for (const s of [a.mission.title, a.mission.body, a.founder.title, a.founder.body, a.quote, a.team.title, a.team.body]) expect(t).toContain(s);
+    for (const s of [a.mission.title, a.mission.body, a.founder.title, a.founder.body, a.quote, a.team.title, a.team.body]) expectCopy(t, s);
   });
   it('principles', () => {
     const t = sectionText('approach');
@@ -41,11 +59,18 @@ describe('copy matches the brief word for word', () => {
       const i = t.indexOf(s.lead); expect(i).toBeGreaterThan(at); at = i;
     }
   });
-  it('contact and footer keep their placeholders', () => {
+  it('contact and footer show their placeholders or the values filled in', () => {
     const t = sectionText('contact');
-    for (const s of [copy.contact.title, copy.contact.body, ...copy.contact.links]) expect(t).toContain(s);
+    for (const s of [copy.contact.title, copy.contact.body]) expectCopy(t, s);
+    // A filled-in email address or LinkedIn URL becomes a link, whose text need not be the address.
+    const hrefs = root.querySelectorAll('#contact a[href]').map((a) => a.getAttribute('href')!);
+    for (const s of copy.contact.links) {
+      if (t.includes(s)) continue;
+      const link = /email/i.test(s) ? /^mailto:\S+@\S+$/ : /^https:\/\/\S+$/;
+      expect(hrefs.some((href) => link.test(href)), `${s} is shown, or has become a link`).toBe(true);
+    }
     const f = norm(root.querySelector('footer')!.textContent);
-    for (const s of copy.footer.fragments) expect(f).toContain(s.replace('{year}', String(new Date().getFullYear())));
+    for (const s of copy.footer.fragments) expectCopy(f, s.replace('{year}', String(new Date().getFullYear())));
   });
   it('navigation labels', () => {
     const n = norm(root.querySelector('header nav')!.textContent);

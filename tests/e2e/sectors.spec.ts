@@ -1,14 +1,10 @@
+import { readFileSync } from 'node:fs';
 import { expect, test } from '@playwright/test';
 
-const names = [
-  'Municipalities',
-  'Emergency management',
-  'Urban planners & developers',
-  'Housing associations & property owners',
-  'Government & infrastructure',
-  'Finance & insurance',
-  'Energy & utilities',
-];
+// The sectors as the brief gives them, in its order.
+const copy = JSON.parse(readFileSync(new URL('../fixtures/copy.en.json', import.meta.url), 'utf8'));
+const sectors: { title: string; lead: string }[] = copy.sectors.items;
+const names = sectors.map((sector) => sector.title);
 
 for (const viewport of [
   { width: 360, height: 740 },
@@ -45,7 +41,7 @@ for (const viewport of [
       await page.keyboard.press('Enter');
 
       await expect(second).toHaveAttribute('open');
-      await expect(second.getByText('You need to know what is coming, who it hits and how to reach them.')).toBeVisible();
+      await expect(second.getByText(sectors[1].lead)).toBeVisible();
       const bullets = second.locator('li');
       await expect(bullets).toHaveCount(3);
       for (const bullet of await bullets.all()) await expect(bullet).toBeVisible();
