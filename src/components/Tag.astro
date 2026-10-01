@@ -1,0 +1,18 @@
+---
+// A small pill naming one thing we do. It is not a control, so it has no hover or focus state.
+---
+
+<span class="tag"><slot /></span>
+
+<style>
+  /* The radius is half the height of one line, so a tag that has to wrap keeps its round ends. */
+  .tag {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--rule-accent);
+    border-radius: 1.1em;
+    color: var(--ink);
+    font-size: var(--step-small);
+    line-height: 1.4;
+  }
+</style>
