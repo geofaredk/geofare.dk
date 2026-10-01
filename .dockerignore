@@ -1,0 +1,19 @@
+# Only what the build needs goes into the image build context.
+node_modules
+dist
+.astro
+.git
+.gitignore
+.superpowers
+.claude
+docs
+tests
+test-results
+playwright-report
+briefing.md
+README.md
+Dockerfile
+compose.yaml
+.dockerignore
+.DS_Store
+.env
