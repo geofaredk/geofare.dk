@@ -15,8 +15,8 @@ const { Content } = await render(section);
 const links = [emailLink(site.company.email), linkedinLink(site.company.linkedin)];
 ---
 
-{/* A band of the line field marks the turn from "who we work with" to "talk to us". */}
-<LineField width={1440} height={192} time={8} class="contact__band" />
+{/* A band of the line field marks the turn from "who we work with" to "talk to us". Drawn at the hero's scale, wider than any screen. */}
+<LineField width={2560} height={192} time={8} actualSize class="contact__band" />
 
 <section id="contact" class="section" aria-labelledby="contact-title">
   <div class="container">

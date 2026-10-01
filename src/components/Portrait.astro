@@ -21,7 +21,8 @@ const { src, alt = '', sizes = '(min-width: 86rem) 31rem, (min-width: 48rem) 36v
     src ? (
       <Image src={src} alt={alt} widths={[320, 480, 640, 960]} sizes={sizes} />
     ) : (
-      <LineField width={400} height={500} time={22} />
+      /* Drawn at the hero's scale and line spacing (wide screens), as large as the slot gets (31rem). */
+      <LineField width={496} height={620} time={22} spacing={28} actualSize />
     )
   }
 </div>

@@ -397,3 +397,18 @@ test('on a page with little on it the footer stands at the foot of the window', 
   const bottom = await page.evaluate(() => document.querySelector('footer')!.getBoundingClientRect().bottom);
   expect(Math.round(bottom)).toBe(900);
 });
+
+for (const width of [360, 768, 1280, 1920]) {
+  test(`the still line fields are drawn at the hero's scale, never shrunk to the screen, at ${width}`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    const scales = await page.evaluate(() =>
+      ['#approach', '.contact__band', '.about__portrait'].map((selector) => {
+        const path = document.querySelector(`${selector} path`) as SVGGraphicsElement | null;
+        const matrix = path?.getScreenCTM();
+        return { selector, scale: matrix ? Math.hypot(matrix.a, matrix.b) : null };
+      }),
+    );
+    for (const { selector, scale } of scales) expect(scale, selector).toBeCloseTo(1, 5);
+  });
+}

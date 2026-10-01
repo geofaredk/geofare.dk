@@ -1,13 +1,16 @@
 ---
 // A static crop of the line field, drawn at build time: the same lines the hero canvas animates.
-// Decorative only. Size and place it from the outside; the viewBox is sliced to fill its box.
+// Decorative only. Size and place it from the outside. By default the drawing is scaled to cover
+// its box. With `actualSize`, it is never scaled: one unit is one CSS px, as on the hero canvas,
+// and the box shows the middle of the drawing. Draw it at least as large as the box can get.
 import { fieldLines, toSvgPath, type FieldOptions, type Polyline } from '../lib/linefield';
 
 interface Props extends FieldOptions {
   class?: string;
+  actualSize?: boolean;
 }
 
-const { width, height, time, level, spacing, seed, class: className, ...rest } = Astro.props;
+const { width, height, time, level, spacing, seed, class: className, actualSize = false, ...rest } = Astro.props;
 
 /** Px beyond the viewBox that are kept, so no stroke ends inside it. */
 const MARGIN = 2;
@@ -54,16 +57,29 @@ const paths = fieldLines({ width, height, time, level, spacing, seed })
   .map((line) => toSvgPath(thin(line)));
 ---
 
-<svg
-  class:list={['line-field', className]}
-  viewBox={`0 0 ${width} ${height}`}
-  preserveAspectRatio="xMidYMid slice"
-  aria-hidden="true"
-  focusable="false"
-  {...rest}
->
-  {paths.map((d) => <path d={d} fill="none" stroke="currentColor" vector-effect="non-scaling-stroke" />)}
-</svg>
+{
+  actualSize ? (
+    <svg class:list={['line-field', className]} aria-hidden="true" focusable="false" {...rest}>
+      {/* The inner origin is the middle of the box; the drawing is moved back by half its size. */}
+      <svg x="50%" y="50%" overflow="visible">
+        <g transform={`translate(${-width / 2} ${-height / 2})`}>
+          {paths.map((d) => <path d={d} fill="none" stroke="currentColor" />)}
+        </g>
+      </svg>
+    </svg>
+  ) : (
+    <svg
+      class:list={['line-field', className]}
+      viewBox={`0 0 ${width} ${height}`}
+      preserveAspectRatio="xMidYMid slice"
+      aria-hidden="true"
+      focusable="false"
+      {...rest}
+    >
+      {paths.map((d) => <path d={d} fill="none" stroke="currentColor" vector-effect="non-scaling-stroke" />)}
+    </svg>
+  )
+}
 
 <style>
   /* Defaults in the base layer, so any style from the place that uses the field wins. */
