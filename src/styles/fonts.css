@@ -17,11 +17,12 @@
  * 500 over Arial 1.0219 (the menu and button labels on the first screen; Arial has no medium),
  * 600 over Arial Bold 0.9502 (headlines; Arial has no semibold).
  * Overrides = metric / unitsPerEm / size-adjust.
+ * Liberation Sans (most Linux systems) has Arial's widths, so the same numbers hold for it.
  */
 @font-face {
   font-family: "Figtree Fallback";
   font-weight: 400;
-  src: local("Arial"), local("ArialMT");
+  src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("LiberationSans");
   size-adjust: 100.31%;
   ascent-override: 94.71%;
   descent-override: 24.92%;
@@ -31,7 +32,7 @@
 @font-face {
   font-family: "Figtree Fallback";
   font-weight: 500;
-  src: local("Arial"), local("ArialMT");
+  src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("LiberationSans");
   size-adjust: 102.19%;
   ascent-override: 92.96%;
   descent-override: 24.46%;
@@ -41,7 +42,7 @@
 @font-face {
   font-family: "Figtree Fallback";
   font-weight: 600;
-  src: local("Arial Bold"), local("Arial-BoldMT");
+  src: local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"), local("LiberationSans-Bold");
   size-adjust: 95.02%;
   ascent-override: 99.98%;
   descent-override: 26.31%;

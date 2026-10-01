@@ -56,6 +56,12 @@ for (const viewport of [
   { width: 1280, height: 800 },
 ]) {
   test(`nothing on the first screen moves when Figtree replaces the fallback at ${viewport.width}`, async ({ page, browserName }) => {
+    // Firefox does not use "Figtree Fallback" while Figtree is loading: it draws with its default
+    // sans-serif, because it only loads a fallback face that something uses first-hand. So in
+    // Firefox the first screen does move when a late Figtree arrives (measured on Linux Firefox
+    // 155; see docs/quality-report.md). Marked as an expected failure so it is visible, and so
+    // the run reports it if a Firefox version starts to pass.
+    test.fail(browserName === 'firefox', 'Firefox draws with its default sans-serif, not the fallback face, while Figtree loads');
     await page.setViewportSize(viewport);
     // The final headline, so the rotation does not change the text between the two measurements.
     await page.emulateMedia({ reducedMotion: 'reduce' });
