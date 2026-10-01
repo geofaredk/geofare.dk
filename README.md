@@ -23,16 +23,20 @@ npm run build        # writes the site to dist/
 npm run preview      # serves dist/ at http://localhost:4321
 npm run check        # type-checks the code and the content
 npm test             # builds, then runs the unit and build tests (Vitest)
-npm run test:e2e     # builds, then runs the browser tests in Chrome, Firefox and WebKit (Playwright)
+npm run test:e2e     # builds, then runs the browser tests in Chrome and WebKit (Playwright)
+npm run test:e2e:firefox          # builds, then runs the same tests in Firefox
+npm run test:e2e:firefox:docker   # the Firefox tests in Docker, for when Firefox does not start (see below)
 npm run test:docker  # builds the image from the last commit and checks the running container
 npm run lighthouse -- http://localhost:8080   # Lighthouse (mobile) three times against a running site
 ```
 
-`npm run test:e2e` needs Google Chrome, plus Playwright's own Firefox and WebKit: install them once with `npx playwright install firefox webkit`. It starts its own server on port 4321 and stops if that port is taken, so it never tests an old build by mistake. Run one browser with `npm run test:e2e -- --project=chrome` (or `firefox`, `webkit`). To test a site that is already running, such as the container, skip the build and set the address: `E2E_BASE_URL=http://localhost:8080 npx playwright test`.
+**Browser tests.** `npm run test:e2e` runs Google Chrome (installed on the computer) and WebKit, the engine of Safari. Install WebKit and Firefox for Playwright once with `npx playwright install firefox webkit`. Every run rebuilds the site and starts its own server on port 4321; if that port is taken, the run stops. Run one browser with `npx playwright test --project=chrome` (or `webkit`, `firefox`) after `npm run build`. To test a site that is already running, such as the container, set its address: `E2E_BASE_URL=http://localhost:8080 npx playwright test --project=chrome`.
+
+**Firefox.** Firefox has its own command, because Playwright's Firefox 155 does not start on macOS 27 ("Could not find profile folder."); where it does start, use `npm run test:e2e:firefox`. `npm run test:e2e:firefox:docker` instead builds the site from your working files into a container of its own (compose project `geofare-e2e`, image `geofare-website-e2e`, port `E2E_PORT`, default 18082) and runs the Firefox tests in Playwright's Linux image (`mcr.microsoft.com/playwright:v<installed version>-noble`) against it. It refuses to start if a container or image of that name already exists, and removes the site container, its network and its image afterwards. It does not remove the Playwright image (about 2.5 GB), which it pulls on first use; remove it yourself with `docker image rm mcr.microsoft.com/playwright:v1.63.0-noble` when you no longer need it.
 
 `npm run test:docker` uses what is committed, not your working files, and needs port 18080 to be free. It removes everything it starts.
 
-`npm run lighthouse` needs Google Chrome and a running site; point it at the container, because compression and cache headers count. It prints the four scores of the median run, layout shift, load times and page weight, keeps the reports in `.lighthouse/`, and fails if a score is below 95. `docs/quality-report.md` has the latest measurements against the brief's quality bar.
+`npm run lighthouse` needs Google Chrome and a running site; point it at the container, because compression and cache headers count. It prints the four scores of the median run, layout shift, load times and page weight, keeps the reports in `.lighthouse/`, and fails if a score is below 95. `docs/quality-report.md` has the latest measurements against the brief's quality bar and the commands to repeat them.
 
 ## Deploy and update
 

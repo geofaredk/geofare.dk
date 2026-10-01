@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { withContrastTools, type ContrastTools } from './support/contrast';
 
 /**
  * WCAG contrast of every piece of visible text on the home page, measured in the browser:
@@ -18,54 +19,10 @@ interface Sample {
 }
 
 /** Every visible text node (and every list marker) with its contrast ratio. */
-const measure = (page: Page): Promise<Sample[]> =>
-  page.evaluate(() => {
-    // Resolve any CSS colour (rgb(), color(srgb …), color-mix() results) through a 1×1 canvas.
-    const probe = document.createElement('canvas');
-    probe.width = probe.height = 1;
-    const ctx = probe.getContext('2d', { willReadFrequently: true })!;
-    const rgba = (colour: string): [number, number, number, number] => {
-      ctx.clearRect(0, 0, 1, 1);
-      ctx.fillStyle = '#000';
-      ctx.fillStyle = colour;
-      ctx.fillRect(0, 0, 1, 1);
-      const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data;
-      return [r, g, b, a / 255];
-    };
-    const over = (top: number[], below: number[]) =>
-      [0, 1, 2].map((i) => top[i] * top[3] + below[i] * (1 - top[3])).concat(1) as [number, number, number, number];
-    const luminance = ([r, g, b]: number[]) => {
-      const lin = (c: number) => ((c /= 255) <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
-      return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
-    };
-    const ratio = (a: number[], b: number[]) => {
-      const [l1, l2] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-      return (l1 + 0.05) / (l2 + 0.05);
-    };
-    const css = (c: number[]) => `rgb(${c.slice(0, 3).map(Math.round).join(' ')})`;
-
-    /** The colour behind an element: translucent backgrounds blended down to the first opaque one. */
-    const backgroundOf = (element: Element) => {
-      const layers: number[][] = [];
-      for (let node: Element | null = element; node; node = node.parentElement) {
-        const style = getComputedStyle(node);
-        if (style.backgroundImage !== 'none') throw new Error(`background image behind text at ${node.tagName}.${node.className}`);
-        const colour = rgba(style.backgroundColor);
-        if (colour[3] > 0) layers.push(colour);
-        if (colour[3] === 1) break;
-      }
-      // Below everything is the canvas, white unless the root paints it.
-      let result: number[] = [255, 255, 255, 1];
-      for (const layer of layers.reverse()) result = over(layer, result);
-      return result;
-    };
-
-    /** Product of the element's and its ancestors' opacity: a faded parent fades the text. */
-    const opacityOf = (element: Element) => {
-      let opacity = 1;
-      for (let node: Element | null = element; node; node = node.parentElement) opacity *= parseFloat(getComputedStyle(node).opacity);
-      return opacity;
-    };
+const measure = async (page: Page): Promise<Sample[]> => {
+  await withContrastTools(page);
+  return page.evaluate(() => {
+    const { rgba, over, ratio, css, backgroundOf, opacityOf } = (window as unknown as { contrast: ContrastTools }).contrast;
 
     /** Visually hidden (the .sr-only pattern): a 1 px clipping box somewhere up the tree. */
     const clippedAway = (element: Element) => {
@@ -112,6 +69,7 @@ const measure = (page: Page): Promise<Sample[]> =>
     }
     return samples;
   });
+};
 
 function report(samples: Sample[], label: string) {
   expect(samples.length, `${label}: found text to measure`).toBeGreaterThan(100);
@@ -174,8 +132,8 @@ for (const viewport of [
       for (let i = 0; i < count; i++) {
         const target = targets.nth(i);
         await target.hover();
-        // Colour transitions are 120 ms.
-        await page.waitForTimeout(200);
+        // Let the 120 ms colour transitions finish.
+        await settle(page);
         const label = ((await target.textContent()) ?? '').replace(/\s+/g, ' ').trim().slice(0, 60);
         const samples = (await measure(page)).filter((s) => s.text === label);
         expect(samples.length, `found the hovered text of target ${i}`).toBeGreaterThan(0);

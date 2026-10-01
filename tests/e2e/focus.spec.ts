@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { withContrastTools, type ContrastTools } from './support/contrast';
 import { tabKey } from './support/keyboard';
 
 /**
@@ -14,6 +15,10 @@ interface Stop {
   bottom: number;
   headerBottom: number;
   viewport: number;
+  /** Contrast of the ring against what it is drawn on (WCAG 1.4.11 asks for 3:1). */
+  ringContrast: number;
+  /** Inside the blue section, where the ring is cream. */
+  onBlue: boolean;
 }
 
 const stop = (page: Page) =>
@@ -21,6 +26,10 @@ const stop = (page: Page) =>
     const element = document.activeElement;
     if (!element || element === document.body) return null;
     const style = getComputedStyle(element);
+    const { rgba, over, ratio, backgroundOf } = (window as unknown as { contrast: ContrastTools }).contrast;
+    // The ring is drawn outside the element (outline-offset 3px), on its parent's background.
+    const behind = backgroundOf(element.parentElement ?? document.body);
+    const ring = over(rgba(style.outlineColor), behind);
     const box = element.getBoundingClientRect();
     const header = document.querySelector('header')!.getBoundingClientRect();
     const sticky = getComputedStyle(document.querySelector('header')!).position === 'sticky';
@@ -33,10 +42,13 @@ const stop = (page: Page) =>
       // Only the sticky header can cover something; it covers neither itself nor the skip link, which sits above it.
       headerBottom: sticky && !element.closest('header, .skip-link') ? header.bottom : 0,
       viewport: innerHeight,
+      ringContrast: ratio(ring, behind),
+      onBlue: !!element.closest('#approach'),
     };
   });
 
 async function walk(page: Page, key: string, limit = 40) {
+  await withContrastTools(page);
   const stops: Stop[] = [];
   for (let i = 0; i < limit; i++) {
     await page.keyboard.press(key);
@@ -66,6 +78,7 @@ function expectRings(stops: Stop[], browserName: string) {
   for (const s of stops) {
     expect(s.outline, `${s.name} has a solid ring`).toMatch(/^solid /);
     expect(s.width, `${s.name} ring width`).toBeGreaterThanOrEqual(2);
+    expect(s.ringContrast, `${s.name} ring contrast`).toBeGreaterThanOrEqual(3);
     expect(s.top, `${s.name} is not under the header`).toBeGreaterThanOrEqual(s.headerBottom - 0.5);
     if (browserName === 'firefox') expect(s.top, `${s.name} is on screen`).toBeLessThanOrEqual(s.viewport - 20);
     else expect(s.bottom, `${s.name} is on screen`).toBeLessThanOrEqual(s.viewport + 0.5);
@@ -84,6 +97,10 @@ test('at 1280 every stop of the Tab order shows a ring, in view and clear of the
   }
   expect(stops.length).toBeGreaterThanOrEqual(18);
   expectRings(stops, browserName);
+  console.log(`[focus] ${browserName} 1280: lowest ring contrast ${Math.min(...stops.map((s) => s.ringContrast)).toFixed(2)}:1`);
+  // The blue section holds nothing focusable today; its cream ring (on-accent) is ready for when it does.
+  expect(stops.filter((s) => s.onBlue)).toEqual([]);
+  expect(await page.locator('#approach').locator('a[href], button, summary, input, select, textarea, [tabindex]').count()).toBe(0);
 });
 
 test('at 360 with the menu open every stop shows a ring, and the walk continues into the page', async ({ page, browserName }) => {

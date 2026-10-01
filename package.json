@@ -13,7 +13,10 @@
     "check": "astro check",
     "test": "astro build && vitest run",
     "pretest:e2e": "astro build",
-    "test:e2e": "playwright test",
+    "test:e2e": "playwright test --project=chrome --project=webkit",
+    "pretest:e2e:firefox": "astro build",
+    "test:e2e:firefox": "playwright test --project=firefox",
+    "test:e2e:firefox:docker": "bash tests/docker/e2e-firefox.sh",
     "test:docker": "bash tests/docker/smoke.sh",
     "lighthouse": "node scripts/lighthouse.mjs",
     "brand-assets": "node scripts/generate-brand-assets.mjs"

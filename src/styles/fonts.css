@@ -10,16 +10,40 @@
 }
 
 /*
- * Arial scaled to Figtree's metrics, so swapping fonts causes no layout shift.
- * From the font file (wght 400): unitsPerEm 1000, ascender 950, descender -250, lineGap 0;
- * average advance of an English text sample is 1.0142 x Arial's.
- * size-adjust = 101.42%; overrides = metric / unitsPerEm / size-adjust.
+ * Arial scaled to Figtree's metrics, one face per weight the site uses, so swapping fonts
+ * causes no layout shift. Figtree (wght axis): unitsPerEm 1000, ascender 950, descender -250,
+ * lineGap 0. size-adjust is Figtree's advance width over the Arial face's for the page's own
+ * text at that weight (measured in Chrome and WebKit): 400 over Arial 1.0031 (all body text),
+ * 500 over Arial 1.0219 (the menu and button labels on the first screen; Arial has no medium),
+ * 600 over Arial Bold 0.9502 (headlines; Arial has no semibold).
+ * Overrides = metric / unitsPerEm / size-adjust.
  */
 @font-face {
   font-family: "Figtree Fallback";
-  src: local("Arial");
-  size-adjust: 101.42%;
-  ascent-override: 93.67%;
-  descent-override: 24.65%;
+  font-weight: 400;
+  src: local("Arial"), local("ArialMT");
+  size-adjust: 100.31%;
+  ascent-override: 94.71%;
+  descent-override: 24.92%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Figtree Fallback";
+  font-weight: 500;
+  src: local("Arial"), local("ArialMT");
+  size-adjust: 102.19%;
+  ascent-override: 92.96%;
+  descent-override: 24.46%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Figtree Fallback";
+  font-weight: 600;
+  src: local("Arial Bold"), local("Arial-BoldMT");
+  size-adjust: 95.02%;
+  ascent-override: 99.98%;
+  descent-override: 26.31%;
   line-gap-override: 0%;
 }

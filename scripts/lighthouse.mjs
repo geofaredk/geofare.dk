@@ -4,16 +4,20 @@
 //   npm run lighthouse                         # http://localhost:8080, the container's default port
 //   npm run lighthouse -- http://localhost:8081
 //
-// Needs Google Chrome installed. Writes every run's JSON to .lighthouse/ and the median run to
-// .lighthouse/median.json. Exits with 1 if any category scores below 95 or the layout shifts.
+// Needs Google Chrome installed. Writes every run's JSON to .lighthouse/ (in the repository root)
+// and the median run to .lighthouse/median.json. Exits with 1 if any category scores below 95 or
+// the layout shifts. Lighthouse is pinned, so scores stay comparable between runs.
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, copyFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
+const LIGHTHOUSE = 'lighthouse@13.5.0';
 
 const url = process.argv[2] ?? 'http://localhost:8080';
 const RUNS = 3;
 const MIN_SCORE = 95;
 const MAX_CLS = 0.01;
-const out = '.lighthouse';
+const out = fileURLToPath(new URL('../.lighthouse', import.meta.url));
 mkdirSync(out, { recursive: true });
 
 const runs = [];
@@ -22,7 +26,7 @@ for (let i = 1; i <= RUNS; i++) {
   console.log(`Lighthouse run ${i} of ${RUNS} against ${url}`);
   execFileSync(
     'npx',
-    ['-y', 'lighthouse', url, '--output=json', `--output-path=${path}`, '--quiet', '--chrome-flags=--headless=new'],
+    ['-y', LIGHTHOUSE, url, '--output=json', `--output-path=${path}`, '--quiet', '--chrome-flags=--headless=new'],
     { stdio: 'inherit' },
   );
   const report = JSON.parse(readFileSync(path, 'utf8'));
@@ -42,7 +46,7 @@ const audit = (id) => report.audits[id];
 const categories = ['performance', 'accessibility', 'best-practices', 'seo'];
 const failures = [];
 
-console.log(`\nMedian of ${RUNS} runs (${median.path}), ${report.lighthouseVersion}, ${report.configSettings.formFactor}:`);
+console.log(`\nMedian of ${RUNS} runs (.lighthouse/${median.path.split("/").pop()}), ${report.lighthouseVersion}, ${report.configSettings.formFactor}:`);
 for (const id of categories) {
   const value = score(report, id);
   console.log(`  ${report.categories[id].title.padEnd(16)} ${value}${value < MIN_SCORE ? '  < 95' : ''}`);
