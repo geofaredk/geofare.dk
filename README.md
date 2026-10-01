@@ -4,7 +4,7 @@ The marketing site for geofare. It is a static site built with Astro and TypeScr
 
 ## Requirements
 
-- Node 22.12 or newer (the repo pins 25.6.1 in `.nvmrc`)
+- Node 22.12 or newer; `.nvmrc` names 24, the version the Docker build uses
 - Docker with Compose, to build and run the container
 
 ## Run it locally

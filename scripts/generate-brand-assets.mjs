@@ -1,6 +1,7 @@
 // Renders the supplied square mark (src/assets/brand.svg, unmodified) into the favicon,
 // touch icon and share image in public/. Run with `npm run brand-assets`; commit the output.
 import { copyFile, readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 
 const root = new URL('../', import.meta.url);
@@ -24,12 +25,12 @@ async function onBackground(file, width, height, markSize) {
   await sharp({ create: { width, height, channels: 4, background: bg } })
     .composite([{ input: await renderMark(markSize), gravity: 'centre' }])
     .png()
-    .toFile(new URL(`public/${file}`, root).pathname);
+    .toFile(fileURLToPath(new URL(`public/${file}`, root)));
 }
 
 await onBackground('og-image.png', 1200, 630, 300);
 await onBackground('apple-touch-icon.png', 180, 180, 112);
-await sharp(await renderMark(32)).toFile(new URL('public/favicon-32.png', root).pathname);
+await sharp(await renderMark(32)).toFile(fileURLToPath(new URL('public/favicon-32.png', root)));
 await copyFile(new URL('src/assets/brand.svg', root), new URL('public/favicon.svg', root));
 
 console.log('Wrote public/og-image.png, apple-touch-icon.png, favicon-32.png, favicon.svg');
