@@ -44,6 +44,8 @@ export function mountHeroField(canvas: HTMLCanvasElement, opts: { quietZones?: (
   let opacity = 1;
   let masked = '';
 
+  /** False once destroyed. */
+  let mounted = true;
   let playing = !still;
   let onScreen = true;
   let frame = 0;
@@ -77,17 +79,24 @@ export function mountHeroField(canvas: HTMLCanvasElement, opts: { quietZones?: (
     return true;
   }
 
+  /** The quiet zones as [left, top, right, bottom] in CSS px from the canvas corner. */
+  function zoneRects(): number[][] {
+    const box = canvas.getBoundingClientRect();
+    return (opts.quietZones?.() ?? []).map((zone) =>
+      [zone.left - box.left, zone.top - box.top, zone.right - box.left, zone.bottom - box.top].map(Math.round),
+    );
+  }
+
   /** Erases the lines behind and around each quiet zone, fading out over FEATHER px. */
   function eraseQuietZones() {
-    const zones = opts.quietZones?.() ?? [];
-    if (!zones.length) return;
-    const box = canvas.getBoundingClientRect();
-    const rects = zones.map((zone) => [zone.left - box.left, zone.top - box.top, zone.right - box.left, zone.bottom - box.top].map(Math.round));
+    const rects = zoneRects();
+    const key = rects.join(';');
+    const moved = key !== masked;
+    masked = key;
+    if (!rects.length) return;
 
     // The mask is rebuilt only when a zone moves relative to the canvas: not on scroll, not per frame.
-    const key = rects.join(';');
-    if (key !== masked) {
-      masked = key;
+    if (moved) {
       mask.width = Math.ceil(width / MASK_CELL);
       mask.height = Math.ceil(height / MASK_CELL);
       const image = maskCtx.createImageData(mask.width, mask.height);
@@ -152,6 +161,14 @@ export function mountHeroField(canvas: HTMLCanvasElement, opts: { quietZones?: (
     canvas.dataset.state = still ? 'static' : playing ? 'running' : 'paused';
   }
 
+  /**
+   * While the loop is not running (reduced motion, paused, asleep) nothing else would notice
+   * text reflowing under the lines, so redraw when the canvas or a quiet zone has changed.
+   */
+  function refresh() {
+    if (mounted && !frame && (measure() || zoneRects().join(';') !== masked)) draw();
+  }
+
   const resizeObserver = new ResizeObserver(() => {
     // Resizing clears a canvas, so redraw at once instead of waiting for the next frame.
     if (measure()) draw();
@@ -167,6 +184,10 @@ export function mountHeroField(canvas: HTMLCanvasElement, opts: { quietZones?: (
   resizeObserver.observe(canvas);
   intersectionObserver.observe(canvas);
   document.addEventListener('visibilitychange', sync);
+  // What reflows text without resizing the canvas: a web font arriving, the window changing.
+  document.fonts.ready.then(refresh);
+  document.fonts.addEventListener('loadingdone', refresh);
+  addEventListener('resize', refresh);
 
   return {
     play() {
@@ -188,10 +209,13 @@ export function mountHeroField(canvas: HTMLCanvasElement, opts: { quietZones?: (
     },
     destroy() {
       playing = false;
+      mounted = false;
       sync();
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
       document.removeEventListener('visibilitychange', sync);
+      document.fonts.removeEventListener('loadingdone', refresh);
+      removeEventListener('resize', refresh);
     },
   };
 }
