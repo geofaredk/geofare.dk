@@ -15,8 +15,8 @@
   }
 
   html {
-    -webkit-text-size-adjust: none;
-    text-size-adjust: none;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
     scroll-padding-top: calc(var(--header-h) + 1rem);
   }
 
