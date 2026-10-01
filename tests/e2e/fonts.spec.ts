@@ -11,8 +11,11 @@ import { expect, test, type Page } from '@playwright/test';
  *   stays put sideways too.
  * - Words differ in width by a few percent between Arial and Figtree whatever the scaling, so
  *   what is placed after a word moves sideways a little: the second hero button by up to 1.7 px,
- *   the right-aligned menu at 960 px and wider by up to 6.5 px (measured). Those moves are
- *   bounded here so a worse fallback would fail, and reported in docs/quality-report.md.
+ *   the right-aligned menu at 960 px and wider by up to 6.5 px (measured in Chrome, Firefox and
+ *   WebKit). Those moves are bounded here so a worse fallback would fail, and reported in
+ *   docs/quality-report.md.
+ * - Firefox uses the fallback only because src/styles/fonts.css makes the fallback faces load
+ *   from the start; without that it drew in its default sans-serif and moved the menu 33 px.
  */
 
 /** Sideways movement allowed for elements placed after a word: the measured worst case plus a margin. */
@@ -88,6 +91,13 @@ for (const viewport of [
       });
     }
 
+    // A browser that has just started can still be reading the system's font list. Firefox on
+    // Linux then rebuilds its fonts in the middle of the first page load and draws that page in
+    // its default sans-serif, which no running browser does. Let it finish on a page of plain
+    // text that loads no web font, so the measurement below is of the site, not of the start-up.
+    await page.setContent('<p>geofare</p>');
+    await page.waitForTimeout(1000);
+
     let release!: () => void;
     const held = new Promise<void>((resolve) => (release = resolve));
     await page.route('**/*.woff2', async (route) => {
@@ -119,17 +129,7 @@ for (const viewport of [
       if (Math.abs(delta.x) > SIDEWAYS) problems.push(`${selector} moved sideways by ${delta.x.toFixed(1)}, more than ${SIDEWAYS}`);
     }
     console.log(`[fonts] ${browserName} ${viewport.width}: ${report.length ? report.join('; ') : 'all boxes within 1 px'}`);
-    if (browserName === 'firefox') {
-      // Known and expected: Firefox does not use "Figtree Fallback" while Figtree is loading. It
-      // draws with its default sans-serif, because it only loads a fallback face that something
-      // uses first-hand, so the first screen moves when a late Figtree arrives (measured on Linux
-      // Firefox 155; docs/quality-report.md, known limitation 6). Only this comparison is
-      // inverted: if it starts failing, Firefox has started to use the fallback, and this branch
-      // should go.
-      expect(problems.length, 'Firefox now keeps the first screen still: remove the Firefox branch').toBeGreaterThan(0);
-    } else {
-      expect(problems).toEqual([]);
-    }
+    expect(problems).toEqual([]);
 
     if (browserName === 'chromium') {
       // Chrome's own layout-shift measurement, as Lighthouse uses it.

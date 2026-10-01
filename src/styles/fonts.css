@@ -48,3 +48,36 @@
   descent-override: 26.31%;
   line-gap-override: 0%;
 }
+
+/*
+ * Firefox only falls back to "Figtree Fallback" while Figtree is loading if that face has
+ * already been loaded; otherwise it draws in its default sans-serif and the page moves when
+ * Figtree arrives. A local() face loads once some text asks for it by name, so three hidden
+ * letters ask for the three weights from the start. They are out of the flow, clipped to
+ * nothing, and have empty alternative text, so assistive technology skips them.
+ */
+body::before,
+body::after,
+main::before {
+  content: "a" / "";
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  pointer-events: none;
+  font-family: "Figtree Fallback";
+}
+
+body::before {
+  font-weight: var(--weight-regular);
+}
+
+body::after {
+  font-weight: var(--weight-medium);
+}
+
+main::before {
+  font-weight: var(--weight-semibold);
+}
