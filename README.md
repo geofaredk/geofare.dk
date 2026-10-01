@@ -31,28 +31,28 @@ npm run test:docker  # builds the image from the last commit and checks the runn
 
 ## Deploy and update
 
-From the repository root on the server:
+Run everything from the repository root on the server.
 
-```sh
-docker compose up -d --build
-```
-
-This builds the image `geofare-website` and starts the container `geofare-web-1` (project `geofare`). It restarts by itself unless you stop it. Check it:
-
-```sh
-docker compose ps                    # STATUS shows "healthy" after a few seconds
-curl http://localhost:8080/healthz   # prints: ok
-```
-
-**Port.** The container listens on 8080 inside. The host port is `GEOFARE_PORT` (default 8080).
-
-**Domain.** `SITE_URL` sets the address used in the canonical link, `sitemap.xml` and `robots.txt`. It is read when the image is built, so changing it needs `--build`. Until it is set, the placeholder `https://geofare.example` is used.
+**1. Choose the port and the domain.** The container listens on 8080 inside. The host port is `GEOFARE_PORT` (default 8080). Pick a free host port: if something else on the server already uses 8080, you must set `GEOFARE_PORT`. `SITE_URL` sets the address used in the canonical link, `sitemap.xml` and `robots.txt`. It is read when the image is built, so changing it needs `--build`. Until it is set, the placeholder `https://geofare.example` is used.
 
 Put both in a file named `.env` next to `compose.yaml` (Compose reads it by itself; git ignores it):
 
 ```sh
 GEOFARE_PORT=8081
 SITE_URL=https://www.example.dk
+```
+
+**2. Build and start.**
+
+```sh
+docker compose up -d --build
+```
+
+This builds the image `geofare-website` and starts the container `geofare-web-1`. It restarts by itself unless you stop it. The compose project is named `geofare` on purpose, so these commands never touch containers of other projects, whatever the folder is called. Check it, using your `GEOFARE_PORT` (8080 if you did not set one):
+
+```sh
+docker compose ps                     # STATUS reads "starting" for up to 30 seconds, then "healthy"
+curl http://localhost:8081/healthz    # prints: ok
 ```
 
 **Change the text and publish it.** Edit a Markdown file under `src/content/`, then:
@@ -115,7 +115,7 @@ To turn a menu anchor into a page link, change its `href` in `src/config/navigat
 
 **A language (Danish at `/da/`).**
 
-1. In `src/config/site.ts`, change the type to `export type Lang = 'en' | 'da';` and add this to `locales`: `da: { path: '/da/', htmlLang: 'da-DK', hreflang: 'da' }`. The Astro config and the `hreflang` links read the locale list from this file, so `astro.config.mjs` needs no change.
+1. In `src/config/site.ts`, change the type to `export type Lang = 'en' | 'da';` and add this to `locales`: `da: { path: '/da/', htmlLang: 'da-DK', hreflang: 'da' }`. The Astro config and the `hreflang` links read the locale list from this file, so the language itself needs no change in `astro.config.mjs`. Do add `'/da/privacy'` to the `excludedFromSitemap` list there, so the Danish privacy page stays out of the sitemap like the English one.
 2. Copy each `en` folder to `da` inside `src/content/services/`, `sectors/`, `principles/` and `sections/`, and translate the files. Keep the file names and the `slug` values.
 3. Copy `src/content/ui/en.yaml` to `src/content/ui/da.yaml` and translate it.
 4. Add `src/pages/da/index.astro` with this content:
