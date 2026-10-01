@@ -2,24 +2,10 @@ import { readFileSync } from 'node:fs';
 import { parse } from 'node-html-parser';
 import { describe, expect, it } from 'vitest';
 import copy from '../fixtures/copy.en.json';
+import { copyPattern, footerAddressPattern } from './copy-match';
 
 export const norm = (s: string) =>
   s.replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/ /g, ' ').replace(/\s+/g, ' ').trim();
-
-const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-/**
- * A fixture string as a pattern. The brief leaves some values open as `[like this]`; each may
- * still be the placeholder or have been filled in with a real value (any non-empty text), so
- * filling in an open point needs no change here. Every other word must match exactly.
- */
-export const copyPattern = (s: string) =>
-  new RegExp(
-    s
-      .split(/(\[[^\]]+\])/)
-      .map((part, i) => (i % 2 ? `(?:${escape(part)}|\\S(?:.*?\\S)?)` : escape(part)))
-      .join(''),
-  );
 
 /** The page text contains the fixture string, with its placeholders either kept or filled in. */
 const expectCopy = (text: string, s: string) => expect(text).toMatch(copyPattern(s));
@@ -69,8 +55,11 @@ describe('copy matches the brief word for word', () => {
       const link = /email/i.test(s) ? /^mailto:\S+@\S+$/ : /^https:\/\/\S+$/;
       expect(hrefs.some((href) => link.test(href)), `${s} is shown, or has become a link`).toBe(true);
     }
-    const f = norm(root.querySelector('footer')!.textContent);
-    for (const s of copy.footer.fragments) expectCopy(f, s.replace('{year}', String(new Date().getFullYear())));
+    // The footer as whole sentences, so a value left empty ("CVR .") fails.
+    const [address, legal] = root.querySelectorAll('footer p').map((p) => norm(p.textContent));
+    expect(address).toMatch(footerAddressPattern(copy.footer.fragments));
+    const [, , , , , privacy, copyright] = copy.footer.fragments;
+    expect(legal).toBe(`${privacy}. ${copyright.replace('{year}', String(new Date().getFullYear()))}.`);
   });
   it('navigation labels', () => {
     const n = norm(root.querySelector('header nav')!.textContent);
