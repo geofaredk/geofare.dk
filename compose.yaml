@@ -1,3 +1,7 @@
+# A fixed project name, so this stack never shares a name with another project
+# that lives in a folder called "website".
+name: geofare
+
 services:
   web:
     build:

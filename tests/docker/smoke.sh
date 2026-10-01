@@ -10,7 +10,7 @@ repo="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 tmp="$(mktemp -d)"
 
 cleanup() {
-  (cd "$tmp" && docker compose -p "$project" down --remove-orphans --rmi local >/dev/null 2>&1) || true
+  (cd "$tmp" && docker compose -p "$project" down --remove-orphans --rmi all >/dev/null 2>&1) || true
   rm -rf "$tmp"
 }
 trap cleanup EXIT
