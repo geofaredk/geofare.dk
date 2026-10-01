@@ -1,6 +1,7 @@
 ---
 // The 4:5 portrait slot. Until there is a photo it shows a crop of the line field;
 // pass `src` (an imported image) and `alt` and the photo takes its place, same size.
+// The place that uses the slot decides how wide it is.
 import type { ImageMetadata } from 'astro';
 import { Image } from 'astro:assets';
 import LineField from './LineField.astro';
@@ -8,15 +9,17 @@ import LineField from './LineField.astro';
 interface Props {
   src?: ImageMetadata;
   alt?: string;
+  /** How wide the slot is drawn, for the browser's choice of image file. The default is the About section's slot. */
+  sizes?: string;
 }
 
-const { src, alt = '' } = Astro.props;
+const { src, alt = '', sizes = '(min-width: 86rem) 31rem, (min-width: 48rem) 36vw, 16rem' } = Astro.props;
 ---
 
 <div class="portrait">
   {
     src ? (
-      <Image src={src} alt={alt} widths={[320, 480, 640, 960]} sizes="(min-width: 48rem) 32vw, 100vw" />
+      <Image src={src} alt={alt} widths={[320, 480, 640, 960]} sizes={sizes} />
     ) : (
       <LineField width={400} height={500} time={22} />
     )
