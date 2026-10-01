@@ -12,7 +12,10 @@ export default defineConfig({
     channel: 'chrome',
   },
   webServer: {
-    command: 'npm run preview',
+    // Serves the existing dist/ (run `npm test` or `npm run build` first).
+    // Astro 7 moves `astro preview` into the background when it detects an AI agent;
+    // --ignore-lock keeps it in the foreground so Playwright owns and stops the server.
+    command: 'npm run preview -- --ignore-lock',
     url: baseURL,
     reuseExistingServer: !process.env.CI,
   },
