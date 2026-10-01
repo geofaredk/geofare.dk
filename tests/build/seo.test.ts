@@ -3,6 +3,7 @@ import { parse } from 'node-html-parser';
 import { describe, expect, it } from 'vitest';
 import copy from '../fixtures/copy.en.json';
 import { site } from '../../src/config/site';
+import { isPlaceholder, postalAddress } from '../../src/lib/contact';
 
 const read = (path: string) => readFileSync(`dist/${path}`, 'utf8');
 const root = parse(read('index.html'));
@@ -47,6 +48,14 @@ describe('structured data', () => {
   });
   it('leaks no placeholder', () => {
     for (const s of strings(data)) expect(s).not.toMatch(/\[[^\]]+\]/);
+  });
+  it('has the street and the postcode and town once they are real, and not before', () => {
+    expect(data.address).toEqual(postalAddress(site.company));
+    expect('streetAddress' in data.address).toBe(!isPlaceholder(site.company.street));
+    expect('addressLocality' in data.address).toBe(!isPlaceholder(site.company.postalTown));
+  });
+  it('states no service area, which the brief does not give', () => {
+    expect(data.areaServed).toBeUndefined();
   });
 });
 

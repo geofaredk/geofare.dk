@@ -5,7 +5,7 @@ import '../styles/base.css';
 import figtreeLatin from '@fontsource-variable/figtree/files/figtree-latin-wght-normal.woff2?url';
 import { site, type Lang } from '../config/site';
 import { getUi } from '../lib/content';
-import { emailLink, linkedinLink } from '../lib/contact';
+import { emailLink, linkedinLink, postalAddress } from '../lib/contact';
 import { alternates, localizePath } from '../lib/i18n';
 import Header from '../components/sections/Header.astro';
 import Footer from '../components/sections/Footer.astro';
@@ -37,8 +37,7 @@ const structuredData = {
   description: ui.meta.description,
   logo: absolute('/apple-touch-icon.png'),
   image: ogImage.url,
-  address: { '@type': 'PostalAddress', addressCountry: 'DK' },
-  areaServed: { '@type': 'Country', name: ui.footer.country },
+  address: postalAddress(site.company),
   ...(email.href && { email: email.label }),
   ...(linkedin.href && { sameAs: [linkedin.href] }),
 };
