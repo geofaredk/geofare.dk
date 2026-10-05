@@ -1,0 +1,210 @@
+{
+  "meta": {
+    "title": "geofare | Naturfarer og klimarisici, klart nok til at handle på",
+    "description": "geofare hjælper kommuner, planlæggere og ejere af bygninger og anlæg med at træffe gode beslutninger om oversvømmelsesrisiko, fysiske klimarisici og andre naturfarer."
+  },
+  "nav": [
+    "Ydelser",
+    "Om os",
+    "Sådan arbejder vi",
+    "Hvem vi arbejder med",
+    "Lab"
+  ],
+  "button": "Kontakt os",
+  "hero": {
+    "fixed": "Træf gode beslutninger",
+    "endings": [
+      "når fremtiden er usikker.",
+      "når åerne går over deres bredder.",
+      "når havet stiger.",
+      "når risiciene hober sig op.",
+      "når det gælder."
+    ],
+    "subline": "Vi omsætter satellitdata, GIS og hydraulisk modellering til viden om risiko, som I kan handle på. Oversvømmelsesrisiko er der, hvor vi går mest i dybden.",
+    "primaryCta": "Kontakt os",
+    "secondaryCta": "Se, hvad vi laver"
+  },
+  "services": [
+    {
+      "number": "01",
+      "title": "Se, hvad der er.",
+      "body": "Vi bruger satellitobservationer, åbne geodata og jeres egne data til at tegne et klart billede af landskabet, som det ser ud i dag.",
+      "tags": [
+        "Jordobservation",
+        "Indsamling og integration af geodata",
+        "Geodataanalyse"
+      ]
+    },
+    {
+      "number": "02",
+      "title": "Forudse, hvad der kommer.",
+      "body": "Vi modellerer, hvordan vand, vejr og klima kan ramme jeres område, i netop den detaljeringsgrad, beslutningen kræver.",
+      "tags": [
+        "Oversvømmelsesmodellering og farekortlægning",
+        "Modellering af klimafarer"
+      ]
+    },
+    {
+      "number": "03",
+      "title": "Beslut, hvad der kommer først.",
+      "body": "Vi vurderer, hvad der står på spil, og prioriterer de tiltag, der gør en forskel, så jeres budget havner der, hvor risikoen er.",
+      "tags": [
+        "Vurdering af oversvømmelsesrisiko",
+        "Risikovurdering af klima og naturfarer",
+        "Klimatilpasningsplaner",
+        "Sikring af ejendomme mod oversvømmelse",
+        "Risikoanalyse for forsikringsselskaber og långivere"
+      ]
+    },
+    {
+      "number": "04",
+      "title": "Gør risiko forståelig.",
+      "body": "En risiko, ingen forstår, er en risiko, ingen handler på. Vi laver de kort, visualiseringer, værktøjer og varsler, der når ud til dem, der skal handle.",
+      "tags": [
+        "Risikokommunikation",
+        "Datavisualisering og kort",
+        "Varsling",
+        "Borgerinddragelse",
+        "Risikoplatforme og værktøjer",
+        "Kurser og foredrag"
+      ]
+    }
+  ],
+  "about": {
+    "mission": {
+      "title": "Tryggere lokalsamfund begynder med risiko, som folk forstår.",
+      "body": "geofare er specialiseret i håndtering af oversvømmelsesrisiko, fysiske klimarisici og andre naturfarer. Vi bruger satellitdata, GIS og hydraulisk modellering til at gøre viden om risiko klar nok til at handle på."
+    },
+    "founder": {
+      "title": "Ledet af stifteren. Tæt på opgaven.",
+      "body": "geofare er grundlagt af Niklas [efternavn], geolog. Han tænker i landskaber, arbejder i data og måler sit arbejde på, hvad folk bruger det til. Han er lige så hjemme i satellitbilleder, kort og oversvømmelsesmodeller som i det rum, hvor beslutningen bliver truffet."
+    },
+    "quote": "Alt for meget god viden om naturfarer når aldrig frem til dem, der skal træffe beslutningerne. Jeg startede geofare for at ændre på det.",
+    "team": {
+      "title": "Et team bygget op omkring jeres projekt.",
+      "body": "I får Niklas, ikke en kundeansvarlig. Han leder hvert projekt og henter de rette specialister ind fra vores netværk, når opgaven kræver flere hænder. I ved altid, hvem der udfører arbejdet."
+    }
+  },
+  "principles": [
+    {
+      "title": "Start i det små.",
+      "body": "Et første svar tidligt, og flere detaljer der, hvor det betaler sig."
+    },
+    {
+      "title": "Åbent som udgangspunkt.",
+      "body": "Åbne data og åbne værktøjer, hvor de løser opgaven."
+    },
+    {
+      "title": "Jeres at beholde.",
+      "body": "I får data, modeller og værktøjer, ikke kun en pdf."
+    },
+    {
+      "title": "Ingen mellemled.",
+      "body": "I taler med den, der udfører arbejdet."
+    }
+  ],
+  "sectors": {
+    "title": "Forskellige brancher. Samme spørgsmål.",
+    "intro": "En kommune, et netselskab og en bank har ikke meget til fælles, indtil vandet stiger. Så spørger de alle om det samme: Hvad kan ramme os, og hvad gør vi ved det? Sådan svarer vi på det for hver af dem.",
+    "items": [
+      {
+        "title": "Kommuner",
+        "lead": "I skal klimatilpasse med et begrænset budget, mens borgerne følger med.",
+        "bullets": [
+          "Se, hvor risikoen for oversvømmelse og klimaskader er størst, og hvad I skal tage fat på først",
+          "Få de modeller og kort, jeres klimatilpasningsplan har brug for, og ikke flere",
+          "Forklar planen, så borgerne er med"
+        ]
+      },
+      {
+        "title": "Beredskab",
+        "lead": "I skal vide, hvad der er på vej, hvem det rammer, og hvordan I når dem.",
+        "bullets": [
+          "Scenarier, I kan planlægge og øve efter",
+          "Varsler, som folk forstår og handler på",
+          "Kort og dashboards, der virker i en kommandocentral og ikke kun i en rapport"
+        ]
+      },
+      {
+        "title": "Byplanlæggere og ejendomsudviklere",
+        "lead": "Det, I planlægger i dag, står i årtier. Tjek risikoen, før den er bygget ind.",
+        "bullets": [
+          "Oversvømmelsesmodellering for jeres grund eller planområde",
+          "Hurtig risikoscreening tidligt, mens ændringer stadig er billige",
+          "Visualiseringer, der gør risikoen tydelig for beslutningstagere og borgere"
+        ]
+      },
+      {
+        "title": "Boligorganisationer og ejendomsejere",
+        "lead": "Jeres bygninger kan ikke flytte sig, men de kan beskyttes bedre.",
+        "bullets": [
+          "Oversvømmelsesrisiko for hver ejendom i hele jeres portefølje",
+          "Praktiske tiltag, prioriteret efter hvad der skal gøres først",
+          "Klar information til beboere og lejere"
+        ]
+      },
+      {
+        "title": "Myndigheder og infrastruktur",
+        "lead": "Jeres veje, baner og net møder forhold, de ikke er bygget til.",
+        "bullets": [
+          "Risikovurderinger af anlæg og net på tværs af naturfarer",
+          "Overvågning af store områder med satellit- og geodata",
+          "Værktøjer, jeres egne medarbejdere kan bruge"
+        ]
+      },
+      {
+        "title": "Finans og forsikring",
+        "lead": "I skal kende den fysiske risiko i jeres portefølje og kunne vise, hvordan I ved det.",
+        "bullets": [
+          "Screening af porteføljer for oversvømmelses- og klimafarer",
+          "Risiko helt ned på den enkelte adresse eller det enkelte aktiv",
+          "Metoder, der er dokumenteret godt nok til rapportering og due diligence"
+        ]
+      },
+      {
+        "title": "Energi og forsyning",
+        "lead": "Jeres anlæg har lang levetid, ligger ofte udsat, og alle er afhængige af dem.",
+        "bullets": [
+          "Faretjek af nye placeringer, før I binder jer",
+          "Risikovurderinger af anlæg og net",
+          "Tilpasningsplaner for det, der allerede er bygget"
+        ]
+      }
+    ]
+  },
+  "lab": {
+    "title": "Bygget i det åbne.",
+    "intro": "Vi rådgiver ikke kun, vi bygger også. Det her er vores egne projekter: gratis at bruge, baseret på åbne data og lavet for at bringe viden om naturfarer ud til dem, der har brug for den.",
+    "projects": [
+      {
+        "title": "FloodReady.dk",
+        "description": "Et gratis tjek af oversvømmelsesrisikoen for alle danske boliger. Det omsætter offentlige data om stormflod, skybrud, grundvand og vandløb til én klar karakter pr. adresse, fra A til F.",
+        "tags": [
+          "Oversvømmelsesrisiko",
+          "Risikokommunikation"
+        ],
+        "status": "Lanceres snart"
+      },
+      {
+        "title": "Vindy.dk",
+        "description": "Danmarks vejr på ét levende kort. Prognoser, observationer, radar og satellitbilleder fra officielle åbne kilder, samlet på et kort, alle kan læse.",
+        "tags": [
+          "Vejrdata",
+          "Visualisering"
+        ]
+      },
+      {
+        "title": "MeteoAlarm til Python",
+        "description": "En open source-pakke til Python, der giver udviklere nem adgang til officielle vejrvarsler i hele Europa. Den læser MeteoAlarms varslingsfeeds og filtrerer dem efter land, alvorlighed og type.",
+        "tags": [
+          "Varsling",
+          "Open source"
+        ]
+      }
+    ]
+  },
+  "contact": {
+    "title": "Står I over for en beslutning?",
+    "body": "Fortæl os, hvad I har brug for at vide. Så fortæller vi, hvad det kræver at finde ud af det."
+  }
+}

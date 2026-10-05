@@ -8,15 +8,19 @@ nav:
   about: About
   approach: How we work
   sectors: Who we work with
+  lab: Lab
   contact: Get in touch
   menuOpen: Menu
   menuClose: Close
 skip: Skip to content
+about:
+  portrait: '[portrait photo]'
+  portraitAlt: Niklas, the founder of geofare, smiling, in a cap and round glasses
 home: geofare home
-hero:
-  pause: Pause animation
-  play: Play animation
+lab:
+  newTab: (opens in a new tab)
+lang:
+  label: Language
 footer:
-  country: Denmark
   cvr: CVR
-  privacy: Privacy
+  imprint: Imprint

@@ -109,17 +109,18 @@ for (const viewport of [
       report(await measure(page), 'reduced motion, all sectors open');
     });
 
-    test('every text reaches 4.5:1 with the animation running, then paused', async ({ page }) => {
+    test('every text reaches 4.5:1 with the animation running, at the first and at the last ending', async ({ page }) => {
+      await page.clock.install();
       await page.goto('/');
       await page.evaluate(() => document.fonts.ready);
       await openAllSectors(page);
       // Running: the first ending is on show over the moving field.
       report(await measure(page), 'animation running');
-      await page.getByRole('button', { name: 'Pause animation' }).click();
-      await expect(page.getByRole('button', { name: 'Play animation' })).toBeVisible();
-      // Pausing settles the headline on its last ending; let the outgoing one finish fading.
+      // Run the rotation to its last ending; let the outgoing one finish fading.
+      await page.clock.runFor(15000);
+      await expect(page.locator('.hero__ending[data-active]')).toHaveText('when it matters.');
       await settle(page);
-      report(await measure(page), 'animation paused');
+      report(await measure(page), 'headline settled');
     });
 
     test('buttons and links keep 4.5:1 when hovered', async ({ page }) => {
@@ -135,7 +136,8 @@ for (const viewport of [
         // Let the 120 ms colour transitions finish.
         await settle(page);
         const label = ((await target.textContent()) ?? '').replace(/\s+/g, ' ').trim().slice(0, 60);
-        const samples = (await measure(page)).filter((s) => s.text === label);
+        // A language link's name continues out of sight ("DA Dansk"); what is drawn is its start.
+        const samples = (await measure(page)).filter((s) => s.text === label || label.startsWith(`${s.text} `));
         expect(samples.length, `found the hovered text of target ${i}`).toBeGreaterThan(0);
         for (const s of samples) {
           lowest = Math.min(lowest, s.ratio);

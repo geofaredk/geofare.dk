@@ -1,4 +1,0 @@
----
-title: Privacy
----
-[privacy text]

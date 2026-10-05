@@ -19,7 +19,7 @@ for (const width of [320, 360, 768, 1280, 1920]) {
   test.describe(`at ${width}`, () => {
     test.use({ viewport: { width, height: 900 } });
 
-    for (const path of ['/', '/privacy', '/404']) {
+    for (const path of ['/', '/imprint', '/404']) {
       test(`${path} fits the viewport: no sideways scrolling, nothing past the right edge`, async ({ page }) => {
         await page.goto(path);
         await page.evaluate(() => document.fonts.ready);
@@ -109,6 +109,8 @@ test.describe('at 1280', () => {
         body: parseFloat(getComputedStyle(document.querySelector('#about .about__text p')!).fontSize),
         accent: getComputedStyle(document.querySelector('#about h2')!).color,
         portrait: (({ left, right, top, bottom, width, height }) => ({ left, right, top, bottom, width, height }))(box('.portrait')),
+        window: (({ left, right, top, bottom, width, height }) => ({ left, right, top, bottom, width, height }))(box('.portrait__window')),
+        picture: (({ left, right, top, bottom, width, height }) => ({ left, right, top, bottom, width, height }))(box('.portrait__picture')),
       };
     });
     const near = (a: number, b: number) => expect(Math.abs(a - b)).toBeLessThan(1);
@@ -127,12 +129,23 @@ test.describe('at 1280', () => {
     expect(about.quote.colour).toBe(about.accent);
     expect(about.quote.indent).toBeLessThan(0); // the opening mark hangs
 
-    // The picture: columns 1 to 5, 4:5, its top on the founder heading's top, beside the quote.
+    // The picture block: columns 1 to 5, its top on the founder heading's top, beside the quote.
     near(about.portrait.left, about.left);
     near(about.portrait.right, about.fifth);
-    expect(Math.abs(about.portrait.width / about.portrait.height - 4 / 5)).toBeLessThan(0.01);
     expect(Math.abs(about.portrait.top - about.founder.top)).toBeLessThan(2);
     expect(about.quote.top).toBeLessThan(about.portrait.bottom);
+    // In it: the 4:5 picture top right, and the window onto the line field lower on the left;
+    // the picture overlaps the window's upper right and stands out above it.
+    for (const part of [about.window, about.picture]) expect(Math.abs(part.width / part.height - 4 / 5)).toBeLessThan(0.01);
+    near(about.picture.right, about.portrait.right);
+    near(about.picture.top, about.portrait.top);
+    near(about.window.left, about.portrait.left);
+    near(about.window.bottom, about.portrait.bottom);
+    expect(about.picture.top).toBeLessThan(about.window.top - 40);
+    expect(about.picture.bottom).toBeGreaterThan(about.window.top + 40);
+    expect(about.picture.bottom).toBeLessThan(about.window.bottom - 40);
+    expect(about.picture.left).toBeGreaterThan(about.window.left + 40);
+    expect(about.picture.left).toBeLessThan(about.window.right - 40);
   });
 });
 
@@ -224,7 +237,7 @@ test.describe('at 360', () => {
     expect(distinct(principles.map((principle) => principle.y))).toHaveLength(4);
   });
 
-  test('the portrait slot is a small 4:5 picture on the left edge, not a full-width box', async ({ page }) => {
+  test('the picture block is small and on the left edge, not a full-width box', async ({ page }) => {
     await page.goto('/');
     const slot = await page.evaluate(() => {
       const box = document.querySelector('#about .portrait')!.getBoundingClientRect();
@@ -234,7 +247,6 @@ test.describe('at 360', () => {
     expect(slot.left).toBe(slot.edge);
     expect(slot.width).toBeLessThanOrEqual(16 * slot.rem);
     expect(slot.width).toBeGreaterThanOrEqual(12 * slot.rem);
-    expect(Math.abs(slot.width / slot.height - 4 / 5)).toBeLessThan(0.01);
   });
 });
 
@@ -278,32 +290,33 @@ for (const width of [360, 1280, 1920]) {
 test('the line field in the blue section lies below the text, never behind it', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto('/');
-  const field = page.locator('#approach svg.line-field');
+  const field = page.locator('#approach .field-window');
   await expect(field).toHaveCount(1);
   await expect(field).toHaveAttribute('aria-hidden', 'true');
   const edges = await page.evaluate(() => {
     const approach = document.querySelector('#approach')!;
     const bottoms = [...approach.querySelectorAll('h2, h3, p')].map((element) => element.getBoundingClientRect().bottom);
-    const box = approach.querySelector('svg.line-field')!.getBoundingClientRect();
+    const box = approach.querySelector('.field-window')!.getBoundingClientRect();
     return { text: Math.max(...bottoms), top: box.top, bottom: box.bottom, section: approach.getBoundingClientRect().bottom };
   });
   expect(edges.top).toBeGreaterThanOrEqual(edges.text);
   expect(Math.abs(edges.bottom - edges.section)).toBeLessThan(1);
 });
 
-test('one line-field band stands between the sectors and the contact section, with no text on it', async ({ page }) => {
+test('one line-field band stands between the lab and the contact section, with no text on it', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto('/');
   const band = await page.evaluate(() => {
-    const sectors = document.querySelector('#sectors')!;
+    const lab = document.querySelector('#lab')!;
     const contact = document.querySelector('#contact')!;
     const between: Element[] = [];
-    for (let node = sectors.nextElementSibling; node && node !== contact; node = node.nextElementSibling) between.push(node);
-    const fields = between.flatMap((node) => (node.matches('svg.line-field') ? [node] : [...node.querySelectorAll('svg.line-field')]));
+    for (let node = lab.nextElementSibling; node && node !== contact; node = node.nextElementSibling) between.push(node);
+    const fields = between.flatMap((node) => (node.matches('.field-window') ? [node] : [...node.querySelectorAll('.field-window')]));
     const box = fields[0]?.getBoundingClientRect();
     return {
       fields: fields.length,
-      text: between.map((node) => node.textContent!.trim()).join(''),
+      // What is shown: innerText leaves out the still drawing kept in <noscript> for when JavaScript is off.
+      text: between.map((node) => (node as HTMLElement).innerText.trim()).join(''),
       ids: between.map((node) => node.id).join(''),
       left: box?.left,
       width: box?.width,
@@ -358,14 +371,40 @@ for (const width of [360, 1280]) {
     expect(hrefs.filter((href) => /\[|%5B/i.test(href))).toEqual([]);
   });
 
-  test(`the footer is quiet and its privacy link is underlined and easy to hit at ${width}`, async ({ page }) => {
+  test(`the footer is one quiet line and its imprint link is underlined and easy to hit at ${width}`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
     const footer = page.locator('footer');
     await expect(footer).toContainText(`© ${new Date().getFullYear()} geofare.`);
+    // Link, copyright and CVR stand on one line; there is no address.
+    const text = footer.locator('p');
+    await expect(text).toHaveCount(1);
+    const lines = await text.evaluate((p) => Math.round(p.getBoundingClientRect().height / parseFloat(getComputedStyle(p).lineHeight)));
+    expect(lines).toBe(1);
+    await expect(footer).not.toContainText('Denmark');
     const logo = (await footer.locator('img').boundingBox())!;
     expect(logo.height).toBe(36);
-    const link = footer.getByRole('link', { name: 'Privacy' });
+    // Beside the logo, the line is right-aligned on the page's right edge and stands on the foot of the logo.
+    if (width >= 768) {
+      const edges = await footer.evaluate((element) => {
+        const logo = element.querySelector('img')!.getBoundingClientRect();
+        const line = element.querySelector('p')!;
+        const range = document.createRange();
+        range.selectNodeContents(line);
+        const text = range.getBoundingClientRect();
+        const mark = document.createElement('span');
+        mark.style.display = 'inline-block';
+        line.append(mark);
+        const baseline = mark.getBoundingClientRect().bottom;
+        mark.remove();
+        const container = element.querySelector('.container')!;
+        const right = container.getBoundingClientRect().right - parseFloat(getComputedStyle(container).paddingRight);
+        return { logoFoot: logo.bottom, baseline, textRight: text.right, right };
+      });
+      expect(Math.abs(edges.baseline - edges.logoFoot)).toBeLessThanOrEqual(1);
+      expect(Math.abs(edges.textRight - edges.right)).toBeLessThanOrEqual(1);
+    }
+    const link = footer.getByRole('link', { name: 'Imprint' });
     expect(await link.evaluate((element) => getComputedStyle(element).textDecorationLine)).toBe('underline');
     // The target reaches beyond the word: 10 px above and below it still belongs to the link.
     await link.scrollIntoViewIfNeeded();
@@ -376,8 +415,8 @@ for (const width of [360, 1280]) {
     });
     expect(hits).toEqual([true, true]);
     await link.click();
-    await expect(page).toHaveURL(/\/privacy\/?$/);
-    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Privacy');
+    await expect(page).toHaveURL(/\/imprint\/?$/);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('Imprint');
   });
 }
 
@@ -393,14 +432,15 @@ test('the 404 page offers one button back to the home page', async ({ page }) =>
 
 test('on a page with little on it the footer stands at the foot of the window', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
-  await page.goto('/privacy');
+  await page.goto('/imprint');
   const bottom = await page.evaluate(() => document.querySelector('footer')!.getBoundingClientRect().bottom);
   expect(Math.round(bottom)).toBe(900);
 });
 
 for (const width of [360, 768, 1280, 1920]) {
-  test(`the still line fields are drawn at the hero's scale, never shrunk to the screen, at ${width}`, async ({ page }) => {
-    await page.setViewportSize({ width, height: 900 });
+  test(`without JavaScript the still line fields are drawn at the hero's scale, never shrunk to the screen, at ${width}`, async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width, height: 900 } });
+    const page = await context.newPage();
     await page.goto('/');
     const scales = await page.evaluate(() =>
       ['#approach', '.contact__band', '.about__portrait'].map((selector) => {
@@ -410,5 +450,80 @@ for (const width of [360, 768, 1280, 1920]) {
       }),
     );
     for (const { selector, scale } of scales) expect(scale, selector).toBeCloseTo(1, 5);
+    await context.close();
   });
 }
+
+test.describe('the windows onto the line field', () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+
+  /** Scrolls so the window's top is `offset` px below the top of the screen, and reports where things are. */
+  const at = (page: Page, selector: string, offset: number) =>
+    page.evaluate(
+      async ({ selector, offset }) => {
+        const win = document.querySelector(selector)!;
+        const canvas = win.querySelector('canvas')!;
+        scrollTo({ top: win.getBoundingClientRect().top + scrollY - offset, behavior: 'instant' });
+        // The field wakes when its window comes on screen: wait until it has been drawn again.
+        while (!canvas.width) await new Promise((resolve) => requestAnimationFrame(resolve));
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+        const rect = (element: Element) => (({ left, top, width, height }) => ({ left, top, width, height }))(element.getBoundingClientRect());
+        return { canvas: rect(canvas), window: rect(win), state: canvas.dataset.state, backing: canvas.width };
+      },
+      { selector, offset },
+    );
+
+  for (const selector of ['#about .portrait__window', '#approach .approach__field', '.contact__band']) {
+    test(`the field stays where it is on screen while its window scrolls over it: ${selector}`, async ({ page }) => {
+      await page.goto('/');
+      const high = await at(page, selector, 120);
+      const low = await at(page, selector, 320);
+      // The canvas fills the viewport and does not move; the window does.
+      for (const shot of [high, low]) expect(shot.canvas).toEqual({ left: 0, top: 0, width: 1280, height: 800 });
+      expect(low.window.top - high.window.top).toBeCloseTo(200, 0);
+      expect(high.state).toBe('running');
+      // Out of sight, the viewport-sized canvas gives its memory back.
+      await page.evaluate(() => scrollTo({ top: 0, behavior: 'instant' }));
+      await expect.poll(() => page.locator(`${selector} canvas`).evaluate((canvas: HTMLCanvasElement) => canvas.width)).toBe(0);
+    });
+
+    test(`with reduced motion the field is one still frame inside its window: ${selector}`, async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.goto('/');
+      const shot = await at(page, selector, 120);
+      expect(shot.state).toBe('static');
+      expect(shot.canvas).toEqual(shot.window);
+    });
+  }
+
+  test('nothing of a viewport-sized canvas can be reached outside its window', async ({ page }) => {
+    await page.goto('/');
+    await at(page, '#about .portrait__window', 120);
+    const hit = await page.evaluate(() => document.elementFromPoint(900, 400)?.className ?? '');
+    expect(hit).not.toContain('field-window__field');
+  });
+
+  test('the window in the blue section draws in the colour of its text', async ({ page }) => {
+    await page.goto('/');
+    await at(page, '#approach .approach__field', 300);
+    const colours = await page.evaluate(() => ({
+      line: getComputedStyle(document.querySelector('#approach canvas')!).color,
+      text: getComputedStyle(document.querySelector('#approach h2')!).color,
+    }));
+    expect(colours.line).toBe(colours.text);
+  });
+
+  test('the picture is the founder photo, described for those who cannot see it, filling its 4:5 box', async ({ page }) => {
+    await page.goto('/');
+    const photo = page.locator('#about .portrait__picture img');
+    await photo.scrollIntoViewIfNeeded();
+    await expect(photo).toHaveAttribute('alt', /\S+/);
+    await expect.poll(() => photo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0)).toBe(true);
+    const { image, box } = await page.evaluate(() => {
+      const rect = (selector: string) => (({ width, height }) => ({ width, height }))(document.querySelector(selector)!.getBoundingClientRect());
+      return { image: rect('#about .portrait__picture img'), box: rect('#about .portrait__picture') };
+    });
+    expect(image).toEqual(box);
+    await expect(page.locator('#about .portrait__placeholder')).toHaveCount(0);
+  });
+});

@@ -37,6 +37,18 @@ for (const viewport of [
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     });
 
+    test('the About window shows a still of the line field', async ({ page }) => {
+      await page.goto('/');
+      const still = page.locator('#about .portrait__window svg.line-field');
+      await expect(still).toBeVisible();
+      expect(await still.locator('path').count()).toBeGreaterThan(5);
+      await expect(page.locator('#about .field-window__field')).toBeHidden();
+      // The two bands show their stills too.
+      for (const selector of ['#approach .approach__field', '.contact__band']) {
+        await expect(page.locator(`${selector} svg.line-field`)).toBeVisible();
+      }
+    });
+
     test('a static line field stands in for the animation, clear of all text', async ({ page }) => {
       await page.goto('/');
       const still = page.locator('#top svg.line-field');
@@ -82,10 +94,5 @@ for (const viewport of [
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     });
 
-    test('there is no pause button for an animation that is not running', async ({ page }) => {
-      await page.goto('/');
-      await expect(page.locator('.hero__pause')).toBeHidden();
-      await expect(page.getByRole('button', { name: /animation/ })).toHaveCount(0);
-    });
   });
 }

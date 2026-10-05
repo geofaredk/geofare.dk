@@ -1,7 +1,7 @@
 /**
- * Brings the hero to life: mounts the line field behind it, starts the headline rotation and
- * wires the pause button to both. With reduced motion there is one still frame, no rotation
- * and no button (the stylesheet already shows the final sentence).
+ * Brings the hero to life: mounts the line field behind it and starts the headline rotation.
+ * With reduced motion there is one still frame and no rotation (the stylesheet already shows
+ * the final sentence).
  */
 import { mountHeroField, type HeroField } from './hero-field';
 import { startRotator } from './hero-rotator';
@@ -22,40 +22,57 @@ function start(hero: HTMLElement, canvas: HTMLCanvasElement) {
   const final = hero.querySelector<HTMLElement>('.hero__final');
   const rotator = hero.querySelector<HTMLElement>('.hero__rotator');
   const lede = hero.querySelector<HTMLElement>('.hero__lede');
-  const pause = hero.querySelector<HTMLButtonElement>('.hero__pause');
   const range = document.createRange();
 
-  /** The box around the headline text on show now: the fixed part and whichever endings are visible. */
-  function headline(): DOMRect {
+  /**
+   * The headline text on show now, one box per line of text: the fixed part and whichever
+   * endings are visible. Text that shares a line (two endings in mid-change) shares a box.
+   */
+  function headlineLines(): DOMRect[] {
     const rotating = rotator && getComputedStyle(rotator).display !== 'none';
     const endings = rotating
       ? Array.from(rotator.children).filter((ending) => getComputedStyle(ending).visibility !== 'hidden')
       : [final];
-    let [left, top, right, bottom] = [Infinity, Infinity, -Infinity, -Infinity];
+    const lines: { left: number; top: number; right: number; bottom: number }[] = [];
     for (const part of [fixed, ...endings]) {
       if (!part) continue;
       range.selectNodeContents(part);
-      const box = range.getBoundingClientRect();
-      left = Math.min(left, box.left);
-      top = Math.min(top, box.top);
-      right = Math.max(right, box.right);
-      bottom = Math.max(bottom, box.bottom);
+      for (const box of range.getClientRects()) {
+        if (!box.width || !box.height) continue;
+        const line = lines.find((other) => Math.abs(other.top - box.top) < box.height / 2);
+        if (line) {
+          line.left = Math.min(line.left, box.left);
+          line.top = Math.min(line.top, box.top);
+          line.right = Math.max(line.right, box.right);
+          line.bottom = Math.max(line.bottom, box.bottom);
+        } else {
+          lines.push({ left: box.left, top: box.top, right: box.right, bottom: box.bottom });
+        }
+      }
     }
-    return new DOMRect(left, top, right - left, bottom - top);
+    return lines.sort((a, b) => a.top - b.top).map((line) => new DOMRect(line.left, line.top, line.right - line.left, line.bottom - line.top));
   }
 
-  // The headline's quiet zone follows the text. Where the text grows the zone grows at once,
-  // so no line is ever behind a letter; where it shrinks the zone eases, so lines flow in.
-  let zone = { width: 0, height: 0 };
+  // Each line of the headline has a quiet zone of its own, as wide as that line. Where a line
+  // grows its zone grows at once, so no field line is ever behind a letter; where it shrinks
+  // the zone eases, so the field flows in. A line that goes gives its zone up at once.
+  let widths = new Map<number, number>();
   let easedAt = 0;
-  function headlineZone(eased: boolean): DOMRect {
-    const text = headline();
+  function headlineZones(eased: boolean): DOMRect[] {
     const now = performance.now();
     const step = eased ? 1 - Math.exp(-Math.min(now - easedAt, 100) / SETTLE_MS) : 1;
     easedAt = now;
     const ease = (from: number, to: number) => (to >= from || from - to < 0.5 ? to : from + (to - from) * step);
-    zone = { width: ease(zone.width, text.width), height: ease(zone.height, text.height) };
-    return new DOMRect(text.left, text.top, zone.width, zone.height);
+    const next = new Map<number, number>();
+    const zones = headlineLines().map((line) => {
+      // A line is known by where it stands: its top, to the pixel.
+      const key = Math.round(line.top + scrollY);
+      const width = ease(widths.get(key) ?? 0, line.width);
+      next.set(key, width);
+      return new DOMRect(line.left, line.top, width, line.height);
+    });
+    widths = next;
+    return zones;
   }
 
   // Still undefined during the first frame, which mountHeroField draws before it returns.
@@ -63,10 +80,10 @@ function start(hero: HTMLElement, canvas: HTMLCanvasElement) {
   const quietZones = () => {
     const box = hero.getBoundingClientRect();
     return [
-      // Easing needs frames; a field that is standing still gets the exact box.
-      headlineZone(mounted?.running ?? false),
-      // The sub-line and both buttons, and the pause control when it is shown.
-      ...[lede, pause].filter((element) => element?.getClientRects().length).map((element) => element!.getBoundingClientRect()),
+      // Easing needs frames; a field that is standing still gets the exact boxes.
+      ...headlineZones(mounted?.running ?? false),
+      // The sub-line and both buttons.
+      ...(lede?.getClientRects().length ? [lede.getBoundingClientRect()] : []),
       // The hero's upper and lower edges, so the field thins out towards the header and the
       // page below instead of being cut off.
       new DOMRect(box.left, box.top, box.width, 0),
@@ -75,24 +92,16 @@ function start(hero: HTMLElement, canvas: HTMLCanvasElement) {
   };
 
   const field = (mounted = mountHeroField(canvas, { quietZones }));
-  if (canvas.dataset.state === 'static') {
-    if (pause) pause.hidden = true;
-    return;
+  // Every further canvas in the hero gets a field of its own, kept clear of the same text.
+  const others = Array.from(hero.querySelectorAll<HTMLCanvasElement>('canvas'))
+    .filter((other) => other !== canvas)
+    .map((other) => mountHeroField(other, { quietZones }));
+  if (canvas.dataset.state === 'static') return;
+
+  if (rotator) {
+    startRotator(rotator, {
+      intervalMs: ENDING_MS,
+      onChange: (index) => [field, ...others].forEach((each) => each.setLevel(LEVELS[index] ?? 0)),
+    });
   }
-
-  const rotation = rotator && startRotator(rotator, { intervalMs: ENDING_MS, onChange: (index) => field.setLevel(LEVELS[index] ?? 0) });
-
-  pause?.addEventListener('click', () => {
-    if (field.running) {
-      // Pausing stops everything that moves by itself, so the headline settles on its last ending.
-      rotation?.finish();
-      field.pause();
-    } else {
-      field.play();
-    }
-    const paused = !field.running;
-    pause.toggleAttribute('data-paused', paused);
-    const label = pause.querySelector('.hero__pause-label');
-    if (label) label.textContent = (paused ? pause.dataset.play : pause.dataset.pause) ?? '';
-  });
 }

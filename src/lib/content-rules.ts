@@ -29,6 +29,17 @@ export function checkSection(
   if (!NO_BODY.has(id) && isBlank(body)) throw new Error(`${file} needs text below the front matter`);
 }
 
+/** Throws if two lab projects of one language share an `order`: each needs its own place in the grid. */
+export function checkLab(lang: string, entries: { id: string; filePath?: string; data: { order: number } }[]): void {
+  const seen = new Map<number, string>();
+  for (const entry of entries) {
+    const file = entry.filePath ?? `src/content/lab/${entry.id}.md`;
+    const other = seen.get(entry.data.order);
+    if (other) throw new Error(`src/content/lab/${lang}: ${other} and ${file} have the same order (${entry.data.order}); each needs its own`);
+    seen.set(entry.data.order, file);
+  }
+}
+
 interface ListEntry {
   id: string;
   filePath?: string;

@@ -7,7 +7,8 @@
     "Services",
     "About",
     "How we work",
-    "Who we work with"
+    "Who we work with",
+    "Lab"
   ],
   "hero": {
     "fixed": "Make good decisions",
@@ -170,6 +171,40 @@
       }
     ]
   },
+  "lab": {
+    "title": "Built in the open.",
+    "intro": "We don't only advise, we build. These are our own projects: free to use, based on open data, and made to put hazard information in front of the people who need it.",
+    "projects": [
+      {
+        "title": "FloodReady.dk",
+        "description": "A free flood risk check for every Danish home. It turns public flood data on storm surge, cloudbursts, groundwater and watercourses into one clear grade per address, from A to F.",
+        "tags": [
+          "Flood risk",
+          "Risk communication"
+        ],
+        "url": "https://floodready.dk",
+        "status": "Launching soon"
+      },
+      {
+        "title": "Vindy.dk",
+        "description": "Denmark's weather on one live map. Forecasts, observations, radar and satellite images from official open sources, in a map anyone can read.",
+        "tags": [
+          "Weather data",
+          "Visualisation"
+        ],
+        "url": "https://vindy.dk"
+      },
+      {
+        "title": "MeteoAlarm for Python",
+        "description": "An open-source Python package that gives developers easy access to official weather warnings across Europe. It reads the MeteoAlarm warning feeds and filters them by country, severity and type.",
+        "tags": [
+          "Early warning",
+          "Open source"
+        ],
+        "url": "https://meteoalarm.readthedocs.io/en/latest/"
+      }
+    ]
+  },
   "contact": {
     "title": "Have a decision coming up?",
     "body": "Tell us what you need to know. We will tell you what it takes to find out.",
@@ -180,13 +215,9 @@
   },
   "footer": {
     "fragments": [
-      "geofare",
-      "[street address]",
-      "[postcode and town]",
-      "Denmark",
-      "CVR [number]",
-      "Privacy",
-      "© {year} geofare"
+      "Imprint",
+      "© {year} geofare",
+      "CVR [number]"
     ]
   }
 }

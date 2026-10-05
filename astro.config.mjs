@@ -3,7 +3,9 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import { site } from './src/config/site.ts';
 
-const excludedFromSitemap = ['/privacy', '/404'];
+const excludedFromSitemap = ['/imprint', '/404'];
+// Draft languages (placeholder copy) stay out of the sitemap altogether.
+const draftPaths = Object.values(site.locales).filter((locale) => locale.draft).map((locale) => locale.path);
 
 export default defineConfig({
   output: 'static',
@@ -16,7 +18,11 @@ export default defineConfig({
   },
   integrations: [
     sitemap({
-      filter: (page) => !excludedFromSitemap.some((path) => new URL(page).pathname.replace(/\/$/, '') === path),
+      filter: (page) => {
+        const { pathname } = new URL(page);
+        if (draftPaths.some((path) => (pathname + '/').startsWith(path))) return false;
+        return !excludedFromSitemap.some((path) => pathname.replace(/\/$/, '') === path);
+      },
     }),
   ],
   build: {

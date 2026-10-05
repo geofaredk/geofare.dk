@@ -1,8 +1,8 @@
 ---
-import type { Lang } from '../../config/site';
+import { site, type Lang } from '../../config/site';
 import { contactCta, mainNav } from '../../config/navigation';
 import { getUi } from '../../lib/content';
-import { localizePath } from '../../lib/i18n';
+import { localizePath, switchPath } from '../../lib/i18n';
 import Button from '../Button.astro';
 import Logo from '../Logo.astro';
 
@@ -12,6 +12,15 @@ interface Props {
 
 const { lang } = Astro.props;
 const ui = await getUi(lang);
+
+// The language switcher leads to the same page in the other language; from a page that exists
+// once for the whole site (the 404 page) it leads to that language's home page.
+const here = /^\/404/.test(Astro.url.pathname) ? '/' : Astro.url.pathname;
+const languages = (Object.keys(site.locales) as Lang[]).map((code) => ({
+  code,
+  locale: site.locales[code],
+  href: switchPath(here, code),
+}));
 ---
 
 <header class="site-header">
@@ -39,6 +48,25 @@ const ui = await getUi(lang);
         }
       </ul>
       <Button href={localizePath(contactCta.href, lang)}>{ui.nav[contactCta.id]}</Button>
+      <ul class="site-header__langs" aria-label={ui.lang.label}>
+        {
+          languages.map(({ code, locale, href }) => (
+            <li>
+              {code === lang ? (
+                <span class="site-header__lang" aria-current="true" lang={locale.htmlLang}>
+                  {locale.short}
+                  <span class="sr-only"> {locale.name}</span>
+                </span>
+              ) : (
+                <a class="site-header__lang" href={href} lang={locale.htmlLang} hreflang={locale.hreflang}>
+                  {locale.short}
+                  <span class="sr-only"> {locale.name}</span>
+                </a>
+              )}
+            </li>
+          ))
+        }
+      </ul>
     </nav>
   </div>
 </header>
@@ -53,28 +81,35 @@ const ui = await getUi(lang);
     position: sticky;
     inset-block-start: 0;
     z-index: 10;
+    display: flex;
+    align-items: center;
     height: var(--header-h);
     background-color: var(--bg);
   }
 
+  /* Logo and menu stand on one line: the foot of the logo is the baseline of the menu text.
+     The row as a whole is centred in the header. */
   .site-header__inner {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     justify-content: space-between;
     gap: 1rem 2rem;
-    height: 100%;
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
+  /* The logo's drawing fills its file from top to bottom, so the bottom edge of this link is the
+     foot of the logo, and that edge is the line the menu text sits on. */
   .site-header__home {
-    display: flex;
+    display: block;
     flex: none;
-    align-items: center;
-    min-height: 2.75rem;
   }
 
+  /* The logo's height in the header; its width follows. */
   .site-header__home :global(.logo) {
+    display: block;
     width: auto;
-    height: 2.75rem;
+    height: 2rem;
   }
 
   .site-header__menu,
@@ -96,6 +131,7 @@ const ui = await getUi(lang);
     color: var(--ink);
     font-weight: var(--weight-medium);
     text-decoration: none;
+    white-space: nowrap;
     transition: color 120ms;
   }
 
@@ -103,12 +139,49 @@ const ui = await getUi(lang);
     color: var(--accent);
   }
 
+  /* The language switcher: short names side by side, the current one in the accent colour. */
+  .site-header__langs {
+    display: flex;
+    align-items: center;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-header__lang {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25rem;
+    min-height: 2.75rem;
+    color: var(--ink-muted);
+    font-size: var(--step-small);
+    font-weight: var(--weight-medium);
+    text-decoration: none;
+    transition: color 120ms;
+  }
+
+  a.site-header__lang:hover {
+    color: var(--accent);
+  }
+
+  .site-header__lang[aria-current] {
+    color: var(--accent);
+  }
+
+  /* In the bar the switcher is the last thing on the right: its last word ends on the page's edge. */
+  @media (width >= 77rem) {
+    .site-header__langs li:last-child .site-header__lang {
+      justify-content: flex-end;
+      min-width: 1.75rem;
+    }
+  }
+
   .site-header__toggle {
     display: none;
   }
 
   /* Small screens: the links wait behind a text button, on a cream sheet below the header. */
-  @media (scripting: enabled) and (width < 60rem) {
+  @media (scripting: enabled) and (width < 77rem) {
     .site-header__toggle {
       display: inline-flex;
       align-items: center;
@@ -152,10 +225,22 @@ const ui = await getUi(lang);
       gap: 0.25rem;
       font-size: var(--step-title);
     }
+
+    /* A short word such as "Lab" is still a full-size target. */
+    .site-header__links a {
+      min-width: 2.75rem;
+    }
+
+    /* In the sheet the languages start on the same edge as the links above them. */
+    .site-header__lang {
+      justify-content: flex-start;
+      min-width: 3rem;
+      font-size: var(--step-body);
+    }
   }
 
   /* Small screens without JavaScript: no button; the links simply wrap under the logo. */
-  @media (scripting: none) and (width < 60rem) {
+  @media (scripting: none) and (width < 77rem) {
     .site-header {
       position: static;
       height: auto;

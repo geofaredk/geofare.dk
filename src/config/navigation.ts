@@ -1,5 +1,5 @@
 export interface NavItem {
-  id: 'services' | 'about' | 'approach' | 'sectors';
+  id: 'services' | 'about' | 'approach' | 'sectors' | 'lab';
   href: string;
 }
 
@@ -9,6 +9,7 @@ export const mainNav: NavItem[] = [
   { id: 'about', href: '/#about' },
   { id: 'approach', href: '/#approach' },
   { id: 'sectors', href: '/#sectors' },
+  { id: 'lab', href: '/#lab' },
 ];
 
 export const contactCta = { id: 'contact', href: '/#contact' } as const;

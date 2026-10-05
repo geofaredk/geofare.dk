@@ -1,14 +1,16 @@
 ---
 import { render } from 'astro:content';
 import type { Lang } from '../../config/site';
-import { getSection } from '../../lib/content';
+import { getSection, getUi } from '../../lib/content';
 import Portrait from '../Portrait.astro';
+import founderPhoto from '../../assets/founder.png';
 
 interface Props {
   lang: Lang;
 }
 
 const { lang } = Astro.props;
+const ui = await getUi(lang);
 const [mission, founder, quote, team] = await Promise.all(
   (['about-mission', 'about-founder', 'about-quote', 'about-team'] as const).map(async (id) => {
     const entry = await getSection(lang, id);
@@ -24,9 +26,9 @@ const [mission, founder, quote, team] = await Promise.all(
       <mission.Content />
     </div>
 
-    {/* The founder's photo goes here: import it and pass it as `src`, with its `alt` text from the content files. */}
+    {/* The founder's photo, with its description from the content files; without `src` a placeholder is shown. */}
     <div class="about__portrait">
-      <Portrait />
+      <Portrait src={founderPhoto} alt={ui.about.portraitAlt} placeholder={ui.about.portrait} />
     </div>
 
     {/* One column of text beside the picture: who he is, what he says, how the work is staffed. */}

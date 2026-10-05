@@ -2,6 +2,16 @@
 
 Measured on 1 October 2026 against the "Quality bar" in `briefing.md`, on the Docker container built from this repository (nginx, gzip and cache headers as in production) and on the Astro preview server. Everything below was measured again at the final commit, after the final round of fixes (see "Final review fixes"), except the Firefox comparison screenshots, which say so.
 
+**Changed after this report: the pause and play button was removed** at the client's request, on 1 October 2026. The hero animation and the headline rotation still run, and visitors who have asked their system for reduced motion still get the final sentence over one still frame. Without the button, the "pause control" part of the Accessibility line below is no longer met: WCAG 2.2.2 (Pause, Stop, Hide, level A) asks for a way to pause motion that starts by itself and runs for more than five seconds, and the line field runs for as long as the hero is on screen. Everything else in the report stands. Where the text below mentions the pause button, a paused state or `focus-pause.png`, it describes the site before the change; the browser suite is now 107 tests per engine (the seven pause tests went with the button), all passing in Chrome and WebKit, and the Tab walk has one stop fewer.
+
+**Also changed after this report:** the About picture, the band at the foot of the blue section and the band above Contact are now windows onto an animated line field that stays fixed while the page scrolls over it; the About window has the founder's photo overlapping it. The brief asked for no parallax; this was added at the client's request. Visitors who ask for reduced motion get one still frame that scrolls with the page, and without JavaScript a still drawing is shown.
+
+**Also changed after this report:** the privacy page is now an imprint page at `/imprint`, and the footer is one line (imprint link, copyright, CVR) without the address. Where the text below says "privacy page" or `/privacy`, read imprint.
+
+**Also changed after this report:** a Lab section with three project cards between "Who we work with" and "Contact", with a "Lab" link in the menu; and a language switcher (English, Danish) in the menu, with Danish as a draft language holding placeholder text, kept out of search engines. The full menu now shows from 1232 px wide; below that it is behind the Menu button.
+
+**Also changed after this report:** Cabin analytics was added at the client's request, on every page. The brief's Privacy line asked for no third-party requests and no analytics at launch; that part no longer holds. Each page now asks two other hosts: `scripts.withcabin.com` for the script and `ping.withcabin.com` for its reports. Still true, and still tested: no cookies, nothing stored in the browser, and nothing else from another origin. Lighthouse with the script in place: 100 in all four categories, layout shift 0.
+
 Result: every line of the quality bar is met in the measurements below, with these limits:
 
 - **Browsers** were checked with the current engines only: installed Google Chrome, and Playwright's builds of WebKit (Safari's engine) and Firefox. Real Safari, Edge and the previous version of each browser were not run.

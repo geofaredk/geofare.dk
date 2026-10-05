@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkList, checkSection } from '../../src/lib/content-rules';
+import { checkList, checkSection, checkLab } from '../../src/lib/content-rules';
 
 describe('checkSection', () => {
   it('passes a section with its title and text', () => {
@@ -61,5 +61,20 @@ describe('checkList', () => {
 
   it('names the file of an entry with no text', () => {
     expect(() => checkList('services', 'en', [entry('a', 1, 'a', ' ')])).toThrow('src/content/services/en/a.md needs text below the front matter');
+  });
+});
+
+describe('checkLab', () => {
+  const project = (id: string, order: number) => ({ id: `en/${id}`, data: { order } });
+
+  it('accepts projects that each have their own place', () => {
+    expect(() => checkLab('en', [project('a', 1), project('b', 2)])).not.toThrow();
+    expect(() => checkLab('en', [])).not.toThrow();
+  });
+
+  it('names both files when two projects share an order', () => {
+    expect(() => checkLab('en', [project('a', 1), project('b', 1)])).toThrow(
+      'src/content/lab/en: src/content/lab/en/a.md and src/content/lab/en/b.md have the same order (1); each needs its own',
+    );
   });
 });

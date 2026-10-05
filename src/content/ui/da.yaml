@@ -1,0 +1,27 @@
+# Danish interface text.
+meta:
+  title: "geofare | Naturfarer og klimarisici, klart nok til at handle på"
+  description: "geofare hjælper kommuner, planlæggere og ejere af bygninger og anlæg med at træffe gode beslutninger om oversvømmelsesrisiko, fysiske klimarisici og andre naturfarer."
+  imageAlt: geofare-mærket
+nav:
+  label: Hovednavigation
+  services: Ydelser
+  about: Om os
+  approach: Sådan arbejder vi
+  sectors: Hvem vi arbejder med
+  lab: Lab
+  contact: Kontakt os
+  menuOpen: Menu
+  menuClose: Luk
+skip: Spring til indhold
+about:
+  portrait: '[portrætfoto]'
+  portraitAlt: Niklas, grundlæggeren af geofare, smilende, med kasket og runde briller
+home: geofare forside
+lab:
+  newTab: (åbner i en ny fane)
+lang:
+  label: Sprog
+footer:
+  cvr: CVR
+  imprint: Kolofon

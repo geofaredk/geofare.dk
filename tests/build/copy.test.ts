@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { parse } from 'node-html-parser';
 import { describe, expect, it } from 'vitest';
 import copy from '../fixtures/copy.en.json';
-import { copyPattern, footerAddressPattern } from './copy-match';
+import { copyPattern, footerLinePattern } from './copy-match';
 
 export const norm = (s: string) =>
   s.replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/ /g, ' ').replace(/\s+/g, ' ').trim();
@@ -45,6 +45,27 @@ describe('copy matches the brief word for word', () => {
       const i = t.indexOf(s.lead); expect(i).toBeGreaterThan(at); at = i;
     }
   });
+  it('lab: title, intro and the projects in order, each with its description, tags, status and one link', () => {
+    const t = sectionText('lab');
+    expect(t).toContain(copy.lab.title);
+    expect(t).toContain(copy.lab.intro);
+    const cards = root.querySelectorAll('#lab .project');
+    expect(cards).toHaveLength(copy.lab.projects.length);
+    copy.lab.projects.forEach((project, i) => {
+      const card = cards[i];
+      const text = norm(card.textContent);
+      expect(norm(card.querySelector('h3')!.textContent)).toContain(project.title);
+      for (const piece of [project.description, ...project.tags]) expect(text).toContain(piece);
+      // Exactly the status the brief gives, or none.
+      expect(card.querySelector('.project__status')?.textContent.trim()).toBe('status' in project ? project.status : undefined);
+      const links = card.querySelectorAll('a');
+      expect(links).toHaveLength(1);
+      expect(links[0].getAttribute('href')).toBe(project.url);
+      expect(links[0].getAttribute('target')).toBe('_blank');
+      expect(links[0].getAttribute('rel')).toBe('noopener noreferrer');
+      expect(norm(links[0].textContent)).toBe(`${project.title} (opens in a new tab)`);
+    });
+  });
   it('contact and footer show their placeholders or the values filled in', () => {
     const t = sectionText('contact');
     for (const s of [copy.contact.title, copy.contact.body]) expectCopy(t, s);
@@ -55,11 +76,10 @@ describe('copy matches the brief word for word', () => {
       const link = /email/i.test(s) ? /^mailto:\S+@\S+$/ : /^https:\/\/\S+$/;
       expect(hrefs.some((href) => link.test(href)), `${s} is shown, or has become a link`).toBe(true);
     }
-    // The footer as whole sentences, so a value left empty ("CVR .") fails.
-    const [address, legal] = root.querySelectorAll('footer p').map((p) => norm(p.textContent));
-    expect(address).toMatch(footerAddressPattern(copy.footer.fragments));
-    const [, , , , , privacy, copyright] = copy.footer.fragments;
-    expect(legal).toBe(`${privacy}. ${copyright.replace('{year}', String(new Date().getFullYear()))}.`);
+    // The footer is one line of whole sentences and nothing else, so a value left empty ("CVR .") fails.
+    const lines = root.querySelectorAll('footer p').map((p) => norm(p.textContent));
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toMatch(footerLinePattern(copy.footer.fragments));
   });
   it('navigation labels', () => {
     const n = norm(root.querySelector('header nav')!.textContent);
@@ -68,7 +88,7 @@ describe('copy matches the brief word for word', () => {
   });
   it('section order answers what, who, how, for whom', () => {
     const ids = root.querySelectorAll('main > section, main > div[id]').map((e) => e.id).filter(Boolean);
-    expect(ids).toEqual(['top', 'services', 'about', 'approach', 'sectors', 'contact']);
+    expect(ids).toEqual(['top', 'services', 'about', 'approach', 'sectors', 'lab', 'contact']);
   });
   it('the brand name is lowercase in running text', () => { expect(text).not.toMatch(/\bGeofare\b|\bGEOFARE\b/); });
 });

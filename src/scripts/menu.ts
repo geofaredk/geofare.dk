@@ -35,5 +35,5 @@ if (toggle && menu && header) {
   });
 
   // On a wide screen the links are always shown and the button is gone.
-  matchMedia('(min-width: 60rem)').addEventListener('change', () => setOpen(false));
+  matchMedia('(min-width: 77rem)').addEventListener('change', () => setOpen(false));
 }

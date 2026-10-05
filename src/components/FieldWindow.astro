@@ -1,0 +1,68 @@
+---
+// A window onto the moving line field. The canvas inside is fixed to the viewport and this
+// box cuts a window out of it, so the page scrolls over a field that stays where it is.
+// Decorative only. Size and place the window from the outside; set `--field-line` and
+// `--field-opacity` on it to change the lines' colour and strength.
+// The field's own options (width, height, time, spacing, seed) describe the still drawing that
+// stands in without JavaScript: make it at least as large as the window can get.
+import type { FieldOptions } from '../lib/linefield';
+import LineField from './LineField.astro';
+
+interface Props extends FieldOptions {
+  class?: string;
+}
+
+const { width, height, time, level, spacing, seed, class: className, ...rest } = Astro.props;
+---
+
+<div class:list={['field-window', className]} aria-hidden="true" {...rest}>
+  <canvas class="field-window__field" data-window-field></canvas>
+  <noscript>
+    <LineField width={width} height={height} time={time} level={level} spacing={spacing} seed={seed} actualSize class="field-window__still" />
+  </noscript>
+</div>
+
+<script>
+  import '../scripts/window-field';
+</script>
+
+<style>
+  /* Defaults in the base layer, so any style from the place that uses the window wins. */
+  @layer base {
+    .field-window {
+      position: relative;
+      /* Cuts the window out of the viewport-sized canvas inside it. */
+      clip-path: inset(0);
+    }
+
+    /* Fixed to the viewport, not to the page: the window moves over it as the page scrolls. */
+    .field-window__field {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      max-width: none;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    /* Reduced motion: no moving background. The field is one still frame that scrolls with its window. */
+    @media (prefers-reduced-motion: reduce) {
+      .field-window__field {
+        position: absolute;
+      }
+    }
+
+    @media (scripting: none) {
+      .field-window__field {
+        display: none;
+      }
+
+      .field-window__still {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
+</style>

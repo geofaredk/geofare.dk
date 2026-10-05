@@ -2,7 +2,7 @@
 import { render } from 'astro:content';
 import type { Lang } from '../../config/site';
 import { getPrinciples, getSection } from '../../lib/content';
-import LineField from '../LineField.astro';
+import FieldWindow from '../FieldWindow.astro';
 
 interface Props {
   lang: Lang;
@@ -32,8 +32,8 @@ const principles = await Promise.all(
       }
     </ul>
   </div>
-  {/* The field runs along the foot of the section, below the text, never behind it. Drawn at the hero's scale, wider than any screen. */}
-  <LineField width={2560} height={176} time={41} actualSize class="approach__field" />
+  {/* A window onto the moving field along the foot of the section, below the text, never behind it. Its still is drawn at the hero's scale, wider than any screen. */}
+  <FieldWindow width={2560} height={176} time={41} class="approach__field" />
 </section>
 
 <style>
@@ -108,7 +108,7 @@ const principles = await Promise.all(
     width: 100%;
     height: clamp(6.5rem, 13vw, 11rem);
     margin-block-start: calc(var(--section-space) * 0.6);
-    color: var(--on-accent);
-    opacity: 0.3;
+    --field-line: var(--on-accent);
+    --field-opacity: 0.3;
   }
 </style>

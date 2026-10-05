@@ -32,19 +32,21 @@ for (const viewport of [
       expect(await violations(page)).toEqual([]);
     });
 
-    test('the home page has no violations with motion on and the animation paused', async ({ page }) => {
+    test('the home page has no violations with motion on, once the headline has settled', async ({ page }) => {
+      await page.clock.install();
       await page.goto('/');
       await page.evaluate(() => document.fonts.ready);
-      // Pausing settles the headline, so no ending is caught half-faded; the pause control itself is on show.
-      await page.getByRole('button', { name: 'Pause animation' }).click();
-      await expect(page.getByRole('button', { name: 'Play animation' })).toBeVisible();
+      // Run the headline rotation to its last ending, so no ending is caught half-faded.
+      await page.clock.runFor(15000);
+      await expect(page.locator('.hero__ending[data-active]')).toHaveText('when it matters.');
+      await page.evaluate(() => Promise.all(document.getAnimations().map((animation) => animation.finished.catch(() => undefined))));
       await page.evaluate(() => document.querySelectorAll('details').forEach((details) => (details.open = true)));
       expect(await violations(page)).toEqual([]);
     });
 
-    test('the privacy page has no violations', async ({ page }) => {
-      await settle(page, '/privacy');
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Privacy');
+    test('the imprint page has no violations', async ({ page }) => {
+      await settle(page, '/imprint');
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Imprint');
       expect(await violations(page)).toEqual([]);
     });
 
@@ -53,6 +55,14 @@ for (const viewport of [
       await expect(page.getByRole('heading', { level: 1 })).toHaveText('Page not found');
       expect(await violations(page)).toEqual([]);
     });
+  });
+}
+
+for (const path of ['/da/', '/da/imprint']) {
+  test(`the page in another language has no violations: ${path}`, async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await settle(page, path);
+    expect(await violations(page)).toEqual([]);
   });
 }
 

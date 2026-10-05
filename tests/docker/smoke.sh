@@ -68,9 +68,9 @@ health="$(body_of "$base/healthz")"
 has "Page not found" "$(body_of "$base/nope")" && pass "404 body is the custom page" || fail "404 body is the custom page"
 
 # A directory-style URL must not redirect to an absolute URL with the internal port.
-privacy_headers="$(headers_of "$base/privacy/")"
-has "location:" "$privacy_headers" && fail "/privacy/ redirects" || pass "/privacy/ does not redirect"
-[ "$(status_of "$base/privacy")" = 200 ] && pass "/privacy returns 200" || fail "/privacy returns 200"
+imprint_headers="$(headers_of "$base/imprint/")"
+has "location:" "$imprint_headers" && fail "/imprint/ redirects" || pass "/imprint/ does not redirect"
+[ "$(status_of "$base/imprint")" = 200 ] && pass "/imprint returns 200" || fail "/imprint returns 200"
 
 gzip_headers="$(headers_of -H 'Accept-Encoding: gzip' "$base/")"
 has "content-encoding: gzip" "$gzip_headers" && pass "/ is gzip-compressed" || fail "/ is gzip-compressed"
@@ -82,7 +82,7 @@ has "no-cache" "$(headers_of "$base/" | grep -i '^cache-control:' || true)" && p
 has "max-age=86400" "$(headers_of "$base/favicon.svg" | grep -i '^cache-control:' || true)" && pass "favicon is cached for one day" || fail "favicon is cached for one day"
 
 security_headers=(
-  "content-security-policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'"
+  "content-security-policy: default-src 'self'; script-src 'self' https://scripts.withcabin.com; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://ping.withcabin.com; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'"
   "x-content-type-options: nosniff"
   "x-frame-options: DENY"
   "referrer-policy: strict-origin-when-cross-origin"

@@ -1,0 +1,19 @@
+---
+import Imprint from '../../components/pages/Imprint.astro';
+import { site, type Lang } from '../../config/site';
+
+// One page per language other than the default one, which lives at the top level.
+export function getStaticPaths() {
+  return (Object.keys(site.locales) as Lang[])
+    .filter((lang) => lang !== site.defaultLang)
+    .map((lang) => ({ params: { lang: site.locales[lang].path.replaceAll('/', '') }, props: { lang } }));
+}
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+---
+
+<Imprint lang={lang} />

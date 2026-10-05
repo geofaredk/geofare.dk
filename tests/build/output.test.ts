@@ -9,7 +9,7 @@ const pages = files.filter((f) => f.endsWith('.html')).map((f) => ({ path: f, ht
 
 describe('CSP-clean output', () => {
   it('builds at least the three pages', () => {
-    expect(pages.map((p) => p.path)).toEqual(expect.arrayContaining(['index.html', '404.html', 'privacy/index.html']));
+    expect(pages.map((p) => p.path)).toEqual(expect.arrayContaining(['index.html', '404.html', 'imprint/index.html']));
   });
 
   for (const { path, html } of pages) {
@@ -25,13 +25,19 @@ describe('CSP-clean output', () => {
           .filter((s) => !s.hasAttribute('src') && s.getAttribute('type') !== 'application/ld+json');
         expect(inline.map((s) => s.outerHTML)).toEqual([]);
       });
-      it('loads nothing from another origin', () => {
+      it('loads the analytics script once, as the last thing in the body', () => {
+        const scripts = root.querySelectorAll(`script[src="${site.analytics.script}"]`);
+        expect(scripts).toHaveLength(1);
+        expect(scripts[0].hasAttribute('async')).toBe(true);
+        expect(root.querySelector('body')!.lastElementChild).toBe(scripts[0]);
+      });
+      it('loads nothing else from another origin', () => {
         const urls = [
           ...root.querySelectorAll('[src]').map((e) => e.getAttribute('src')!),
           ...root.querySelectorAll('[srcset]').flatMap((e) => e.getAttribute('srcset')!.split(',').map((c) => c.trim().split(/\s+/)[0])),
           ...root.querySelectorAll('link[href]').map((e) => e.getAttribute('href')!),
         ];
-        const foreign = urls.filter((u) => /^(https?:)?\/\//i.test(u) && !u.startsWith(site.url));
+        const foreign = urls.filter((u) => /^(https?:)?\/\//i.test(u) && !u.startsWith(site.url) && u !== site.analytics.script);
         expect(foreign).toEqual([]);
       });
     });

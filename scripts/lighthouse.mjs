@@ -26,7 +26,8 @@ for (let i = 1; i <= RUNS; i++) {
   console.log(`Lighthouse run ${i} of ${RUNS} against ${url}`);
   execFileSync(
     'npx',
-    ['-y', LIGHTHOUSE, url, '--output=json', `--output-path=${path}`, '--quiet', '--chrome-flags=--headless=new'],
+    // The analytics reports are blocked, so a measurement is not counted as a visit; the script itself still loads and is measured.
+    ['-y', LIGHTHOUSE, url, '--output=json', `--output-path=${path}`, '--quiet', '--chrome-flags=--headless=new', '--blocked-url-patterns=https://ping.withcabin.com/*'],
     { stdio: 'inherit' },
   );
   const report = JSON.parse(readFileSync(path, 'utf8'));

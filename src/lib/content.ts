@@ -1,6 +1,6 @@
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
 import type { Lang } from '../config/site';
-import { checkList, checkSection } from './content-rules';
+import { checkLab, checkList, checkSection } from './content-rules';
 
 export type SectionId =
   | 'hero'
@@ -11,8 +11,9 @@ export type SectionId =
   | 'about-team'
   | 'approach'
   | 'sectors'
+  | 'lab'
   | 'contact'
-  | 'privacy'
+  | 'imprint'
   | 'not-found';
 
 type ListCollection = 'services' | 'sectors' | 'principles';
@@ -34,6 +35,13 @@ async function getList<C extends ListCollection>(collection: C, lang: Lang): Pro
   const entries = await getCollection(collection, (entry) => entry.id.startsWith(`${lang}/`));
   checkList(collection, lang, entries);
   return entries.sort((a, b) => a.data.order - b.data.order);
+}
+
+/** The lab projects of a language, in grid order. The slug of each is its file name. */
+export async function getLab(lang: Lang): Promise<(CollectionEntry<'lab'> & { slug: string })[]> {
+  const entries = await getCollection('lab', (entry) => entry.id.startsWith(`${lang}/`));
+  checkLab(lang, entries);
+  return entries.sort((a, b) => a.data.order - b.data.order).map((entry) => ({ ...entry, slug: entry.id.slice(lang.length + 1) }));
 }
 
 export const getServices = (lang: Lang) => getList('services', lang);

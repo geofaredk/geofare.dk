@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import copy from '../fixtures/copy.en.json';
-import { copyPattern, footerAddressPattern } from '../../tests/build/copy-match';
+import { copyPattern, footerLinePattern } from '../../tests/build/copy-match';
 
 const founder = copy.about.founder.body;
-const address = footerAddressPattern(copy.footer.fragments);
+const line = footerLinePattern(copy.footer.fragments, 2026);
 
 describe('copyPattern', () => {
   it('accepts the founder text with the placeholder or a surname', () => {
@@ -25,27 +25,17 @@ describe('copyPattern', () => {
   });
 });
 
-describe('footerAddressPattern', () => {
-  it('accepts the placeholders', () => {
-    expect('geofare, [street address], [postcode and town], Denmark. CVR [number].').toMatch(address);
+describe('footerLinePattern', () => {
+  it('accepts the placeholder and a real number', () => {
+    expect('Imprint. © 2026 geofare. CVR [number].').toMatch(line);
+    expect('Imprint. © 2026 geofare. CVR 12345678.').toMatch(line);
+    expect('Imprint. © 2026 geofare. CVR 12 34 56 78.').toMatch(line);
   });
 
-  it('accepts real values', () => {
-    expect('geofare, Vestergade 12, 8000 Aarhus C, Denmark. CVR 12345678.').toMatch(address);
-    expect('geofare, St.Kongensgade 4, 1264 København K, Denmark. CVR 12 34 56 78.').toMatch(address);
-    expect('geofare, Vestergade 12, [postcode and town], Denmark. CVR [number].').toMatch(address);
-  });
-
-  it('rejects blanked street, town or CVR', () => {
-    expect('geofare, , , Denmark. CVR .').not.toMatch(address);
-    expect('geofare, , 8000 Aarhus C, Denmark. CVR 12345678.').not.toMatch(address);
-    expect('geofare, Vestergade 12, , Denmark. CVR 12345678.').not.toMatch(address);
-    expect('geofare, Vestergade 12, 8000 Aarhus C, Denmark. CVR .').not.toMatch(address);
-    expect('geofare, Vestergade 12, 8000 Aarhus C, Denmark. CVR  .').not.toMatch(address);
-  });
-
-  it('rejects a value that swallows the next part of the sentence', () => {
-    expect('geofare, Vestergade 12, Denmark. CVR 12345678.').not.toMatch(address);
-    expect('geofare, Vestergade 12, 8000 Aarhus C, Denmark. CVR 1. More text.').not.toMatch(address);
+  it('rejects a blanked CVR, another year, or anything before or after the line', () => {
+    expect('Imprint. © 2026 geofare. CVR .').not.toMatch(line);
+    expect('Imprint. © 2025 geofare. CVR 12345678.').not.toMatch(line);
+    expect('geofare, Vestergade 12, Denmark. Imprint. © 2026 geofare. CVR 12345678.').not.toMatch(line);
+    expect('Imprint. © 2026 geofare. CVR 12345678. Denmark.').not.toMatch(line);
   });
 });

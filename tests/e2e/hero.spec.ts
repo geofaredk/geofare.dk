@@ -74,7 +74,6 @@ const strongestLines = (page: Page) =>
       sub: document.querySelector('.hero__sub')!.getBoundingClientRect(),
       primary: document.querySelector('.hero__actions a:nth-of-type(1)')!.getBoundingClientRect(),
       secondary: document.querySelector('.hero__actions a:nth-of-type(2)')!.getBoundingClientRect(),
-      pause: document.querySelector('.hero__pause')!.getBoundingClientRect(),
     };
     [...document.querySelectorAll('.hero__ending')].filter(visible).forEach((ending, i) => (areas[`ending ${i}`] = textRect(ending)));
     const behind: Record<string, number> = {};
@@ -88,7 +87,7 @@ async function expectClear(page: Page) {
   // The field is there …
   expect(anywhere).toBeGreaterThan(0);
   // … but not behind anything that is read or pressed.
-  expect(Object.keys(behind)).toEqual(expect.arrayContaining(['fixed', 'sub', 'primary', 'secondary', 'pause', 'ending 0']));
+  expect(Object.keys(behind)).toEqual(expect.arrayContaining(['fixed', 'sub', 'primary', 'secondary', 'ending 0']));
   expect(Object.entries(behind).filter(([, alpha]) => alpha > 0)).toEqual([]);
 }
 
@@ -196,54 +195,6 @@ test.describe('headline rotation', () => {
   });
 });
 
-test.describe('pause control', () => {
-  test('pauses and resumes the field, and settles the headline on the final ending', async ({ page }) => {
-    await openWithClock(page);
-    await expect(canvas(page)).toHaveAttribute('data-state', 'running');
-    await expect(canvas(page)).toHaveAttribute('aria-hidden', 'true');
-    await page.clock.runFor(INTERVAL);
-    await expectEnding(page, endings[1]);
-
-    await page.getByRole('button', { name: 'Pause animation' }).click();
-    await expect(canvas(page)).toHaveAttribute('data-state', 'paused');
-    await expect(page.getByRole('button', { name: 'Play animation' })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Pause animation' })).toHaveCount(0);
-    await expectHeadlineText(page);
-    await expectEnding(page, FINAL);
-    await expectHeadlineText(page);
-
-    await page.getByRole('button', { name: 'Play animation' }).click();
-    await expect(canvas(page)).toHaveAttribute('data-state', 'running');
-    await expect(page.getByRole('button', { name: 'Pause animation' })).toBeVisible();
-    // Playing again resumes the field only; the headline has finished.
-    await page.clock.runFor(INTERVAL * 2);
-    await expectEnding(page, FINAL);
-  });
-
-  test('stops all drawing while paused', async ({ page }) => {
-    await countDraws(page);
-    await page.goto('/');
-    await page.getByRole('button', { name: 'Pause animation' }).click();
-    await page.waitForTimeout(300);
-    const paused = await draws(page);
-    await page.waitForTimeout(700);
-    expect(await draws(page)).toBe(paused);
-  });
-
-  for (const viewport of [
-    { width: 360, height: 740 },
-    { width: 1280, height: 800 },
-  ]) {
-    test(`is a target of at least 44 px at ${viewport.width}`, async ({ page }) => {
-      await page.setViewportSize(viewport);
-      await page.goto('/');
-      const box = (await page.getByRole('button', { name: 'Pause animation' }).boundingBox())!;
-      expect(box.width).toBeGreaterThanOrEqual(44);
-      expect(box.height).toBeGreaterThanOrEqual(44);
-    });
-  }
-});
-
 test.describe('line field', () => {
   test('draws at no more than 30 frames per second', async ({ page }) => {
     await countDraws(page);
@@ -295,27 +246,12 @@ test.describe('line field', () => {
     });
   }
 
-  test('pausing mid-rotation leaves no line behind the final sentence', async ({ page }) => {
-    // On a phone "when it matters." is wider than "when rivers / overflow.", so the zone has to grow.
-    await page.setViewportSize({ width: 360, height: 740 });
-    await openWithClock(page);
-    await page.clock.runFor(INTERVAL);
-    await expectEnding(page, endings[1]);
-    await page.clock.runFor(2000);
-    await expectClear(page);
-
-    await page.getByRole('button', { name: 'Pause animation' }).click();
-    await expect(canvas(page)).toHaveAttribute('data-state', 'paused');
-    await expectClear(page);
-    await expectEnding(page, FINAL);
-    await expectClear(page);
-  });
 });
 
 test.describe('reduced motion', () => {
   test.use({ reducedMotion: 'reduce' });
 
-  test('shows the final sentence and one static frame, with nothing to pause', async ({ page }) => {
+  test('shows the final sentence and one static frame', async ({ page }) => {
     await countDraws(page);
     await page.goto('/');
     await expect(page.locator('.hero__final')).toBeVisible();
@@ -324,7 +260,6 @@ test.describe('reduced motion', () => {
     await expect(finalHeading(page)).toBeVisible();
     await expectHeadlineText(page);
     await expect(canvas(page)).toHaveAttribute('data-state', 'static');
-    await expect(page.locator('.hero__pause')).toBeHidden();
 
     // A late web font may move a quiet zone and cause one honest redraw, so settle first.
     await page.evaluate(() => document.fonts.ready);

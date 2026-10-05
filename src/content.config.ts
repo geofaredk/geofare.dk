@@ -48,15 +48,36 @@ const ui = defineCollection({
       about: z.string(),
       approach: z.string(),
       sectors: z.string(),
+      lab: z.string(),
       contact: z.string(),
       menuOpen: z.string(),
       menuClose: z.string(),
     }),
     skip: z.string(),
     home: z.string(),
-    hero: z.object({ pause: z.string(), play: z.string() }),
-    footer: z.object({ country: z.string(), cvr: z.string(), privacy: z.string() }),
+    lang: z.object({ label: z.string() }),
+    lab: z.object({ newTab: z.string() }),
+    about: z.object({ portrait: z.string(), portraitAlt: z.string() }),
+    footer: z.object({ cvr: z.string(), imprint: z.string() }),
   }),
 });
 
-export const collections = { services, sectors, principles, sections, ui };
+// The lab: geofare's own projects, one file each. The file name is the slug; the text below the
+// front matter stays empty for now and is reserved for a detail page at /lab/[slug].
+const lab = defineCollection({
+  loader: byLanguage('lab'),
+  schema: ({ image }) =>
+    z.strictObject({
+      title: z.string().min(1),
+      description: z.string().min(1).max(220, '220 characters at most'),
+      url: z.string().regex(/^https:\/\/\S+$/, 'a full https address'),
+      order: z.number().int().positive(),
+      // A local image file, optimised at build time; never a remote address.
+      thumbnail: image().optional(),
+      thumbnailAlt: z.string().optional(),
+      tags: z.array(z.string().min(1)).max(3, 'three at most').optional(),
+      status: z.string().min(1).optional(),
+    }),
+});
+
+export const collections = { services, sectors, principles, sections, ui, lab };

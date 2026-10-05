@@ -25,15 +25,25 @@ const MAX_PIXEL_RATIO = 2;
 const LINE_WIDTH = 1.25;
 const LEVEL_SECONDS = 2.5;
 /** CSS px over which the lines fade out around a quiet zone … */
-const FEATHER = 80;
+const FEATHER = 10;
 /** … but no more than this share of the canvas width, or a phone would have no field left between its zones. */
 const FEATHER_SHARE = 0.08;
 /** CSS px per pixel of the erase mask; it is soft, so it can be coarse. */
-const MASK_CELL = 8;
+const MASK_CELL = 1;
+
+const PAD_X = 16;
+const PAD_Y = 10;
 
 const smooth = (t: number) => t * t * (3 - 2 * t);
 
-export function mountHeroField(canvas: HTMLCanvasElement, opts: { quietZones?: () => DOMRect[] } = {}): HeroField {
+export function mountHeroField(
+  canvas: HTMLCanvasElement,
+  opts: {
+    quietZones?: () => DOMRect[];
+    /** The element whose being on screen keeps the field running; the canvas itself by default. */
+    watch?: Element;
+  } = {},
+): HeroField {
   const ctx = canvas.getContext('2d')!;
   const mask = document.createElement('canvas');
   const maskCtx = mask.getContext('2d')!;
@@ -49,7 +59,8 @@ export function mountHeroField(canvas: HTMLCanvasElement, opts: { quietZones?: (
   /** False once destroyed. */
   let mounted = true;
   let playing = !still;
-  let onScreen = true;
+  /** A watched field waits for the first word on whether its window is on screen. */
+  let onScreen = !opts.watch;
   let frame = 0;
   /** Seconds of animation shown so far; it only advances while frames are drawn. */
   let clock = 0;
@@ -81,48 +92,67 @@ export function mountHeroField(canvas: HTMLCanvasElement, opts: { quietZones?: (
     return true;
   }
 
-  /** The quiet zones as [left, top, right, bottom] in CSS px from the canvas corner. */
+  /**
+   * The quiet zones as [left, top, right, bottom] in CSS px from the canvas corner, in the
+   * canvas's own coordinates: a canvas mirrored in CSS (transform: scale(-1, 1) or scale(1, -1))
+   * draws mirrored too, so its zones are mirrored to land behind the text on screen.
+   */
   function zoneRects(): number[][] {
     const box = canvas.getBoundingClientRect();
+    const transform = getComputedStyle(canvas).transform;
+    const matrix = transform === 'none' ? undefined : new DOMMatrixReadOnly(transform);
+    const mirroredX = (matrix?.a ?? 1) < 0;
+    const mirroredY = (matrix?.d ?? 1) < 0;
     return (opts.quietZones?.() ?? []).map((zone) =>
-      [zone.left - box.left, zone.top - box.top, zone.right - box.left, zone.bottom - box.top].map(Math.round),
+      [
+        mirroredX ? box.right - zone.right : zone.left - box.left,
+        mirroredY ? box.bottom - zone.bottom : zone.top - box.top,
+        mirroredX ? box.right - zone.left : zone.right - box.left,
+        mirroredY ? box.bottom - zone.top : zone.bottom - box.top,
+      ].map(Math.round),
     );
   }
 
   /** Erases the lines behind and around each quiet zone, fading out over FEATHER px. */
+  // function eraseQuietZones() {
+  //   const rects = zoneRects();
+  //   const key = rects.join(';');
+  //   const moved = key !== masked;
+  //   masked = key;
+  //   if (!rects.length) return;
+  //
+  //   // The mask is rebuilt only when a zone moves relative to the canvas: not on scroll, not per frame.
+  //   if (moved) {
+  //     mask.width = Math.ceil(width / MASK_CELL);
+  //     mask.height = Math.ceil(height / MASK_CELL);
+  //     const image = maskCtx.createImageData(mask.width, mask.height);
+  //     const feather = Math.min(FEATHER, width * FEATHER_SHARE);
+  //     for (let row = 0, i = 3; row < mask.height; row++) {
+  //       const y = (row + 0.5) * MASK_CELL;
+  //       for (let column = 0; column < mask.width; column++, i += 4) {
+  //         const x = (column + 0.5) * MASK_CELL;
+  //         let nearest = feather + MASK_CELL;
+  //         for (const [left, top, right, bottom] of rects) {
+  //           nearest = Math.min(nearest, Math.hypot(Math.max(left - x, 0, x - right), Math.max(top - y, 0, y - bottom)));
+  //         }
+  //         // Opaque to one cell beyond the zone, so scaling the mask up leaves nothing inside it.
+  //         image.data[i] = 255 * smooth(1 - Math.max(0, nearest - MASK_CELL) / feather);
+  //       }
+  //     }
+  //     maskCtx.putImageData(image, 0, 0);
+  //   }
+//
+//   ctx.globalAlpha = 1;
+//   ctx.globalCompositeOperation = 'destination-out';
+//   ctx.drawImage(mask, 0, 0, mask.width * MASK_CELL, mask.height * MASK_CELL);
+//   ctx.globalCompositeOperation = 'source-over';
+// }
+
   function eraseQuietZones() {
-    const rects = zoneRects();
-    const key = rects.join(';');
-    const moved = key !== masked;
-    masked = key;
-    if (!rects.length) return;
-
-    // The mask is rebuilt only when a zone moves relative to the canvas: not on scroll, not per frame.
-    if (moved) {
-      mask.width = Math.ceil(width / MASK_CELL);
-      mask.height = Math.ceil(height / MASK_CELL);
-      const image = maskCtx.createImageData(mask.width, mask.height);
-      const feather = Math.min(FEATHER, width * FEATHER_SHARE);
-      for (let row = 0, i = 3; row < mask.height; row++) {
-        const y = (row + 0.5) * MASK_CELL;
-        for (let column = 0; column < mask.width; column++, i += 4) {
-          const x = (column + 0.5) * MASK_CELL;
-          let nearest = feather + MASK_CELL;
-          for (const [left, top, right, bottom] of rects) {
-            nearest = Math.min(nearest, Math.hypot(Math.max(left - x, 0, x - right), Math.max(top - y, 0, y - bottom)));
-          }
-          // Opaque to one cell beyond the zone, so scaling the mask up leaves nothing inside it.
-          image.data[i] = 255 * smooth(1 - Math.max(0, nearest - MASK_CELL) / feather);
-        }
+    for (const [left, top, right, bottom] of zoneRects()) {
+      ctx.clearRect(left - PAD_X, top - PAD_Y, right - left + 2 * PAD_X, bottom - top + 2 * PAD_Y);
       }
-      maskCtx.putImageData(image, 0, 0);
     }
-
-    ctx.globalAlpha = 1;
-    ctx.globalCompositeOperation = 'destination-out';
-    ctx.drawImage(mask, 0, 0, mask.width * MASK_CELL, mask.height * MASK_CELL);
-    ctx.globalCompositeOperation = 'source-over';
-  }
 
   function draw() {
     if (!width || !height) return;
@@ -169,23 +199,34 @@ export function mountHeroField(canvas: HTMLCanvasElement, opts: { quietZones?: (
    * text reflowing under the lines, so redraw when the canvas or a quiet zone has changed.
    */
   function refresh() {
-    if (mounted && !frame && (measure() || zoneRects().join(';') !== masked)) draw();
+    if (mounted && onScreen && !frame && (measure() || zoneRects().join(';') !== masked)) draw();
   }
 
   const resizeObserver = new ResizeObserver(() => {
     // Resizing clears a canvas, so redraw at once instead of waiting for the next frame.
-    if (measure()) draw();
+    if (onScreen && measure()) draw();
   });
   const intersectionObserver = new IntersectionObserver((entries) => {
     onScreen = entries[entries.length - 1].isIntersecting;
+    if (opts.watch) {
+      if (onScreen) {
+        if (measure()) draw();
+      } else {
+        // A canvas as large as the viewport: give its memory back while its window is out of sight.
+        canvas.width = canvas.height = 0;
+        width = height = 0;
+      }
+    }
     sync();
   });
 
-  measure();
-  draw();
+  if (onScreen) {
+    measure();
+    draw();
+  }
   sync();
   resizeObserver.observe(canvas);
-  intersectionObserver.observe(canvas);
+  intersectionObserver.observe(opts.watch ?? canvas);
   document.addEventListener('visibilitychange', sync);
   // What reflows text without resizing the canvas: a web font arriving, the window changing.
   document.fonts.ready.then(refresh);

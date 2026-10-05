@@ -26,10 +26,9 @@ export function copyPattern(s: string, whole = false): RegExp {
 }
 
 /**
- * The footer's address line, built from the brief's fragments in the order the brief gives them:
- * "geofare, [street address], [postcode and town], Denmark. CVR [number]."
+ * The footer's one line, built from the fixture's fragments in their order, each a sentence:
+ * "Imprint. © 2026 geofare. CVR [number]." The year is the year of the build.
  */
-export function footerAddressPattern(fragments: string[]): RegExp {
-  const [name, street, town, country, cvr] = fragments;
-  return copyPattern(`${name}, ${street}, ${town}, ${country}. ${cvr}.`, true);
+export function footerLinePattern(fragments: string[], year = new Date().getFullYear()): RegExp {
+  return copyPattern(fragments.map((fragment) => `${fragment.replace('{year}', String(year))}.`).join(' '), true);
 }

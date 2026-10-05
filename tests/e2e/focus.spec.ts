@@ -25,7 +25,9 @@ const stop = (page: Page) =>
   page.evaluate((): Stop | null => {
     const element = document.activeElement;
     if (!element || element === document.body) return null;
-    const style = getComputedStyle(element);
+    // A lab card's link draws its ring round the whole card, on the box stretched over it.
+    const own = getComputedStyle(element);
+    const style = own.outlineStyle === 'none' ? getComputedStyle(element, '::after') : own;
     const { rgba, over, ratio, backgroundOf } = (window as unknown as { contrast: ContrastTools }).contrast;
     // The ring is drawn outside the element (outline-offset 3px), on its parent's background.
     const behind = backgroundOf(element.parentElement ?? document.body);
@@ -91,11 +93,11 @@ test('at 1280 every stop of the Tab order shows a ring, in view and clear of the
   const stops = await walk(page, tabKey(browserName));
   console.log(`[focus] ${browserName} 1280: ${stops.length} stops: ${stops.map((s) => s.name).join(' → ')}`);
   const names = stops.map((s) => s.name);
-  // Skip link, home, four links, call to action, two hero buttons, pause, seven sector rows, privacy.
-  for (const expected of ['Skip to content', 'Services', 'Who we work with', 'See what we do', 'Pause animation', 'Municipalities', 'Energy & utilities', 'Privacy']) {
+  // Skip link, home, four links, call to action, two hero buttons, seven sector rows, imprint.
+  for (const expected of ['Skip to content', 'Services', 'Who we work with', 'See what we do', 'Municipalities', 'Energy & utilities', 'Imprint']) {
     expect(names.some((name) => name.includes(expected)), `reaches ${expected}`).toBe(true);
   }
-  expect(stops.length).toBeGreaterThanOrEqual(18);
+  expect(stops.length).toBeGreaterThanOrEqual(17);
   expectRings(stops, browserName);
   console.log(`[focus] ${browserName} 1280: lowest ring contrast ${Math.min(...stops.map((s) => s.ringContrast)).toFixed(2)}:1`);
   // The blue section holds nothing focusable today; its cream ring (on-accent) is ready for when it does.
@@ -110,7 +112,7 @@ test('at 360 with the menu open every stop shows a ring, and the walk continues 
   const stops = await walk(page, tabKey(browserName));
   console.log(`[focus] ${browserName} 360: ${stops.length} stops: ${stops.map((s) => s.name).join(' → ')}`);
   const names = stops.map((s) => s.name);
-  for (const expected of ['Services', 'About', 'How we work', 'Who we work with', 'Get in touch', 'Pause animation', 'Energy & utilities', 'Privacy']) {
+  for (const expected of ['Services', 'About', 'How we work', 'Who we work with', 'Get in touch', 'Energy & utilities', 'Imprint']) {
     expect(names.some((name) => name.includes(expected)), `reaches ${expected}`).toBe(true);
   }
   expectRings(stops, browserName);

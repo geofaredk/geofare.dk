@@ -32,7 +32,6 @@ const FIRST_SCREEN = [
   '.hero__sub',
   '.hero__actions a:nth-of-type(1)',
   '.hero__actions a:nth-of-type(2)',
-  '.hero__pause',
   '#services h2',
   '#services .service:first-child h3',
   '#services .service:first-child .service__body',

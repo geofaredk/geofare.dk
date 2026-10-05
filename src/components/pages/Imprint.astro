@@ -1,11 +1,15 @@
 ---
 import { render } from 'astro:content';
-import { site } from '../config/site';
-import Base from '../layouts/Base.astro';
-import { getSection } from '../lib/content';
+import { site, type Lang } from '../../config/site';
+import Base from '../../layouts/Base.astro';
+import { getSection } from '../../lib/content';
 
-const lang = 'en';
-const page = await getSection(lang, 'privacy');
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const page = await getSection(lang, 'imprint');
 const { Content } = await render(page);
 ---
 

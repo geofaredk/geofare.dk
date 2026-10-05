@@ -4,11 +4,11 @@
 //   node scripts/screenshots.mjs focus <base URL> <output dir>
 //
 // page:  full-page shots, default widths 360 and 1280 (the two the brief asks for); pass e.g.
-//        360,768,1280,1920 for more. The hero animation runs while the page loads and is then
-//        paused, so the headline is settled; the first sector row is open, as on load.
+//        360,768,1280,1920 for more. The page is shot with reduced motion, so the headline shows its
+//        final sentence over one still frame of the field; the first sector row is open, as on load.
 //        Files: home-<width>.png in Chrome, home-<width>-<engine>.png otherwise.
 // focus: close-ups of the keyboard focus ring, in Chrome at 1280 (and the menu at 360):
-//        focus-nav-link, -button, -pause, -sector-summary, -menu-link-360, and
+//        focus-nav-link, -button, -sector-summary, -menu-link-360, and
 //        focus-contact-block-sample: the contact rows are plain text while they hold
 //        placeholders, so for that one shot the email placeholder is swapped, in the browser
 //        only, for a sample address to show the focus state a real address will get.
@@ -25,10 +25,10 @@ if (mode === 'page') {
   const browser = await engines[engine]();
   for (const width of widths.split(',').map(Number)) {
     const page = await browser.newPage({ viewport: { width, height: width < 768 ? 740 : 900 } });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto(base, { waitUntil: 'networkidle' });
     await page.evaluate(() => document.fonts.ready);
-    await page.getByRole('button', { name: 'Pause animation' }).click();
-    await page.waitForTimeout(600);
+    await page.waitForTimeout(300);
     const file = `${out}/home-${width}${engine === 'chrome' ? '' : `-${engine}`}.png`;
     await page.screenshot({ path: file, fullPage: true });
     console.log(file);
@@ -43,7 +43,7 @@ if (mode === 'page') {
   /** Opens the page, optionally prepares it, presses Tab `tabs` times and shoots the focused element with a margin. */
   async function shot(name, { width = 1280, motion = 'reduce', prepare, tabs }) {
     const page = await browser.newPage({ viewport: { width, height: width < 768 ? 740 : 800 } });
-    // Reduced motion: instant scrolling and a still headline. The pause button only exists with motion.
+    // Reduced motion: instant scrolling and a still headline.
     await page.emulateMedia({ reducedMotion: motion });
     await page.goto(base);
     await page.evaluate(() => document.fonts.ready);
@@ -64,7 +64,6 @@ if (mode === 'page') {
 
   await shot('nav-link', { tabs: 3 });
   await shot('button', { tabs: 8 });
-  await shot('pause', { motion: 'no-preference', tabs: 10 });
   await shot('sector-summary', { tabs: 12 });
   await shot('contact-block-sample', {
     tabs: 1,

@@ -1,0 +1,223 @@
+---
+import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import type { Lang } from '../../config/site';
+import { getLab, getSection, getUi } from '../../lib/content';
+import LineField from '../LineField.astro';
+import Tag from '../Tag.astro';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const ui = await getUi(lang);
+const section = await getSection(lang, 'lab');
+const { Content: Intro } = await render(section);
+const projects = await getLab(lang);
+---
+
+<section id="lab" class="section" aria-labelledby="lab-title">
+  <div class="container">
+    <h2 id="lab-title" class="claim">{section.data.title}</h2>
+    <div class="lead lab__intro">
+      <Intro />
+    </div>
+    <ul class="lab" role="list">
+      {
+        projects.map(({ data }) => (
+          <li class="project">
+            {/* The picture area, with the status label on its lower left corner. */}
+            <div class="project__top">
+              <div class="project__thumb">
+              {data.thumbnail ? (
+                /* Shown at about 23 to 45rem wide at most; 800 px covers a double-density screen. */
+                <Image
+                  src={data.thumbnail}
+                  alt={data.thumbnailAlt ?? ''}
+                  width={800}
+                  widths={[400, 800]}
+                  sizes="(min-width: 64rem) 30vw, (min-width: 40rem) 45vw, 100vw"
+                />
+              ) : (
+                /* No image yet: a crop of the line field at the hero's scale, a different one for each place in the grid.
+                   A card is at most 37.5rem wide (one column, just below the two-column width). */
+                <LineField width={640} height={400} time={(data.order * 17) % 60} seed={data.order + 1} spacing={28} actualSize />
+              )}
+            </div>
+            {data.status && <p class="project__status">{data.status}</p>}
+            </div>
+            <h3 class="project__title">
+              {/* The one link of the card: it is stretched over the whole card below. */}
+              <a href={data.url} target="_blank" rel="noopener noreferrer">
+                {data.title}
+                <svg class="project__arrow" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+                  <path d="M3 9 9 3M4 3h5v5" />
+                </svg>
+                <span class="sr-only"> {ui.lab.newTab}</span>
+              </a>
+            </h3>
+            <p class="project__text">{data.description}</p>
+            {data.tags && data.tags.length > 0 && (
+              <ul class="project__tags" role="list">
+                {data.tags.map((tag) => (
+                  <li>
+                    <Tag>{tag}</Tag>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .lab__intro {
+    max-width: var(--measure);
+    margin-block-start: 1.75rem;
+  }
+
+  /* One, two or three columns; a short last row simply ends early, on the left. */
+  .lab {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(2.5rem, 4.5vw, 3.5rem) var(--grid-gap);
+    margin-block-start: calc(var(--section-space) / 2);
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (width >= 40rem) {
+    .lab {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (width >= 64rem) {
+    .lab {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  /* The card is the box its one link is stretched over. */
+  .project {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .project__top {
+    position: relative;
+    align-self: stretch;
+  }
+
+  /* 16:10 for every card, with or without an image, so the cards line up. */
+  .project__thumb {
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-radius: var(--radius);
+  }
+
+  .project__thumb > :global(*) {
+    width: 100%;
+    height: 100%;
+  }
+
+  .project__thumb > :global(img) {
+    object-fit: cover;
+  }
+
+  /* With no image the card shows the line field; it grows stronger when the card is pointed at or focused. */
+  .project__thumb > :global(.line-field) {
+    transition: opacity 120ms;
+  }
+
+  .project:hover .project__thumb > :global(.line-field),
+  .project:focus-within .project__thumb > :global(.line-field) {
+    opacity: 0.45;
+  }
+
+  /* An outlined pill in the accent colour, on the page's own ground: it says where the project
+     stands, unlike the tags below. It sits on the picture area's lower left corner, like a label
+     on a map sheet, so it reads on any picture and every title starts on the same line. */
+  .project__status {
+    position: absolute;
+    inset-block-end: 0.75rem;
+    inset-inline-start: 0.75rem;
+    padding: 0.25rem 0.75rem;
+    background-color: var(--bg);
+    border: 1px solid var(--accent);
+    border-radius: 1.1em;
+    color: var(--accent);
+    font-size: var(--step-small);
+    font-weight: var(--weight-medium);
+    line-height: 1.4;
+  }
+
+  .project__title {
+    margin-block-start: 1.5rem;
+    color: var(--ink);
+    font-size: var(--step-title);
+    line-height: 1.2;
+  }
+
+  .project__title a {
+    color: inherit;
+    text-decoration: none;
+    transition: color 120ms;
+  }
+
+  /* The whole card is the link's target. */
+  .project__title a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .project:hover .project__title a,
+  .project__title a:focus-visible {
+    color: var(--accent);
+  }
+
+  /* The focus ring goes round the card, not just round the title. */
+  .project__title a:focus-visible {
+    outline: none;
+  }
+
+  .project__title a:focus-visible::after {
+    border-radius: var(--radius);
+    outline: var(--focus-ring);
+    outline-offset: 3px;
+  }
+
+  /* A small arrow up and to the right: the link leaves the site. */
+  .project__arrow {
+    display: inline-block;
+    width: 0.5em;
+    height: 0.5em;
+    margin-inline-start: 0.2em;
+    vertical-align: 0.25em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+  }
+
+  .project__text {
+    max-width: var(--measure);
+    margin-block-start: 0.75rem;
+    text-wrap: pretty;
+  }
+
+  .project__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-block-start: 1.75rem;
+    padding: 0;
+    list-style: none;
+  }
+</style>

@@ -22,10 +22,24 @@ function unlocalizePath<L extends string>(pathname: string, locales: LocaleTable
   return pathname;
 }
 
-/** Absolute URLs of a page in every locale, plus `x-default` (the default language). */
+/** The same page in another language: `/imprint/` → `/da/imprint/` for Danish, and back for English. */
+export function switchPath<L extends string = Lang>(
+  pathname: string,
+  lang: L,
+  locales: LocaleTable<L> = site.locales as LocaleTable<L>,
+): string {
+  return localizePath(unlocalizePath(pathname, locales), lang, locales);
+}
+
+/** The languages search engines are told about: every locale that is not a draft. */
+export function publishedLocales(): LocaleTable<string> {
+  return Object.fromEntries(Object.entries(site.locales).filter(([, locale]) => !locale.draft));
+}
+
+/** Absolute URLs of a page in every published locale, plus `x-default` (the default language). */
 export function alternates<L extends string = Lang>(
   pathname: string,
-  locales: LocaleTable<L> = site.locales as LocaleTable<L>,
+  locales: LocaleTable<L> = publishedLocales() as LocaleTable<L>,
   defaultLang: L = site.defaultLang as L,
 ): { hreflang: string; href: string }[] {
   const path = unlocalizePath(pathname, locales);

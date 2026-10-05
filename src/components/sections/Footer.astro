@@ -10,7 +10,7 @@ interface Props {
 
 const { lang } = Astro.props;
 const ui = await getUi(lang);
-const { street, postalTown, cvr } = site.company;
+const { cvr } = site.company;
 const year = new Date().getFullYear();
 ---
 
@@ -19,8 +19,7 @@ const year = new Date().getFullYear();
     <div class="cols site-footer__inner">
       <Logo alt="" class="site-footer__logo" />
       <div class="site-footer__text">
-        <p>{site.name}, {street}, {postalTown}, {ui.footer.country}. {ui.footer.cvr} {cvr}.</p>
-        <p><a href={localizePath('/privacy', lang)}>{ui.footer.privacy}</a>. © {year} {site.name}.</p>
+        <p><a href={localizePath('/imprint', lang)}>{ui.footer.imprint}</a>. © {year} {site.name}. {ui.footer.cvr} {cvr}.</p>
       </div>
     </div>
   </div>
@@ -63,13 +62,21 @@ const year = new Date().getFullYear();
     color: var(--accent);
   }
 
+  /* Side by side: the logo on the left edge, the line on the right edge, right-aligned.
+     The line stands on the foot of the logo: the logo has no text baseline of its own, so its
+     bottom edge serves as one. */
   @media (width >= 48rem) {
+    .site-footer__inner {
+      align-items: baseline;
+    }
+
     .site-footer__inner :global(.site-footer__logo) {
       grid-column: 1 / span 6;
     }
 
     .site-footer__text {
       grid-column: 7 / -1;
+      text-align: end;
     }
   }
 </style>

@@ -17,11 +17,13 @@ interface Props {
   noindex?: boolean;
 }
 
-const { lang, noindex = false } = Astro.props;
+const { lang } = Astro.props;
 const ui = await getUi(lang);
 const title = Astro.props.title ?? ui.meta.title;
 const description = Astro.props.description ?? ui.meta.description;
 const locale = site.locales[lang];
+// A draft language (placeholder copy) is kept out of search engines, whatever the page.
+const noindex = (Astro.props.noindex ?? false) || locale.draft;
 const absolute = (path: string) => new URL(path, site.url).href;
 const canonical = absolute(Astro.url.pathname);
 const ogImage = { url: absolute('/og-image.png'), width: 1200, height: 630 };
@@ -81,5 +83,7 @@ const jsonLd = JSON.stringify(structuredData).replace(/</g, '\\u003c');
       <slot />
     </main>
     <Footer lang={lang} />
+    {/* Cabin analytics, on every page of the built site. Left out of `npm run dev`, so work on the site is not counted as visits. */}
+    {import.meta.env.PROD && <script is:inline async defer src={site.analytics.script} />}
   </body>
 </html>
