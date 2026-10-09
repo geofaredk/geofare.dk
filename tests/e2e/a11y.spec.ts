@@ -52,7 +52,7 @@ for (const viewport of [
 
     test('the 404 page has no violations', async ({ page }) => {
       await settle(page, '/404');
-      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Page not found');
+      await expect(page.getByRole('heading', { level: 1 })).toHaveText('Off the map.');
       expect(await violations(page)).toEqual([]);
     });
   });

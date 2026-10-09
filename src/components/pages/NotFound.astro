@@ -1,8 +1,11 @@
 ---
+// The 404 page: one blue screen with the line field moving behind the words, no header or
+// footer. The words stand on solid blue, cut out of the field as the hero's headline is.
 import { render } from 'astro:content';
 import { site, type Lang } from '../../config/site';
 import Base from '../../layouts/Base.astro';
 import Button from '../Button.astro';
+import FieldWindow from '../FieldWindow.astro';
 import { getSection } from '../../lib/content';
 import { localizePath } from '../../lib/i18n';
 
@@ -15,22 +18,95 @@ const page = await getSection(lang, 'not-found');
 const { Content } = await render(page);
 ---
 
-<Base lang={lang} title={`${page.data.title} | ${site.name}`} noindex>
-  <section class="section">
+<Base lang={lang} title={`${page.data.title} | ${site.name}`} noindex bare>
+  <section class="not-found">
+    {/* The still for no JavaScript is drawn at the hero's scale, larger than any screen. */}
+    <FieldWindow width={2560} height={1600} time={8} class="not-found__field" />
     <div class="container">
-      <h1 class="claim">{page.data.title}</h1>
-      <div class="prose">
-        <Content />
+      <div class="not-found__panel">
+        <h1 class="not-found__title">{page.data.title}</h1>
+        <div class="not-found__text">
+          <Content />
+        </div>
+        <p class="not-found__back">
+          <Button href={localizePath('/', lang)} variant="secondary">{page.data.back}</Button>
+        </p>
       </div>
-      <p class="not-found__back">
-        <Button href={localizePath('/', lang)}>{page.data.back}</Button>
-      </p>
     </div>
   </section>
 </Base>
 
 <style>
+  /* The whole window, blue, with the words a little above its middle. */
+  .not-found {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    align-items: center;
+    min-height: 100svh;
+    padding-block: var(--section-space) calc(var(--section-space) * 1.4);
+    background-color: var(--accent);
+    color: var(--on-accent);
+  }
+
+  /* A grid item with auto margins would shrink to its words; the page keeps the site's left edge. */
+  .not-found .container {
+    width: 100%;
+  }
+
+  .not-found :global(:focus-visible) {
+    outline-color: var(--on-accent);
+  }
+
+  /* The field fills the section, behind everything, in cream like the one under the values. */
+  .not-found :global(.not-found__field) {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    --field-line: var(--on-accent);
+    --field-opacity: 0.3;
+  }
+
+  /* Solid blue behind the words, overhanging the text by the hero's cut-out margins. */
+  .not-found__panel {
+    width: fit-content;
+    max-width: 100%;
+    padding: 0.75rem 1rem;
+    margin: -0.75rem -1rem;
+    background-color: var(--accent);
+  }
+
+  .not-found__title {
+    max-width: 12ch;
+    font-size: var(--step-hero);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-hero);
+    letter-spacing: var(--tracking-hero);
+    text-wrap: balance;
+    color: var(--on-accent);
+  }
+
+  .not-found__text {
+    max-width: 34ch;
+    margin-block-start: 1.5rem;
+    font-size: var(--step-lead);
+    line-height: 1.45;
+    text-wrap: pretty;
+  }
+
   .not-found__back {
-    margin-block-start: 2rem;
+    margin-block-start: 2.5rem;
+  }
+
+  /* The secondary button on blue: cream outline and text, filling with cream when hovered. */
+  .not-found__back :global(.button) {
+    border-color: var(--on-accent);
+    color: var(--on-accent);
+  }
+
+  .not-found__back :global(.button:hover),
+  .not-found__back :global(.button:active) {
+    background-color: var(--on-accent);
+    color: var(--accent);
   }
 </style>

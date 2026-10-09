@@ -92,9 +92,7 @@ describe('crawl files', () => {
       ['index.html', 'EN', { DA: '/da/' }],
       ['da/index.html', 'DA', { EN: '/' }],
       ['da/imprint/index.html', 'DA', { EN: '/imprint/' }],
-      // From a 404 page the other languages lead to their home pages.
-      ['404.html', 'EN', { DA: '/da/' }],
-      ['da/404/index.html', 'DA', { EN: '/' }],
+      // The 404 pages have no header, so no switcher.
     ];
     for (const [path, current, others] of cases) {
       const items = parse(read(path)).querySelectorAll('header nav .site-header__lang');

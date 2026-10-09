@@ -13,9 +13,8 @@ interface Props {
 const { lang } = Astro.props;
 const ui = await getUi(lang);
 
-// The language switcher leads to the same page in the other language; from a page that exists
-// per language (the 404 page) it leads to that language's home page.
-const here = /(^|\/)404\/?$/.test(Astro.url.pathname) ? localizePath('/', lang) : Astro.url.pathname;
+// The language switcher leads to the same page in the other language.
+const here = Astro.url.pathname;
 const languages = (Object.keys(site.locales) as Lang[]).map((code) => ({
   code,
   locale: site.locales[code],

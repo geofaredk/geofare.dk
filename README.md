@@ -168,7 +168,7 @@ To publish a language:
 
 To add a further language: add it to the `Lang` type and to `locales` in `src/config/site.ts`, copy each `en` content folder and `src/content/ui/en.yaml` under the new language code, and translate. The pages come from `src/pages/[lang]/`, which builds the home page and the imprint for every language in the list, so no page file is needed. If a section or interface file is missing, the build stops and names it. A missing service, sector, principle or project file does not stop the build, so check the page.
 
-There is a 404 page per language (`src/content/sections/<lang>/not-found.md`): nginx serves the Danish one for missing pages under `/da/` and the English one elsewhere (`docker/nginx.conf`, one `location` block per language other than English). From a 404 page the switcher leads to the other language's home page. The copy tests check the English text only.
+There is a 404 page per language (`src/content/sections/<lang>/not-found.md`): nginx serves the Danish one for missing pages under `/da/` and the English one elsewhere (`docker/nginx.conf`, one `location` block per language other than English). The 404 page has no header or footer, only its words and a button to that language's home page; the copy tests check the English text only.
 
 ## Open points
 

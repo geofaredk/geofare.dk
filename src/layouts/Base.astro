@@ -15,9 +15,11 @@ interface Props {
   title?: string;
   description?: string;
   noindex?: boolean;
+  /** No header, footer or skip link: a page that is only its own content, such as the 404 page. */
+  bare?: boolean;
 }
 
-const { lang } = Astro.props;
+const { lang, bare = false } = Astro.props;
 const ui = await getUi(lang);
 const title = Astro.props.title ?? ui.meta.title;
 const description = Astro.props.description ?? ui.meta.description;
@@ -77,12 +79,12 @@ const jsonLd = JSON.stringify(structuredData).replace(/</g, '\\u003c');
     <script type="application/ld+json" set:html={jsonLd} />
   </head>
   <body>
-    <a href="#main" class="skip-link">{ui.skip}</a>
-    <Header lang={lang} />
+    {!bare && <a href="#main" class="skip-link">{ui.skip}</a>}
+    {!bare && <Header lang={lang} />}
     <main id="main" tabindex="-1">
       <slot />
     </main>
-    <Footer lang={lang} />
+    {!bare && <Footer lang={lang} />}
     {/* Cabin analytics, on every page of the built site. Left out of `npm run dev`, so work on the site is not counted as visits. */}
     {import.meta.env.PROD && <script is:inline async defer src={site.analytics.script} />}
   </body>
