@@ -150,20 +150,35 @@ test.describe('at 360', () => {
       expect(box.width).toBeGreaterThanOrEqual(44);
       expect(box.height).toBeGreaterThanOrEqual(44);
     }
-    // The logo link is exactly as tall as the logo, so that its foot is the line the menu stands on;
-    // it stays above the 24 px that WCAG 2.2 asks of a target.
-    const home = (await page.getByRole('link', { name: 'geofare home' }).first().boundingBox())!;
+    // The logo link's box ends on the wordmark's baseline, the line the menu stands on; its target
+    // is a pseudo-element covering the whole logo and more, and must be as tall as the others.
+    const home = await page.evaluate(() => {
+      const link = document.querySelector('.site-header__home')!;
+      const box = link.getBoundingClientRect();
+      const after = getComputedStyle(link, '::after');
+      const top = box.top + parseFloat(after.top);
+      const bottom = box.bottom - parseFloat(after.bottom);
+      const logo = link.querySelector('img')!.getBoundingClientRect();
+      const x = box.left + box.width / 2;
+      const hits = [top + 1, bottom - 1].every((y) => link.contains(document.elementFromPoint(x, y)));
+      return { width: box.width, height: bottom - top, coversLogo: top <= logo.top && bottom >= logo.bottom, hits };
+    });
     expect(home.width).toBeGreaterThanOrEqual(44);
-    expect(home.height).toBeGreaterThanOrEqual(24);
+    expect(home.height).toBeGreaterThanOrEqual(44);
+    expect(home.coversLogo).toBe(true);
+    expect(home.hits).toBe(true);
   });
 
   for (const width of [360, 1280]) {
-    test(`the menu text stands on the line of the logo's foot at ${width}`, async ({ page }) => {
+    test(`the menu text is as tall as the wordmark and stands on its baseline at ${width}`, async ({ page }) => {
       await page.setViewportSize({ width, height: 800 });
       await page.goto('/');
       await page.evaluate(() => document.fonts.ready);
-      const { logoFoot, baseline } = await page.evaluate(() => {
-        const logoFoot = document.querySelector('.site-header__home img')!.getBoundingClientRect().bottom;
+      const { wordmarkBaseline, wordmarkCaps, menuCaps, baseline } = await page.evaluate(() => {
+        // The logo file: 320 units tall, the wordmark's capitals 124 units tall on a baseline at 220.
+        const logo = document.querySelector('.site-header__home img')!.getBoundingClientRect();
+        const wordmarkBaseline = logo.top + (logo.height * 220) / 320;
+        const wordmarkCaps = (logo.height * 124) / 320;
         // The first thing shown beside the logo: a menu link on wide screens, the menu button on narrow ones.
         const text = [...document.querySelectorAll<HTMLElement>('.site-header__links a, .site-header__toggle')].find((e) => e.getClientRects().length)!;
         // Its text baseline: the bottom of an empty inline box set at the end of the text.
@@ -177,9 +192,12 @@ test.describe('at 360', () => {
         mark.remove();
         while (wrap.firstChild) text.appendChild(wrap.firstChild);
         wrap.remove();
-        return { logoFoot, baseline };
+        // Figtree's capitals are 0.7 em.
+        const menuCaps = parseFloat(getComputedStyle(text).fontSize) * 0.7;
+        return { wordmarkBaseline, wordmarkCaps, menuCaps, baseline };
       });
-      expect(Math.abs(logoFoot - baseline)).toBeLessThanOrEqual(1);
+      expect(Math.abs(wordmarkBaseline - baseline)).toBeLessThanOrEqual(1);
+      expect(Math.abs(wordmarkCaps - menuCaps)).toBeLessThanOrEqual(0.5);
     });
   }
 });

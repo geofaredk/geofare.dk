@@ -100,16 +100,33 @@ const languages = (Object.keys(site.locales) as Lang[]).map((code) => ({
 
   /* The logo's drawing fills its file from top to bottom, so the bottom edge of this link is the
      foot of the logo, and that edge is the line the menu text sits on. */
+  /*
+   * The logo file is 1280 × 320 units: the mark fills the height, and the wordmark's capitals run
+   * from 98 to 222 (124 units tall) and stand on a baseline at 220. The logo is drawn at the height
+   * that makes those capitals exactly as tall as the menu text's (Figtree's capitals are 0.7 em),
+   * and the link's box ends on the wordmark's baseline, which is the line the menu text stands on
+   * (the header aligns its row on that baseline). The mark's lower part hangs below the box.
+   */
   .site-header__home {
+    --logo-h: calc(var(--step-body) * 0.7 * 320 / 124);
+    position: relative;
     display: block;
     flex: none;
+    height: calc(var(--logo-h) * 220 / 320);
   }
 
-  /* The logo's height in the header; its width follows. */
+  /* The target covers the whole logo, the part hanging below the box included, plus a margin
+     that makes it at least 44 px tall. */
+  .site-header__home::after {
+    content: '';
+    position: absolute;
+    inset: -0.75rem 0 calc(-0.75rem - 100% * 100 / 220);
+  }
+
   .site-header__home :global(.logo) {
     display: block;
     width: auto;
-    height: 2rem;
+    height: var(--logo-h);
   }
 
   .site-header__menu,
