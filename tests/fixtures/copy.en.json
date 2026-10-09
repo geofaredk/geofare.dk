@@ -84,22 +84,25 @@
       "body": "You get Niklas, not an account manager. He leads every project and brings in the right specialists from our network when a job needs more hands. You always know who is doing the work."
     }
   },
+  "approach": {
+    "title": "What we stand for."
+  },
   "principles": [
     {
-      "title": "Start small.",
-      "body": "A first answer early, then more detail where it pays off."
+      "title": "Curious",
+      "body": "We are nerds, and we love what we do. Landscapes, water, data, models: we want to know how things really behave, and we keep digging until the picture holds. We work rigorously and from evidence, and we are happiest when a hard question turns up."
     },
     {
-      "title": "Open by default.",
-      "body": "Open data and open tools wherever they do the job."
+      "title": "Practical",
+      "body": "We believe knowledge is only worth something when someone can use it. So we prefer a useful answer in time to a perfect one too late. And because people can only act on what they understand, we make our work accessible and usable for the people who have to work with it."
     },
     {
-      "title": "Yours to keep.",
-      "body": "You get the data, the models and the tools, not only a PDF."
+      "title": "Open",
+      "body": "We are open by default, because we believe tools get better and communities get safer when knowledge is shared. We build on open-source technology and work in the open whenever we can."
     },
     {
-      "title": "No layers.",
-      "body": "You talk to the person doing the work."
+      "title": "Impact-driven",
+      "body": "We do this to make a difference, not to fill shelves with reports. Our goal is that every project leaves you in a stronger position: clearer about your risk, surer of your next step, and better prepared than before."
     }
   ],
   "sectors": {

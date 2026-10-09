@@ -85,22 +85,25 @@
       "body": "I får Niklas, ikke en kundeansvarlig. Han leder hvert projekt og henter de rette specialister ind fra vores netværk, når opgaven kræver flere hænder. I ved altid, hvem der udfører arbejdet."
     }
   },
+  "approach": {
+    "title": "Det står vi for."
+  },
   "principles": [
     {
-      "title": "Start i det små.",
-      "body": "Et første svar tidligt, og flere detaljer der, hvor det betaler sig."
+      "title": "Nysgerrige",
+      "body": "Vi er nørder, og vi elsker det, vi laver. Landskaber, vand, data, modeller: Vi vil vide, hvordan tingene faktisk opfører sig, og vi graver videre, til billedet holder. Vi arbejder grundigt og evidensbaseret, og vi er gladest, når der dukker et svært spørgsmål op."
     },
     {
-      "title": "Åbent som udgangspunkt.",
-      "body": "Åbne data og åbne værktøjer, hvor de løser opgaven."
+      "title": "Praktiske",
+      "body": "Vi tror på, at viden kun er noget værd, når nogen kan bruge den. Derfor foretrækker vi et brugbart svar i tide frem for et perfekt svar for sent. Og fordi man kun kan handle på det, man forstår, gør vi vores arbejde tilgængeligt og brugbart for dem, der skal arbejde med det."
     },
     {
-      "title": "Jeres at beholde.",
-      "body": "I får data, modeller og værktøjer, ikke kun en pdf."
+      "title": "Åbne",
+      "body": "Vi er åbne som udgangspunkt, fordi vi tror på, at værktøjer bliver bedre og samfundet tryggere, når viden deles. Vi bygger på open source-teknologi og arbejder åbent, når vi kan."
     },
     {
-      "title": "Ingen mellemled.",
-      "body": "I taler med den, der udfører arbejdet."
+      "title": "Formålsdrevne",
+      "body": "Vi gør det her for at gøre en forskel, ikke for at fylde hylder med rapporter. Vores mål er, at hvert projekt stiller dig stærkere: klarere over din risiko, sikrere på dit næste skridt og bedre forberedt end før."
     }
   ],
   "sectors": {

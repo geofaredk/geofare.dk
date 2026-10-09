@@ -34,7 +34,7 @@ describe('copy matches the brief word for word', () => {
   });
   it('principles', () => {
     const t = sectionText('approach');
-    expect(t).toContain('How we work');
+    expect(t).toContain(copy.approach.title);
     for (const p of copy.principles) { expect(t).toContain(p.title); expect(t).toContain(p.body); }
   });
   it('sectors, in order, all text in the HTML', () => {

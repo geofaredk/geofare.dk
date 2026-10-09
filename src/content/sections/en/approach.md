@@ -1,3 +1,3 @@
 ---
-title: How we work
+title: What we stand for.
 ---

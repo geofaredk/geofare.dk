@@ -1,3 +1,3 @@
 ---
-title: "Sådan arbejder vi"
+title: "Det står vi for."
 ---
