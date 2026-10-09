@@ -9,9 +9,10 @@
  * Work in the logo's own axes: `u` runs along the band diagonal (lower left to upper right),
  * `v` across it. Measured on brand.svg, every band edge is the same staircase in these axes:
  * a straight run along `u`, then a soft step across by exactly one band pair, the step
- * having a tanh profile. All edges step at the same `u`, and wide and narrow gaps alternate
- * (the blue bands and the cream between them). STEP_SOFTNESS and PAIRING are those
- * measurements in units of the mean line spacing.
+ * having a tanh profile. Each line steps a little further along `u` than the one before, so
+ * the steps lie on a front leaning slightly from straight across, and wide and narrow gaps
+ * alternate (the blue bands and the cream between them). STEP_SOFTNESS, PAIRING and STAGGER
+ * are those measurements in units of the mean line spacing.
  *
  * A field is not a logo, so three things are relaxed, all slowly and smoothly:
  *   - the straight runs are longer and of uneven length (STEP_PERIOD, STEPS);
@@ -45,13 +46,15 @@ export interface FieldOptions {
 /** x0, y0, x1, y1, … */
 export type Polyline = Float32Array;
 
-// Every length below is in units of the mean line spacing (32.9 of the logo's 229 units).
+// Every length below is in units of the mean line spacing (28.3 of the logo's 228 units).
 
 /** Softness of a step: across = tanh(along / STEP_SOFTNESS). Measured on the logo. */
-const STEP_SOFTNESS = 0.46;
+const STEP_SOFTNESS = 0.415;
 /** Gaps alternate between (1 + PAIRING) and (1 - PAIRING) spacings: the logo's bands. */
-const PAIRING = 0.29;
-/** Mean distance along the band from one step to the next. The logo's is 4.9. */
+const PAIRING = 0.4;
+/** How much further along the band each line steps than its neighbour one spacing across. */
+const STAGGER = -0.115;
+/** Mean distance along the band from one step to the next. The logo shows one step per edge. */
 const STEP_PERIOD = 8;
 /** Where the steps sit within one repeat of the pattern, in step periods. */
 const STEPS = [0, 1.1, 2];
@@ -138,7 +141,7 @@ export function fieldLines(o: FieldOptions): Polyline[] {
     // Everything that is constant along one line.
     for (let i = 0; i < steps; i++) {
       const wander = Math.sin(TAU * (c / (MEANDER.wavelength * s) + hash(seed, 10 + i)));
-      stepAt[i] = drift + s * (STEPS[i] * STEP_PERIOD + MEANDER.amplitude * wander);
+      stepAt[i] = drift + STAGGER * c + s * (STEPS[i] * STEP_PERIOD + MEANDER.amplitude * wander);
     }
     for (let i = 0; i < SWELLS.length; i++) {
       swellAt[i] = c / (SWELLS[i][1] * s) + SWELLS[i][3] * phase + hash(seed, 20 + i);
