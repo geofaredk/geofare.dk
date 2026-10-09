@@ -1,4 +1,4 @@
 ---
 title: "Tryggere lokalsamfund begynder med risiko, som folk forstår."
 ---
-geofare er specialiseret i håndtering af oversvømmelsesrisiko, fysiske klimarisici og andre naturfarer. Vi bruger satellitdata, GIS og hydraulisk modellering til at gøre viden om risiko klar nok til at handle på.
+Vi arbejder for at gøre samfundet tryggere over for oversvømmelser, klimarisici og andre naturfarer. Vi ser nøje efter: på stedet, i data og i vores modeller. Vi siger klart, hvad risikoen er. Og vi hjælper dig med at finde de tiltag, der mindsker den.

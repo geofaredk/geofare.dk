@@ -3,7 +3,7 @@ title: "Se, hvad der er."
 order: 1
 slug: see-whats-there
 tags:
-  - "Jordobservation"
+  - "Jordobservation & fjernmåling"
   - "Indsamling og integration af geodata"
   - "Geodataanalyse"
   - "Besøg på stedet og feltarbejde"

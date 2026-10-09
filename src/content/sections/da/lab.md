@@ -1,4 +1,4 @@
 ---
 title: "Bygget i det åbne."
 ---
-Vi rådgiver ikke kun, vi bygger også. Det her er vores egne projekter: gratis at bruge, baseret på åbne data og lavet for at bringe viden om naturfarer ud til dem, der har brug for den.
+Det her er vores lab. Når vi mangler et værktøj og ikke kan finde det nogen steder, bygger vi det selv og udgiver det, så du frit kan bruge det.

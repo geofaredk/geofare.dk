@@ -2,11 +2,13 @@
 fixed: "Træf gode beslutninger"
 endings:
   - "når fremtiden er usikker."
-  - "når åerne går over deres bredder."
-  - "når havet stiger."
+  - "når temperaturen stiger."
+  - "når stormen nærmer sig."
   - "når risiciene hober sig op."
+  - "når det brænder på."
+  - "når vandet stiger."
   - "når det gælder."
 primaryCta: "Kontakt os"
 secondaryCta: "Se, hvad vi laver"
 ---
-Vi omsætter satellitdata, GIS og hydraulisk modellering til viden om risiko, som I kan handle på. Oversvømmelsesrisiko er der, hvor vi går mest i dybden.
+Vi vil gøre samfundet tryggere. Derfor kombinerer vi det, vi ser på stedet, med geodata og modellering, omsætter det til viden om risiko, som du kan handle på, og hjælper med at finde de tiltag, der mindsker risikoen.

@@ -7,4 +7,5 @@ thumbnail: ../../../assets/lab/meteoalarm-python.png
 tags:
   - Early warning
   - Open source
+status: Open Source
 ---

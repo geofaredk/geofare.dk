@@ -6,5 +6,5 @@ order: 3
 thumbnail: ../../../assets/lab/meteoalarm-python.png
 tags:
   - "Varsling"
-  - "Open source"
+status: Open Source
 ---

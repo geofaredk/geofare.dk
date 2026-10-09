@@ -9,4 +9,4 @@ tags:
   - "Sikring af ejendomme mod oversvømmelse"
   - "Risikoanalyse for forsikringsselskaber og långivere"
 ---
-Vi vurderer, hvad der står på spil, og prioriterer de tiltag, der gør en forskel, så jeres budget havner der, hvor risikoen er.
+Vi vurderer, hvad der står på spil, og prioriterer de tiltag, der gør en forskel, så du ved, hvor du skal starte, og hvad du kan forvente.

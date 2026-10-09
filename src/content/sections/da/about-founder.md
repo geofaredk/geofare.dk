@@ -1,4 +1,6 @@
 ---
-title: "Ledet af stifteren. Tæt på opgaven."
+title: "Mudrede støvler, rene data."
 ---
-geofare er grundlagt af Niklas [efternavn], geolog. Han tænker i landskaber, arbejder i data og måler sit arbejde på, hvad folk bruger det til. Han er lige så hjemme i satellitbilleder, kort og oversvømmelsesmodeller som i det rum, hvor beslutningen bliver truffet.
+Vi tænker i landskaber, arbejder i data og måler vores arbejde på, hvad folk bruger det til. Vi er lige så hjemme på stedet, i kort og i oversvømmelsesmodeller som i det rum, hvor beslutningen bliver truffet.
+
+geofare er grundlagt af geologen Niklas Jordan. Han forklarer hvorfor:

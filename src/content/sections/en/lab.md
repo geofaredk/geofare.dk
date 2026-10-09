@@ -1,4 +1,4 @@
 ---
 title: Built in the open.
 ---
-We don't only advise, we build. These are our own projects: free to use, based on open data, and made to put hazard information in front of the people who need it.
+This is our lab. When we need a tool and can’t find it anywhere, we build it ourselves and publish it. Free for you to use.

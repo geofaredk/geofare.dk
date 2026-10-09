@@ -1,4 +1,4 @@
 ---
-title: A team built around your project.
+title: A team built around your needs.
 ---
-You get Niklas, not an account manager. He leads every project and brings in the right specialists from our network when a job needs more hands. You always know who is doing the work.
+We are a network of experts. For each project we put together the team it needs: the right people for the job, and no layers in between. You always know who is doing the work.

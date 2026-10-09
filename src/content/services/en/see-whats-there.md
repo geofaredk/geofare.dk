@@ -3,7 +3,7 @@ title: See what’s there.
 order: 1
 slug: see-whats-there
 tags:
-  - Earth observation
+  - Earth observation & remote sensing
   - Geodata sourcing & integration
   - Geospatial analysis
   - Site visits & fieldwork

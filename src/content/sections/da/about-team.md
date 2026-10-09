@@ -1,4 +1,4 @@
 ---
-title: "Et team bygget op omkring jeres projekt."
+title: "Et team bygget op omkring dine behov."
 ---
-I får Niklas, ikke en kundeansvarlig. Han leder hvert projekt og henter de rette specialister ind fra vores netværk, når opgaven kræver flere hænder. I ved altid, hvem der udfører arbejdet.
+Vi er et netværk af eksperter. Til hvert projekt sammensætter vi det team, opgaven kræver: de rette folk og ingen mellemled. Du ved altid, hvem der udfører arbejdet.

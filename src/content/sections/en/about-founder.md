@@ -1,4 +1,6 @@
 ---
-title: Founder-led. Hands-on.
+title: Muddy boots, clean data.
 ---
-geofare was founded by Niklas [surname], a geologist. He thinks in landscapes, works in data, and measures his work by what people do with it. He is as much at home in satellite imagery, maps and flood models as in the room where the decision gets made.
+We think in landscapes, work in data, and measure our work by what people do with it. We are as much at home on site, in maps and in flood models as in the room where the decision gets made.
+
+geofare was founded by geologist Niklas Jordan. He explains why:
