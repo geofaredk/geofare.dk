@@ -1,0 +1,21 @@
+---
+import NotFound from '../../components/pages/NotFound.astro';
+import { site, type Lang } from '../../config/site';
+
+// One 404 page per language other than the default one. Only the top-level 404 gets Astro's
+// special name, so this one builds to /da/404/index.html, which nginx serves for missing pages
+// under /da/ (docker/nginx.conf).
+export function getStaticPaths() {
+  return (Object.keys(site.locales) as Lang[])
+    .filter((lang) => lang !== site.defaultLang)
+    .map((lang) => ({ params: { lang: site.locales[lang].path.replaceAll('/', '') }, props: { lang } }));
+}
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+---
+
+<NotFound lang={lang} />

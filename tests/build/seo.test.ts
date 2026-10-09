@@ -92,8 +92,9 @@ describe('crawl files', () => {
       ['index.html', 'EN', { DA: '/da/' }],
       ['da/index.html', 'DA', { EN: '/' }],
       ['da/imprint/index.html', 'DA', { EN: '/imprint/' }],
-      // The 404 page exists once, so from there the other languages lead home.
+      // From a 404 page the other languages lead to their home pages.
       ['404.html', 'EN', { DA: '/da/' }],
+      ['da/404/index.html', 'DA', { EN: '/' }],
     ];
     for (const [path, current, others] of cases) {
       const items = parse(read(path)).querySelectorAll('header nav .site-header__lang');
@@ -107,7 +108,7 @@ describe('crawl files', () => {
     }
   });
   it('404 and imprint pages exist and are noindex', () => {
-    for (const path of ['404.html', 'imprint/index.html']) {
+    for (const path of ['404.html', 'da/404/index.html', 'imprint/index.html']) {
       expect(existsSync(`dist/${path}`)).toBe(true);
       expect(parse(read(path)).querySelector('meta[name="robots"]')?.getAttribute('content')).toContain('noindex');
     }

@@ -1,5 +1,5 @@
 ---
-title: Page not found
-back: Back to the home page
+title: Off the map.
+back: Back to solid ground
 ---
-This page does not exist.
+We have mapped rivers, coastlines and whole municipalities. This page is not among them.

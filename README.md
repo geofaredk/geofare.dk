@@ -168,7 +168,7 @@ To publish a language:
 
 To add a further language: add it to the `Lang` type and to `locales` in `src/config/site.ts`, copy each `en` content folder and `src/content/ui/en.yaml` under the new language code, and translate. The pages come from `src/pages/[lang]/`, which builds the home page and the imprint for every language in the list, so no page file is needed. If a section or interface file is missing, the build stops and names it. A missing service, sector, principle or project file does not stop the build, so check the page.
 
-The 404 page exists once, in English; from it the switcher leads to the other language's home page. The copy tests check the English text only.
+There is a 404 page per language (`src/content/sections/<lang>/not-found.md`): nginx serves the Danish one for missing pages under `/da/` and the English one elsewhere (`docker/nginx.conf`, one `location` block per language other than English). From a 404 page the switcher leads to the other language's home page. The copy tests check the English text only.
 
 ## Open points
 
@@ -201,7 +201,7 @@ The brief does not give these words; they were written so the site works. Change
 | --- | --- | --- |
 | "The geofare mark" | Description of the share image (`meta.imageAlt`) | `src/content/ui/en.yaml` |
 | "Niklas, the founder of geofare, smiling, in a cap and round glasses" | Description of the founder photo for screen readers (`about.portraitAlt`) | `src/content/ui/en.yaml` |
-| "Page not found", "This page does not exist.", "Back to the home page" | The 404 page | `src/content/sections/en/not-found.md` |
+| "Off the map.", "We have mapped rivers…", "Back to solid ground" | The 404 page | `src/content/sections/en/not-found.md` (Danish: `src/content/sections/da/not-found.md`) |
 | "Skip to content" | Skip link, shown on the first Tab | `src/content/ui/en.yaml` (`skip`) |
 | "Menu", "Close" | Menu button on small screens | `src/content/ui/en.yaml` (`nav.menuOpen`, `nav.menuClose`) |
 | "Main navigation" | Name of the menu for screen readers | `src/content/ui/en.yaml` (`nav.label`) |

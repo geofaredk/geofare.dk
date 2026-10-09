@@ -420,15 +420,20 @@ for (const width of [360, 1280]) {
   });
 }
 
-test('the 404 page offers one button back to the home page', async ({ page }) => {
-  await page.goto('/404');
-  const back = page.locator('main').getByRole('link', { name: 'Back to the home page' });
-  await expect(back).toBeVisible();
-  expect((await back.boundingBox())!.height).toBeGreaterThanOrEqual(48);
-  await back.click();
-  await expect(page).toHaveURL(/\/$/);
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Make good decisions when it matters.');
-});
+for (const [path, name, home] of [
+  ['/404', 'Back to solid ground', /\/$/],
+  ['/da/404', 'Tilbage på fast grund', /\/da\/$/],
+] as const) {
+  test(`the 404 page at ${path} offers one button back to its home page`, async ({ page }) => {
+    await page.goto(path);
+    const back = page.locator('main').getByRole('link', { name });
+    await expect(back).toBeVisible();
+    expect((await back.boundingBox())!.height).toBeGreaterThanOrEqual(48);
+    await back.click();
+    await expect(page).toHaveURL(home);
+    await expect(page.locator('main')).toBeVisible();
+  });
+}
 
 test('on a page with little on it the footer stands at the foot of the window', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });

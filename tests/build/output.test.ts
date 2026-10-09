@@ -9,7 +9,7 @@ const pages = files.filter((f) => f.endsWith('.html')).map((f) => ({ path: f, ht
 
 describe('CSP-clean output', () => {
   it('builds at least the three pages', () => {
-    expect(pages.map((p) => p.path)).toEqual(expect.arrayContaining(['index.html', '404.html', 'imprint/index.html']));
+    expect(pages.map((p) => p.path)).toEqual(expect.arrayContaining(['index.html', '404.html', 'da/404/index.html', 'imprint/index.html']));
   });
 
   for (const { path, html } of pages) {

@@ -65,7 +65,9 @@ health="$(body_of "$base/healthz")"
 [ "$(status_of "$base/healthz")" = 200 ] && [ "$health" = ok ] && pass "/healthz returns 200 ok" || fail "/healthz returns 200 ok"
 
 [ "$(status_of "$base/nope")" = 404 ] && pass "/nope returns 404" || fail "/nope returns 404"
-has "Page not found" "$(body_of "$base/nope")" && pass "404 body is the custom page" || fail "404 body is the custom page"
+has "Off the map" "$(body_of "$base/nope")" && pass "404 body is the custom page" || fail "404 body is the custom page"
+[ "$(status_of "$base/da/nope")" = 404 ] && pass "/da/nope returns 404" || fail "/da/nope returns 404"
+has "Uden for kortet" "$(body_of "$base/da/nope")" && pass "/da/nope body is the Danish 404 page" || fail "/da/nope body is the Danish 404 page"
 
 # A directory-style URL must not redirect to an absolute URL with the internal port.
 imprint_headers="$(headers_of "$base/imprint/")"
