@@ -31,12 +31,16 @@ const projects = await getLab(lang);
             <div class="project__top">
               <div class="project__thumb">
               {data.thumbnail ? (
-                /* Shown at about 23 to 45rem wide at most; 800 px covers a double-density screen. */
+                /* Shown at about 23 to 45rem wide at most; 800 px covers a double-density screen.
+                   A photo is resized and served as WebP, never scaled up. A PNG is a graphic (the
+                   dithered marks): resampling turns its few colours into many and swells it
+                   sevenfold, so it is served as it is, at its own size. */
                 <Image
                   src={data.thumbnail}
                   alt={data.thumbnailAlt ?? ''}
-                  width={800}
-                  widths={[400, 800]}
+                  format={data.thumbnail.format === 'png' ? 'png' : 'webp'}
+                  width={data.thumbnail.format === 'png' ? data.thumbnail.width : Math.min(800, data.thumbnail.width)}
+                  widths={data.thumbnail.format === 'png' ? undefined : [400, 800].filter((w) => w < (data.thumbnail?.width ?? 0))}
                   sizes="(min-width: 64rem) 30vw, (min-width: 40rem) 45vw, 100vw"
                 />
               ) : (
