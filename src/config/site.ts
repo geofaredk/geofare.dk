@@ -22,11 +22,13 @@ export const site = {
     en: { path: '/', htmlLang: 'en-GB', hreflang: 'en', name: 'English', short: 'EN', draft: false },
     da: { path: '/da/', htmlLang: 'da-DK', hreflang: 'da', name: 'Dansk', short: 'DA', draft: true },
   } as Record<Lang, Locale>,
-  // Cabin analytics (withcabin.com): the script every page loads, and where it reports to.
-  // The Content Security Policy in docker/security-headers.conf names the same two hosts.
+  // Umami analytics, self-hosted at umami.geofare.dk: the script every page loads, the site it
+  // counts for, and where the script reports to (always /api/send next to the script).
+  // The Content Security Policy in docker/security-headers.conf names the same host.
   analytics: {
-    script: 'https://scripts.withcabin.com/hello.js',
-    endpoint: 'https://ping.withcabin.com',
+    script: 'https://umami.geofare.dk/script.js',
+    websiteId: '5e442288-c1bd-462a-94c5-c6adb27038f5',
+    endpoint: 'https://umami.geofare.dk/api/send',
   },
   company: {
     street: '[street address]',

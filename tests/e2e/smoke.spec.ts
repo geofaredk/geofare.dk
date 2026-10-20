@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { site } from '../../src/config/site';
 
 /** The analytics script and its reports: the only addresses outside the site that a page may ask for. */
-const isAnalytics = (url: string) => url === site.analytics.script || url.startsWith(site.analytics.endpoint);
+const isAnalytics = (url: string) => url === site.analytics.script || url === site.analytics.endpoint;
 
 test('the home page loads cleanly, with nothing from elsewhere but the analytics script, and in Figtree', async ({ page, baseURL }) => {
   const consoleErrors: string[] = [];

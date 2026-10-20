@@ -11,7 +11,7 @@ export default defineConfig({
   reporter: 'list',
   use: {
     baseURL,
-    // The pages load the Cabin analytics script. Test runs must not show up as visits, so every
+    // The pages load the Umami analytics script. Test runs must not show up as visits, so every
     // request that is not to the site itself is sent to a proxy that does not exist and fails.
     // tests/e2e/privacy.spec.ts runs the real script, with its reports caught before they leave.
     proxy: { server: 'http://127.0.0.1:9', bypass: [...new Set(['localhost', '127.0.0.1', new URL(baseURL).hostname])].join(',') },

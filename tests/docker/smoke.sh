@@ -84,7 +84,7 @@ has "no-cache" "$(headers_of "$base/" | grep -i '^cache-control:' || true)" && p
 has "max-age=86400" "$(headers_of "$base/favicon.svg" | grep -i '^cache-control:' || true)" && pass "favicon is cached for one day" || fail "favicon is cached for one day"
 
 security_headers=(
-  "content-security-policy: default-src 'self'; script-src 'self' https://scripts.withcabin.com; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://ping.withcabin.com; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'"
+  "content-security-policy: default-src 'self'; script-src 'self' https://umami.geofare.dk; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://umami.geofare.dk; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'none'"
   "x-content-type-options: nosniff"
   "x-frame-options: DENY"
   "referrer-policy: strict-origin-when-cross-origin"

@@ -3,7 +3,7 @@ import { site } from '../../src/config/site';
 
 /**
  * Privacy: no cookies, nothing stored in the browser, and nothing asked of another origin
- * except Cabin analytics (the script, and its reports). Checked after a visitor has done
+ * except Umami analytics (the script, and its reports). Checked after a visitor has done
  * everything the page offers: scrolled to the end, opened every sector, visited the other pages.
  *
  * The real analytics script runs here, so that what it does in the browser is what is checked.
@@ -11,13 +11,13 @@ import { site } from '../../src/config/site';
  * leave, so a test run never shows up as a visit. Without a network the script cannot be
  * fetched, and the test then checks the page without it and says so.
  */
-let cabin: string | null = null;
+let analyticsScript: string | null = null;
 test.beforeAll(async () => {
   try {
     const response = await fetch(site.analytics.script);
-    cabin = response.ok ? await response.text() : null;
+    analyticsScript = response.ok ? await response.text() : null;
   } catch {
-    cabin = null;
+    analyticsScript = null;
   }
 });
 
@@ -31,11 +31,11 @@ for (const viewport of [
     const reports: string[] = [];
     page.on('request', (request) => requests.push(request.url()));
     await context.route(site.analytics.script, (route) =>
-      cabin === null ? route.abort() : route.fulfill({ contentType: 'application/javascript', body: cabin }),
+      analyticsScript === null ? route.abort() : route.fulfill({ contentType: 'application/javascript', body: analyticsScript }),
     );
-    await context.route(`${site.analytics.endpoint}/**`, (route) => {
+    await context.route(site.analytics.endpoint, (route) => {
       reports.push(route.request().url());
-      return route.fulfill({ status: 204, body: '' });
+      return route.fulfill({ contentType: 'application/json', body: '{}' });
     });
 
     await page.goto('/', { waitUntil: 'networkidle' });
@@ -64,15 +64,15 @@ for (const viewport of [
     // data: URLs never leave the browser. Everything else comes from the page's own origin,
     // except the analytics script and its reports.
     const elsewhere = requests.filter((url) => !url.startsWith('data:') && new URL(url).origin !== origin);
-    const unexpected = elsewhere.filter((url) => url !== site.analytics.script && !url.startsWith(`${site.analytics.endpoint}/`));
+    const unexpected = elsewhere.filter((url) => url !== site.analytics.script && url !== site.analytics.endpoint);
     expect(unexpected).toEqual([]);
     // Every page asks for the script.
     expect(elsewhere.filter((url) => url === site.analytics.script).length).toBeGreaterThanOrEqual(3);
-    if (cabin === null) {
+    if (analyticsScript === null) {
       test.info().annotations.push({ type: 'note', description: 'The analytics script could not be fetched (no network), so it did not run in this test.' });
     }
     console.log(
-      `[privacy] ${test.info().project.name} ${viewport.width}: ${requests.length} requests; elsewhere only analytics (${cabin === null ? 'script not fetched' : `${reports.length} reports caught`})`,
+      `[privacy] ${test.info().project.name} ${viewport.width}: ${requests.length} requests; elsewhere only analytics (${analyticsScript === null ? 'script not fetched' : `${reports.length} reports caught`})`,
     );
   });
 }

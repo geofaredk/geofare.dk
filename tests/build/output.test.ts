@@ -28,7 +28,8 @@ describe('CSP-clean output', () => {
       it('loads the analytics script once, as the last thing in the body', () => {
         const scripts = root.querySelectorAll(`script[src="${site.analytics.script}"]`);
         expect(scripts).toHaveLength(1);
-        expect(scripts[0].hasAttribute('async')).toBe(true);
+        expect(scripts[0].hasAttribute('defer')).toBe(true);
+        expect(scripts[0].getAttribute('data-website-id')).toBe(site.analytics.websiteId);
         expect(root.querySelector('body')!.lastElementChild).toBe(scripts[0]);
       });
       it('loads nothing else from another origin', () => {

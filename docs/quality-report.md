@@ -10,7 +10,7 @@ Measured on 1 October 2026 against the "Quality bar" in `briefing.md`, on the Do
 
 **Also changed after this report:** a Lab section with three project cards between "Who we work with" and "Contact", with a "Lab" link in the menu; and a language switcher (English, Danish) in the menu, with Danish as a draft language holding placeholder text, kept out of search engines. The full menu now shows from 1232 px wide; below that it is behind the Menu button.
 
-**Also changed after this report:** Cabin analytics was added at the client's request, on every page. The brief's Privacy line asked for no third-party requests and no analytics at launch; that part no longer holds. Each page now asks two other hosts: `scripts.withcabin.com` for the script and `ping.withcabin.com` for its reports. Still true, and still tested: no cookies, nothing stored in the browser, and nothing else from another origin. Lighthouse with the script in place: 100 in all four categories, layout shift 0.
+**Also changed after this report:** analytics was added at the client's request, on every page: first Cabin, since 20 October 2026 Umami, self-hosted at `umami.geofare.dk`. The brief's Privacy line asked for no third-party requests and no analytics at launch; that part no longer holds. Each page now asks one other host, `umami.geofare.dk`, for the script (`/script.js`) and for its reports (`/api/send`). Still true, and still tested: no cookies, nothing stored in the browser, and nothing else from another origin. Lighthouse with the Umami script in place (preview server, 20 October 2026): 100 in all four categories, layout shift 0.
 
 Result: every line of the quality bar is met in the measurements below, with these limits:
 

@@ -85,7 +85,7 @@ const jsonLd = JSON.stringify(structuredData).replace(/</g, '\\u003c');
       <slot />
     </main>
     {!bare && <Footer lang={lang} />}
-    {/* Cabin analytics, on every page of the built site. Left out of `npm run dev`, so work on the site is not counted as visits. */}
-    {import.meta.env.PROD && <script is:inline async defer src={site.analytics.script} />}
+    {/* Umami analytics, on every page of the built site. Left out of `npm run dev`, so work on the site is not counted as visits. */}
+    {import.meta.env.PROD && <script is:inline defer src={site.analytics.script} data-website-id={site.analytics.websiteId} />}
   </body>
 </html>

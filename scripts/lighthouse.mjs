@@ -27,7 +27,7 @@ for (let i = 1; i <= RUNS; i++) {
   execFileSync(
     'npx',
     // The analytics reports are blocked, so a measurement is not counted as a visit; the script itself still loads and is measured.
-    ['-y', LIGHTHOUSE, url, '--output=json', `--output-path=${path}`, '--quiet', '--chrome-flags=--headless=new', '--blocked-url-patterns=https://ping.withcabin.com/*'],
+    ['-y', LIGHTHOUSE, url, '--output=json', `--output-path=${path}`, '--quiet', '--chrome-flags=--headless=new', '--blocked-url-patterns=https://umami.geofare.dk/api/*'],
     { stdio: 'inherit' },
   );
   const report = JSON.parse(readFileSync(path, 'utf8'));
