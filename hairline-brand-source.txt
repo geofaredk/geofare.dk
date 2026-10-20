@@ -1,0 +1,10 @@
+brand.svg  viewBox 0 0 228 228  (1:1)  6 shapes in 0 groups
+title: none   ids: none
+ink: 0..228 × 0..228  (100% × 100% of the viewBox)
+
+#1  path    -         box 0..96 × 0..25  centre 48,12.5  filled  closed, curves and lines, part 1 of 6  inside #3, upper third
+#2  path    -         box 0..176 × 0..96  centre 88,48  filled  closed, curves and lines, part 2 of 6  inside #3, upper third
+#3  path    -         box 0..228 × 0..176  centre 114,88  filled  closed, curves and lines, part 3 of 6
+#4  path    -         box 0..228 × 52..228  centre 114,140  filled  closed, curves and lines, part 4 of 6
+#5  path    -         box 52..228 × 132..228  centre 140,180  filled  closed, curves and lines, part 5 of 6  inside #4, lower third
+#6  path    -         box 132..228 × 203..228  centre 180,215.5  filled  closed, curves and lines, part 6 of 6  inside #4, lower third
