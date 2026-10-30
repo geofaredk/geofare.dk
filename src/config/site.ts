@@ -30,6 +30,10 @@ export const site = {
     websiteId: '5e442288-c1bd-462a-94c5-c6adb27038f5',
     endpoint: 'https://umami.geofare.dk/api/send',
   },
+  // The newsletter's own site, where the button of the newsletter section leads.
+  newsletter: {
+    url: 'https://debrief.geofare.dk/',
+  },
   company: {
     street: '[street address]',
     postalTown: '[postcode and town]',

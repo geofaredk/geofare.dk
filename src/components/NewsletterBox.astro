@@ -1,0 +1,351 @@
+---
+// The newsletter's box: a small card in the lower right corner of the window, on every page
+// that has a footer. Its X folds it to a round button, which opens it again. A <details>, so
+// it opens and closes without JavaScript. The HTML has it folded; the script opens it once the
+// visitor has scrolled past the hero. Nothing is remembered between pages: the site stores
+// nothing in the browser. The space before it keeps the footer's last line clear of the box
+// when the page is scrolled to its end.
+import { render } from 'astro:content';
+import { site, type Lang } from '../config/site';
+import { getSection, getUi } from '../lib/content';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const ui = await getUi(lang);
+const section = await getSection(lang, 'newsletter');
+const { Content } = await render(section);
+/** The headline's sentences, each set on a line of its own. */
+const lines = (section.data.title ?? '').split(/(?<=[.!?])\s+/);
+---
+
+<div class="debrief-space"></div>
+<aside class="debrief" aria-label={ui.newsletter.label}>
+  <details id="newsletter" class="debrief__box" data-newsletter-box>
+    {/* One control for both states: the X on the open box, the round button when it is folded. */}
+    <summary class="debrief__toggle">
+      <span class="sr-only debrief__when-closed">{ui.newsletter.open}</span>
+      <span class="sr-only debrief__when-open">{ui.newsletter.close}</span>
+      {/* A bell, which rings now and then while the box is folded. */}
+      <svg class="debrief__icon debrief__bell debrief__when-closed" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 8 2.5 8h-17S6 15 6 9" />
+        <path d="M10.3 20.5a2 2 0 0 0 3.4 0" />
+      </svg>
+      <svg class="debrief__icon debrief__when-open" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="m6 6 12 12M18 6 6 18" />
+      </svg>
+    </summary>
+    <div class="debrief__body">
+      <h2 class="debrief__title">
+        {lines.map((line, i) => (
+          <>
+            {i > 0 && ' '}
+            <span class="debrief__line">{line}</span>
+          </>
+        ))}
+      </h2>
+      <div class="debrief__text">
+        <Content />
+      </div>
+      <p class="debrief__actions">
+        <a class="debrief__link" href={site.newsletter.url}>
+          {section.data.cta}
+          <svg class="debrief__arrow" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M4 12h15" />
+            <path d="m13 6 6 6-6 6" />
+          </svg>
+        </a>
+      </p>
+    </div>
+  </details>
+</aside>
+
+<script>
+  import '../scripts/newsletter-box';
+</script>
+
+<style>
+  /* As tall as what the box covers at the foot of the window: the round button, or the open card. */
+  .debrief-space {
+    height: 4.5rem;
+  }
+
+  .debrief-space:has(+ .debrief .debrief__box[open]) {
+    height: 21rem;
+  }
+
+  @media (width >= 40rem) {
+    .debrief-space:has(+ .debrief .debrief__box[open]) {
+      height: 18rem;
+    }
+  }
+
+  /* Scrolling something into view, by link or by focus, keeps it above the open card, as
+     scroll-padding-top keeps it below the header. Folded too: the box may open a moment later. */
+  :global(html:has(.debrief__box)) {
+    scroll-padding-bottom: 22rem;
+  }
+
+  @media (width >= 40rem) {
+    :global(html:has(.debrief__box)) {
+      scroll-padding-bottom: 19rem;
+    }
+  }
+
+  @media print {
+    .debrief-space {
+      display: none;
+    }
+  }
+
+  /* Under the header (z-index 10), so the open menu sheet covers it. */
+  .debrief {
+    position: fixed;
+    inset-block-end: max(1rem, env(safe-area-inset-bottom));
+    inset-inline-end: max(1rem, env(safe-area-inset-right));
+    z-index: 5;
+  }
+
+  @media print {
+    .debrief {
+      display: none;
+    }
+  }
+
+  /* Open: a blue card. Everything on it is --on-accent, the focus ring included. */
+  .debrief__box {
+    position: relative;
+    width: min(21rem, 100vw - 2rem);
+    border-radius: var(--radius);
+    background-color: var(--accent);
+    color: var(--on-accent);
+  }
+
+  .debrief__box[open] :global(:focus-visible) {
+    outline-color: var(--on-accent);
+  }
+
+  .debrief__toggle {
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    list-style: none;
+    color: var(--on-accent);
+    transition: background-color 120ms;
+  }
+
+  .debrief__toggle::-webkit-details-marker {
+    display: none;
+  }
+
+  .debrief__icon {
+    width: 1.375rem;
+    height: 1.375rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* The bell's ring: a swing from its crown that dies away in just over a second. The script
+     starts it now and then while the box is folded; no animation runs for long. */
+  .debrief__bell {
+    transform-origin: 50% 12%;
+  }
+
+  .debrief__bell.is-ringing {
+    animation: debrief-ring 1.3s ease-in-out;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .debrief__bell.is-ringing {
+      animation: none;
+    }
+  }
+
+  @keyframes debrief-ring {
+    0%,
+    100% {
+      transform: rotate(0);
+    }
+
+    15% {
+      transform: rotate(16deg);
+    }
+
+    30% {
+      transform: rotate(-14deg);
+    }
+
+    45% {
+      transform: rotate(11deg);
+    }
+
+    60% {
+      transform: rotate(-8deg);
+    }
+
+    75% {
+      transform: rotate(5deg);
+    }
+
+    90% {
+      transform: rotate(-2deg);
+    }
+  }
+
+  /* Each label and icon belongs to one state; display: none keeps the other from assistive tech too. */
+  .debrief__box[open] .debrief__when-closed,
+  .debrief__box:not([open]) .debrief__when-open {
+    display: none;
+  }
+
+  /* The X: a 44 px target in the card's upper right corner. */
+  .debrief__box[open] > .debrief__toggle {
+    position: absolute;
+    inset-block-start: 0.5rem;
+    inset-inline-end: 0.5rem;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--radius);
+  }
+
+  .debrief__box[open] > .debrief__toggle:hover {
+    background-color: color-mix(in srgb, var(--on-accent) 18%, transparent);
+  }
+
+  /* Folded: only the round button is left, in the same corner. */
+  .debrief__box:not([open]) {
+    width: auto;
+    background-color: transparent;
+  }
+
+  .debrief__box:not([open]) > .debrief__toggle {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background-color: var(--accent);
+  }
+
+  .debrief__box:not([open]) > .debrief__toggle:hover {
+    background-color: var(--ink);
+  }
+
+  .debrief__body {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1.5rem;
+  }
+
+  /* The headline, clear of the X. */
+  .debrief__title {
+    padding-inline-end: 2.5rem;
+    color: var(--on-accent);
+    font-size: clamp(1.375rem, 1rem + 1vw, 1.5rem);
+    line-height: 1.15;
+    letter-spacing: var(--tracking-claim);
+  }
+
+  .debrief__line {
+    display: block;
+  }
+
+  .debrief__text {
+    font-size: var(--step-small);
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+
+  /* The link: underlined, an arrow after the words. The target reaches 10 px above and below. */
+  .debrief__actions {
+    margin-block-start: 0.25rem;
+  }
+
+  .debrief__link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    color: var(--on-accent);
+    font-weight: var(--weight-medium);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    transition: text-decoration-thickness 120ms;
+  }
+
+  .debrief__link::after {
+    content: '';
+    position: absolute;
+    inset: -0.625rem 0;
+  }
+
+  .debrief__link:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  .debrief__arrow {
+    width: 1em;
+    height: 1em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .debrief__arrow {
+      transition: transform 120ms;
+    }
+
+    .debrief__link:hover .debrief__arrow {
+      transform: translateX(0.15em);
+    }
+  }
+
+  /* Wider: the headline on the left, the words beside it, the link beneath the words. */
+  @media (width >= 40rem) {
+    .debrief__box {
+      width: min(36rem, 100vw - 2rem);
+    }
+
+    /* The left column is as wide as the headline's longest line, up to half the card. */
+    .debrief__body {
+      grid-template-columns: fit-content(50%) minmax(0, 1fr);
+      gap: 1.25rem 1.75rem;
+    }
+
+    .debrief__title {
+      padding-inline-end: 0;
+    }
+
+    /* The first line of the words stops short of the X. */
+    .debrief__text::before {
+      content: '';
+      float: inline-end;
+      width: 1.5rem;
+      height: 1.75rem;
+    }
+
+    /* Under the words, in their column. */
+    .debrief__actions {
+      grid-column: 2;
+      margin-block-start: -0.25rem;
+    }
+  }
+
+  /* Forced colours paint the card and the round button as Canvas: give them an edge. */
+  @media (forced-colors: active) {
+    .debrief__box[open] {
+      border: 1px solid CanvasText;
+    }
+
+    .debrief__box:not([open]) > .debrief__toggle {
+      border: 1px solid ButtonText;
+    }
+  }
+</style>

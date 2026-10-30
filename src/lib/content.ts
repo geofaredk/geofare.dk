@@ -13,6 +13,7 @@ export type SectionId =
   | 'sectors'
   | 'lab'
   | 'contact'
+  | 'newsletter'
   | 'imprint'
   | 'not-found';
 

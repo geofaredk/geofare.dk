@@ -209,5 +209,11 @@
   "contact": {
     "title": "Står I over for en beslutning?",
     "body": "Fortæl os, hvad I har brug for at vide. Så fortæller vi, hvad det kræver at finde ud af det."
+  },
+  "newsletter": {
+    "title": "Hold dig orienteret. Før det bliver akut.",
+    "body": "Vores Debrief er et nyhedsbrev om naturfarer, beredskab og klimarisiko i Danmark. Hver anden uge samler vi de vigtigste historier om risici, begivenheder og de beslutninger, der afgør, hvor udsatte vi er.",
+    "cta": "Tilmeld dig Debrief",
+    "url": "https://debrief.geofare.dk/"
   }
 }

@@ -435,11 +435,24 @@ for (const [path, name, home] of [
   });
 }
 
-test('on a page with little on it the footer stands at the foot of the window', async ({ page }) => {
+test('on a page with little on it the footer stands at the foot of the window, above the room kept for the newsletter box', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto('/imprint');
-  const bottom = await page.evaluate(() => document.querySelector('footer')!.getBoundingClientRect().bottom);
-  expect(Math.round(bottom)).toBe(900);
+  const measure = () =>
+    page.evaluate(() => ({
+      bottom: document.querySelector('footer')!.getBoundingClientRect().bottom + scrollY,
+      room: document.querySelector('.debrief-space')!.getBoundingClientRect().height,
+      height: document.documentElement.scrollHeight,
+    }));
+  // The box is folded: the room is small and the footer stands at the foot of the window.
+  let m = await measure();
+  expect(m.room).toBeLessThan(100);
+  expect(Math.round(m.bottom + m.room)).toBe(900);
+  // Open, the box needs its height below the footer, which may make the page taller than the window.
+  await page.locator('#newsletter > summary').click();
+  m = await measure();
+  expect(m.room).toBeGreaterThan(200);
+  expect(Math.round(m.bottom + m.room)).toBe(m.height);
 });
 
 for (const width of [360, 768, 1280, 1920]) {

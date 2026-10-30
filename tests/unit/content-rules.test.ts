@@ -35,6 +35,10 @@ describe('checkSection, other fields', () => {
     expect(() => checkSection('en', 'not-found', { title: 'Page not found' }, 'Text.')).toThrow('src/content/sections/en/not-found.md needs back');
     expect(() => checkSection('en', 'not-found', { title: 'Page not found', back: ' ' }, 'Text.')).toThrow('src/content/sections/en/not-found.md needs back');
   });
+  it('needs the newsletter button\'s text', () => {
+    expect(() => checkSection('en', 'newsletter', { title: 'geofare Debrief', cta: 'Subscribe to Debrief' }, 'Text.')).not.toThrow();
+    expect(() => checkSection('en', 'newsletter', { title: 'geofare Debrief' }, 'Text.')).toThrow('src/content/sections/en/newsletter.md needs cta');
+  });
 });
 
 describe('checkList', () => {

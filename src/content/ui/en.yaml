@@ -21,6 +21,10 @@ lab:
   newTab: (opens in a new tab)
 lang:
   label: Language
+newsletter:
+  label: Newsletter
+  open: Open the newsletter box
+  close: Close the newsletter box
 footer:
   cvr: CVR
   imprint: Imprint

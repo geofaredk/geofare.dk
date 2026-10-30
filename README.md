@@ -116,6 +116,8 @@ The container sends no HSTS header, so set it in the proxy once HTTPS works. The
 
 The content folders are `src/content/sections/en/` (one file per block of text), `src/content/services/en/`, `src/content/sectors/en/`, `src/content/principles/en/` and `src/content/lab/en/` (the projects in the Lab section). Each has the same folder for Danish (`da`). Services, sectors and principles are ordered by `order` in the front matter.
 
+The newsletter box in the lower right corner of every page takes its title, text and button text from `src/content/sections/<lang>/newsletter.md`; the address its button opens is `newsletter.url` in `src/config/site.ts`. It starts folded to a round button, opens by itself once the visitor has scrolled past the hero, and stays closed once closed; nothing about it is remembered between pages.
+
 The favicon, the Apple touch icon and the share image in `public/` are made from `src/assets/brand.svg`. To rebuild them, run `npm run brand-assets`.
 
 ## Add things

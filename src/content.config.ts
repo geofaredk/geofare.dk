@@ -35,6 +35,8 @@ const sections = defineCollection({
     secondaryCta: z.string().optional(),
     // not-found
     back: z.string().optional(),
+    // newsletter
+    cta: z.string().optional(),
   }),
 });
 
@@ -58,6 +60,7 @@ const ui = defineCollection({
     lang: z.object({ label: z.string() }),
     lab: z.object({ newTab: z.string() }),
     about: z.object({ portrait: z.string(), portraitAlt: z.string() }),
+    newsletter: z.object({ label: z.string(), open: z.string(), close: z.string() }),
     footer: z.object({ cvr: z.string(), imprint: z.string() }),
   }),
 });

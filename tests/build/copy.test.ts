@@ -81,6 +81,17 @@ describe('copy matches the brief word for word', () => {
     expect(lines).toHaveLength(1);
     expect(lines[0]).toMatch(footerLinePattern(copy.footer.fragments));
   });
+  it('newsletter box: outside the main content, with its name, its text and one button to the Debrief site', () => {
+    const box = root.querySelector('#newsletter')!;
+    expect(box.closest('main')).toBeNull();
+    expect(box.tagName.toLowerCase()).toBe('details');
+    const t = norm(box.textContent);
+    for (const s of [copy.newsletter.title, copy.newsletter.body]) expect(t).toContain(s);
+    const links = box.querySelectorAll('a');
+    expect(links).toHaveLength(1);
+    expect(links[0].getAttribute('href')).toBe(copy.newsletter.url);
+    expect(norm(links[0].textContent)).toBe(copy.newsletter.cta);
+  });
   it('navigation labels', () => {
     const n = norm(root.querySelector('header nav')!.textContent);
     for (const s of copy.nav) expect(n).toContain(s);

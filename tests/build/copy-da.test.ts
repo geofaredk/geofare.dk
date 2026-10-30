@@ -64,6 +64,10 @@ describe('the Danish page carries the Danish copy word for word', () => {
   it('contact', () => {
     expectInOrder(sectionText('contact'), [copy.contact.title, copy.contact.body]);
   });
+  it('newsletter', () => {
+    expectInOrder(sectionText('newsletter'), [copy.newsletter.title, copy.newsletter.body, copy.newsletter.cta]);
+    expect(root.querySelector('#newsletter a')!.getAttribute('href')).toBe(copy.newsletter.url);
+  });
   it('no placeholder filler is left on the page', () => {
     expect(norm(root.querySelector('main')!.textContent)).not.toMatch(/\blorem\b|\bipsum\b|\bdolor\b/i);
   });

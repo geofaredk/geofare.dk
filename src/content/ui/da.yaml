@@ -22,6 +22,10 @@ lab:
   newTab: (åbner i en ny fane)
 lang:
   label: Sprog
+newsletter:
+  label: Nyhedsbrev
+  open: Åbn nyhedsbrevsboksen
+  close: Luk nyhedsbrevsboksen
 footer:
   cvr: CVR
   imprint: Kolofon

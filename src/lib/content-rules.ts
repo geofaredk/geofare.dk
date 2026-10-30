@@ -11,7 +11,7 @@ const NO_BODY = new Set(['services', 'approach']);
 const isBlank = (value: string | undefined | null) => !value?.trim();
 
 /** Other front-matter fields a section renders, which must not be empty either. */
-const REQUIRED: Record<string, string[]> = { 'not-found': ['back'] };
+const REQUIRED: Record<string, string[]> = { 'not-found': ['back'], newsletter: ['cta'] };
 
 /** Throws if a section lacks the title, the text or another field that its page renders. */
 export function checkSection(

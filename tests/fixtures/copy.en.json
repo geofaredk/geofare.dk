@@ -216,6 +216,12 @@
       "[LinkedIn URL]"
     ]
   },
+  "newsletter": {
+    "title": "Stay informed. Before it gets urgent.",
+    "body": "Our Debrief is a newsletter covering natural hazards, emergency preparedness and climate risk in Denmark. Every other week, we bring together the most important stories about risks, events and the decisions that determine how vulnerable we are.",
+    "cta": "Subscribe to Debrief",
+    "url": "https://debrief.geofare.dk/"
+  },
   "footer": {
     "fragments": [
       "Imprint",

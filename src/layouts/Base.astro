@@ -9,6 +9,7 @@ import { emailLink, linkedinLink, postalAddress } from '../lib/contact';
 import { alternates, localizePath } from '../lib/i18n';
 import Header from '../components/sections/Header.astro';
 import Footer from '../components/sections/Footer.astro';
+import NewsletterBox from '../components/NewsletterBox.astro';
 
 interface Props {
   lang: Lang;
@@ -85,6 +86,7 @@ const jsonLd = JSON.stringify(structuredData).replace(/</g, '\\u003c');
       <slot />
     </main>
     {!bare && <Footer lang={lang} />}
+    {!bare && <NewsletterBox lang={lang} />}
     {/* Umami analytics, on every page of the built site. Left out of `npm run dev`, so work on the site is not counted as visits. */}
     {import.meta.env.PROD && <script is:inline defer src={site.analytics.script} data-website-id={site.analytics.websiteId} />}
   </body>
