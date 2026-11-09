@@ -7,10 +7,14 @@ import FieldWindow from '../FieldWindow.astro';
 
 interface Props {
   lang: Lang;
+  /** A page's own claim and text, instead of the home page's contact section. Given together. */
+  title?: string;
+  body?: string;
 }
 
-const { lang } = Astro.props;
+const { lang, body } = Astro.props;
 const section = await getSection(lang, 'contact');
+const title = Astro.props.title ?? section.data.title;
 const { Content } = await render(section);
 const links = [emailLink(site.company.email), linkedinLink(site.company.linkedin)];
 ---
@@ -20,10 +24,8 @@ const links = [emailLink(site.company.email), linkedinLink(site.company.linkedin
 
 <section id="contact" class="section" aria-labelledby="contact-title">
   <div class="container">
-    <h2 id="contact-title" class="claim">{section.data.title}</h2>
-    <div class="lead contact__body">
-      <Content />
-    </div>
+    <h2 id="contact-title" class="claim">{title}</h2>
+    <div class="lead contact__body">{body ? <p>{body}</p> : <Content />}</div>
     {/* role="list": Safari drops list semantics once the markers are styled away. */}
     <ul class="contact__links" role="list">
       {

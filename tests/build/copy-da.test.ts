@@ -44,6 +44,9 @@ describe('the Danish page carries the Danish copy word for word', () => {
     const a = copy.about;
     expectInOrder(sectionText('about'), [a.mission.title, a.mission.body, a.founder.title, a.founder.body, a.quote, a.team.title, a.team.body]);
   });
+  it('clients', () => {
+    expectInOrder(sectionText('clients'), [copy.clients.title]);
+  });
   it('principles', () => {
     expectInOrder(sectionText('approach'), [copy.approach.title, ...copy.principles.flatMap((p) => [p.title, p.body])]);
   });

@@ -1,6 +1,6 @@
 import { getCollection, getEntry, type CollectionEntry } from 'astro:content';
-import type { Lang } from '../config/site';
-import { checkLab, checkList, checkSection } from './content-rules';
+import { site, type Lang } from '../config/site';
+import { checkLab, checkLanding, checkList, checkSection } from './content-rules';
 
 export type SectionId =
   | 'hero'
@@ -9,6 +9,7 @@ export type SectionId =
   | 'about-founder'
   | 'about-quote'
   | 'about-team'
+  | 'clients'
   | 'approach'
   | 'sectors'
   | 'lab'
@@ -45,6 +46,28 @@ export async function getLab(lang: Lang): Promise<(CollectionEntry<'lab'> & { sl
   return entries.sort((a, b) => a.data.order - b.data.order).map((entry) => ({ ...entry, slug: entry.id.slice(lang.length + 1) }));
 }
 
+/** The clients of the logo stripe, in order. Two with the same order would be a silent swap, so that stops the build. */
+export async function getClients(): Promise<CollectionEntry<'clients'>[]> {
+  const entries = await getCollection('clients');
+  checkLab('clients', entries.map((entry) => ({ ...entry, filePath: entry.filePath ?? `src/content/clients/${entry.id}.md` })));
+  return entries.sort((a, b) => a.data.order - b.data.order);
+}
+
 export const getServices = (lang: Lang) => getList('services', lang);
 export const getSectors = (lang: Lang) => getList('sectors', lang);
 export const getPrinciples = (lang: Lang) => getList('principles', lang);
+
+/** A service landing page in one language. The body of the file is the hero's lead and must not be empty. */
+export async function getLanding(lang: Lang, slug: string): Promise<CollectionEntry<'landing'>> {
+  const entry = await getEntry('landing', `${lang}/${slug}`);
+  if (!entry) throw new Error(`Missing landing page: src/content/landing/${lang}/${slug}.md`);
+  if (!entry.body?.trim()) throw new Error(`src/content/landing/${lang}/${slug}.md needs text below the front matter (the hero's lead)`);
+  return entry;
+}
+
+/** The slugs of the landing pages, each of which must exist in every language, so that the switcher never leads to a missing page. */
+export async function getLandingSlugs(): Promise<string[]> {
+  const ids = (await getCollection('landing')).map((entry) => entry.id);
+  checkLanding(Object.keys(site.locales), ids);
+  return [...new Set(ids.map((id) => id.slice(id.indexOf('/') + 1)))].sort();
+}

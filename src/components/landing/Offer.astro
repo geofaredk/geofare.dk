@@ -1,0 +1,97 @@
+---
+// What the service delivers: the home page's numbered services, two by two, with their tags.
+// This is the page's keyword core, so each item has its own heading.
+import Tag from '../Tag.astro';
+
+interface Props {
+  data: { title: string; items: { title: string; body: string; tags: string[] }[] };
+}
+
+const { data } = Astro.props;
+const number = (i: number) => String(i + 1).padStart(2, '0');
+---
+
+<section id="offer" class="section" aria-labelledby="offer-title">
+  <div class="container">
+    <h2 id="offer-title" class="signpost">{data.title}</h2>
+    {/* role="list": Safari drops list semantics once the markers are styled away. */}
+    <ol class="offer" role="list">
+      {
+        data.items.map((item, i) => (
+          <li class="deliverable">
+            <p class="deliverable__number">{number(i)}</p>
+            <h3 class="deliverable__title">{item.title}</h3>
+            <p class="deliverable__body">{item.body}</p>
+            <ul class="deliverable__tags" role="list">
+              {item.tags.map((tag) => (
+                <li>
+                  <Tag>{tag}</Tag>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .offer {
+    display: grid;
+    row-gap: 4rem;
+    margin-block-start: calc(var(--section-space) / 2);
+    padding: 0;
+    list-style: none;
+  }
+
+  .deliverable__number {
+    color: var(--accent);
+    font-weight: var(--weight-medium);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.3;
+    font-size: larger;
+  }
+
+  .deliverable__title {
+    margin-block-start: 0.5rem;
+    font-size: var(--step-claim-s);
+    letter-spacing: var(--tracking-claim);
+  }
+
+  .deliverable__body {
+    max-width: var(--measure);
+    margin-block-start: 1rem;
+    text-wrap: pretty;
+  }
+
+  .deliverable__tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: start;
+    gap: 0.5rem;
+    margin-block-start: 1.75rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Two by two in halves of the grid; each block lends its four rows, so a pair's parts line up. */
+  @media (width >= 48rem) {
+    .offer {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: var(--grid-gap);
+      row-gap: 0;
+    }
+
+    .deliverable {
+      display: grid;
+      grid-row: span 4;
+      grid-template-rows: subgrid;
+      padding-inline-end: clamp(1rem, 6vw - 1.5rem, 5.5rem);
+    }
+
+    .deliverable:nth-child(n + 3) {
+      margin-block-start: 6rem;
+    }
+  }
+</style>

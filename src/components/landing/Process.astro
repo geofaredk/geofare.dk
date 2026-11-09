@@ -1,0 +1,110 @@
+---
+// How a project runs: the one blue band of the page, as the home page's "How we work", with
+// numbered steps and the window onto the field along its foot.
+import FieldWindow from '../FieldWindow.astro';
+
+interface Props {
+  data: { title: string; steps: { title: string; body: string }[] };
+}
+
+const { data } = Astro.props;
+const number = (i: number) => String(i + 1).padStart(2, '0');
+---
+
+<section id="process" class="process" aria-labelledby="process-title">
+  <div class="container">
+    <h2 id="process-title" class="signpost">{data.title}</h2>
+    {/* role="list": Safari drops list semantics once the markers are styled away. */}
+    <ol class="steps" role="list">
+      {
+        data.steps.map((step, i) => (
+          <li class="step">
+            <p class="step__number">{number(i)}</p>
+            <h3>{step.title}</h3>
+            <p class="step__body">{step.body}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+  {/* Its still is drawn at the hero's scale, wider than any screen. */}
+  <FieldWindow width={2560} height={176} time={41} class="process__field" />
+</section>
+
+<style>
+  /* The one blue section. Everything on it is --on-accent, the focus ring included. */
+  .process {
+    padding-block-start: var(--section-space);
+    background-color: var(--accent);
+    color: var(--on-accent);
+  }
+
+  .process h2,
+  .process h3 {
+    color: var(--on-accent);
+  }
+
+  .process :global(:focus-visible) {
+    outline-color: var(--on-accent);
+  }
+
+  .steps {
+    display: grid;
+    row-gap: 2.5rem;
+    margin-block-start: calc(var(--section-space) / 3);
+    padding: 0;
+    list-style: none;
+  }
+
+  .step__number {
+    margin-block-end: 0.5rem;
+    font-weight: var(--weight-medium);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.3;
+  }
+
+  .step h3 {
+    margin-block-end: 0.75rem;
+    font-size: var(--step-claim-s);
+    letter-spacing: var(--tracking-claim);
+  }
+
+  .step__body {
+    max-width: 30ch;
+    text-wrap: pretty;
+  }
+
+  /* Side by side, each step lends its three rows to the grid, so the texts start on one line. */
+  @media (width >= 40rem) {
+    .steps {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: var(--grid-gap);
+      row-gap: 3.5rem;
+    }
+
+    .step {
+      display: grid;
+      grid-row: span 3;
+      grid-template-rows: subgrid;
+      row-gap: 0;
+    }
+  }
+
+  @media (width >= 64rem) {
+    .steps {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .step h3 {
+      font-size: clamp(1.625rem, 2.6vw, 2.25rem);
+    }
+  }
+
+  .process__field {
+    width: 100%;
+    height: clamp(6.5rem, 13vw, 11rem);
+    margin-block-start: calc(var(--section-space) * 0.6);
+    --field-line: var(--on-accent);
+    --field-opacity: 0.3;
+  }
+</style>

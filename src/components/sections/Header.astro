@@ -8,9 +8,13 @@ import Logo from '../Logo.astro';
 
 interface Props {
   lang: Lang;
+  /** Where the "Get in touch" button leads; by default the home page's contact section. */
+  contactHref?: string;
+  /** `accent`: the bar is part of a blue block below it, with pale links and logo. `cream` (the default) is the home page's. */
+  tone?: 'cream' | 'accent';
 }
 
-const { lang } = Astro.props;
+const { lang, contactHref = localizePath(contactCta.href, lang), tone = 'cream' } = Astro.props;
 const ui = await getUi(lang);
 
 // The language switcher leads to the same page in the other language.
@@ -22,10 +26,10 @@ const languages = (Object.keys(site.locales) as Lang[]).map((code) => ({
 }));
 ---
 
-<header class="site-header">
+<header class:list={['site-header', `site-header--${tone}`]}>
   <div class="container site-header__inner">
     <a href={localizePath('/', lang)} class="site-header__home">
-      <Logo alt={ui.home} />
+      <Logo alt={ui.home} tone={tone === 'accent' ? 'pale' : 'accent'} />
     </a>
     <button
       type="button"
@@ -46,7 +50,7 @@ const languages = (Object.keys(site.locales) as Lang[]).map((code) => ({
           ))
         }
       </ul>
-      <Button href={localizePath(contactCta.href, lang)}>{ui.nav[contactCta.id]}</Button>
+      <Button href={contactHref}>{ui.nav[contactCta.id]}</Button>
       <ul class="site-header__langs" aria-label={ui.lang.label}>
         {
           languages.map(({ code, locale, href }) => (
@@ -270,6 +274,58 @@ const languages = (Object.keys(site.locales) as Lang[]).map((code) => ({
     .site-header__menu,
     .site-header__links {
       flex-wrap: wrap;
+    }
+  }
+
+  /*
+   * On the accent tone the bar is the top of a blue block: pale links, switcher and menu button,
+   * the button inverted (pale with blue text), the focus ring pale. The sheet on small screens
+   * is blue too. Hover is the one thing that changes: to white, since the accent is the ground.
+   */
+  .site-header--accent {
+    background-color: var(--accent);
+    color: var(--on-accent);
+  }
+
+  .site-header--accent :global(:focus-visible) {
+    outline-color: var(--on-accent);
+  }
+
+  .site-header--accent .site-header__links a,
+  .site-header--accent .site-header__toggle,
+  .site-header--accent .site-header__lang,
+  .site-header--accent .site-header__lang[aria-current] {
+    color: var(--on-accent);
+  }
+
+  /* Both languages pale (a fainter one would fail contrast on blue); the current one is underlined. */
+  .site-header--accent .site-header__lang[aria-current] {
+    text-decoration: underline;
+    text-underline-offset: 0.3em;
+  }
+
+  .site-header--accent .site-header__links a:hover,
+  .site-header--accent .site-header__toggle:hover,
+  .site-header--accent a.site-header__lang:hover {
+    color: white;
+  }
+
+  .site-header--accent :global(.button) {
+    border-color: var(--on-accent);
+    background-color: var(--on-accent);
+    color: var(--accent);
+  }
+
+  .site-header--accent :global(.button:hover),
+  .site-header--accent :global(.button:active) {
+    border-color: white;
+    background-color: white;
+    color: var(--accent);
+  }
+
+  @media (scripting: enabled) and (width < 77rem) {
+    .site-header--accent .site-header__menu {
+      background-color: var(--accent);
     }
   }
 </style>

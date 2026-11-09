@@ -18,9 +18,15 @@ interface Props {
   noindex?: boolean;
   /** No header, footer or skip link: a page that is only its own content, such as the 404 page. */
   bare?: boolean;
+  /** Further JSON-LD blocks a page adds to the ProfessionalService every page carries. */
+  structuredData?: object[];
+  /** Where the header's "Get in touch" button leads; by default the home page's contact section. */
+  contactHref?: string;
+  /** The header's tone: `accent` when the page starts with a blue block. */
+  headerTone?: 'cream' | 'accent';
 }
 
-const { lang, bare = false } = Astro.props;
+const { lang, bare = false, structuredData: extra = [], contactHref, headerTone } = Astro.props;
 const ui = await getUi(lang);
 const title = Astro.props.title ?? ui.meta.title;
 const description = Astro.props.description ?? ui.meta.description;
@@ -47,7 +53,8 @@ const structuredData = {
   ...(linkedin.href && { sameAs: [linkedin.href] }),
 };
 // Escape `<` so the JSON can never close the script element.
-const jsonLd = JSON.stringify(structuredData).replace(/</g, '\\u003c');
+const toJsonLd = (data: object) => JSON.stringify(data).replace(/</g, '\\u003c');
+const jsonLd = toJsonLd(structuredData);
 ---
 
 <!doctype html>
@@ -78,10 +85,11 @@ const jsonLd = JSON.stringify(structuredData).replace(/</g, '\\u003c');
     <meta name="twitter:card" content="summary_large_image" />
 
     <script type="application/ld+json" set:html={jsonLd} />
+    {extra.map((data) => <script type="application/ld+json" set:html={toJsonLd(data)} />)}
   </head>
   <body>
     {!bare && <a href="#main" class="skip-link">{ui.skip}</a>}
-    {!bare && <Header lang={lang} />}
+    {!bare && <Header lang={lang} contactHref={contactHref} tone={headerTone} />}
     <main id="main" tabindex="-1">
       <slot />
     </main>
