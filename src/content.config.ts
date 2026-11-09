@@ -37,6 +37,8 @@ const sections = defineCollection({
     back: z.string().optional(),
     // newsletter
     cta: z.string().optional(),
+    // contact: the highlighted invitation to book a call, above the email address
+    booking: z.strictObject({ title: z.string().min(1), cta: z.string().min(1), note: z.string().min(1) }).optional(),
   }),
 });
 

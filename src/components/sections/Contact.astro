@@ -1,8 +1,9 @@
 ---
 import { render } from 'astro:content';
 import { site, type Lang } from '../../config/site';
-import { getSection } from '../../lib/content';
+import { getSection, getUi } from '../../lib/content';
 import { emailLink, linkedinLink } from '../../lib/contact';
+import Button from '../Button.astro';
 import FieldWindow from '../FieldWindow.astro';
 
 interface Props {
@@ -17,6 +18,8 @@ const section = await getSection(lang, 'contact');
 const title = Astro.props.title ?? section.data.title;
 const { Content } = await render(section);
 const links = [emailLink(site.company.email), linkedinLink(site.company.linkedin)];
+const booking = section.data.booking;
+const ui = await getUi(lang);
 ---
 
 {/* A band of the line field marks the turn from "who we work with" to "talk to us": a window onto the moving field. Its still is drawn at the hero's scale, wider than any screen. */}
@@ -26,6 +29,24 @@ const links = [emailLink(site.company.email), linkedinLink(site.company.linkedin
   <div class="container">
     <h2 id="contact-title" class="claim">{title}</h2>
     <div class="lead contact__body">{body ? <p>{body}</p> : <Content />}</div>
+    {
+      booking && (
+        /* The invitation to book a call: filled with the accent colour at rest, so it is the first thing the eye lands on. */
+        <div class="contact__booking">
+          <div class="contact__booking-text">
+            <h3 class="contact__booking-title">{booking.title}</h3>
+            <p class="contact__booking-note">{booking.note}</p>
+          </div>
+          <p class="contact__booking-action">
+            {/* The booking page opens in a new tab, as the lab and client links do; the hidden note says so to a screen reader. */}
+            <Button href={site.company.booking} target="_blank" rel="noopener noreferrer">
+              {booking.cta}
+              <span class="sr-only"> {ui.lab.newTab}</span>
+            </Button>
+          </p>
+        </div>
+      )
+    }
     {/* role="list": Safari drops list semantics once the markers are styled away. */}
     <ul class="contact__links" role="list">
       {
@@ -58,10 +79,99 @@ const links = [emailLink(site.company.email), linkedinLink(site.company.linkedin
     margin-block-start: 1.75rem;
   }
 
+  /*
+   * The booking block: a block of the accent colour, reaching into the margins as the link blocks
+   * below it do. Pale type; the button inverted, pale with blue text, so it stands out on the blue.
+   * On a phone the heading, the button and the note stack; from 48rem the heading and the note
+   * stand on the left and the button on the right, on the same line as the text.
+   */
+  .contact__booking {
+    --reach: 1rem;
+
+    display: flex;
+    flex-direction: column;
+    margin-block-start: calc(var(--section-space) / 2);
+    margin-inline: calc(-1 * var(--reach));
+    padding: clamp(1.5rem, 3vw, 2.5rem) clamp(1rem, 2.5vw, 2rem);
+    border-radius: var(--radius);
+    background-color: var(--accent);
+    color: var(--on-accent);
+  }
+
+  .contact__booking :global(:focus-visible) {
+    outline-color: var(--on-accent);
+  }
+
+  .contact__booking-title {
+    color: var(--on-accent);
+    font-size: var(--step-title);
+    font-weight: var(--weight-semibold);
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+
+  /* Stacked: the text wrapper dissolves, so the button can stand between the heading and the note. */
+  .contact__booking-text {
+    display: contents;
+  }
+
+  .contact__booking-action {
+    order: 1;
+    margin-block-start: 1.25rem;
+  }
+
+  .contact__booking-note {
+    order: 2;
+  }
+
+  @media (width >= 48rem) {
+    .contact__booking {
+      flex-direction: row;
+      gap: clamp(1.5rem, 4vw, 3rem);
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .contact__booking-text {
+      display: block;
+      max-width: var(--measure);
+    }
+
+    .contact__booking-action {
+      order: 0;
+      flex-shrink: 0;
+      margin-block-start: 0;
+    }
+  }
+
+  .contact__booking-action > :global(.button--primary) {
+    border-color: var(--on-accent);
+    background-color: var(--on-accent);
+    color: var(--accent);
+  }
+
+  .contact__booking-action > :global(.button--primary:hover),
+  .contact__booking-action > :global(.button--primary:active) {
+    border-color: white;
+    background-color: white;
+    color: var(--accent);
+  }
+
+  .contact__booking-note {
+    margin-block-start: 0.875rem;
+    font-size: var(--step-small);
+    line-height: 1.45;
+  }
+
+  /* With the booking block above them, the link rows follow at a shorter distance. */
   .contact__links {
     margin-block-start: calc(var(--section-space) / 2);
     padding: 0;
     list-style: none;
+  }
+
+  .contact__booking + .contact__links {
+    margin-block-start: clamp(1.5rem, 3vw, 2.5rem);
   }
 
   /* Room for the focus ring of one block to clear the rule of the block above */

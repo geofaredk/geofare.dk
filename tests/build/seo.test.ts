@@ -63,26 +63,40 @@ describe('crawl files', () => {
   it('robots.txt points to the sitemap', () => {
     expect(read('robots.txt')).toMatch(/^Sitemap: \S+$/m);
   });
-  it('the sitemap exists and leaves out /imprint', () => {
+  it('the sitemap exists and leaves out the imprint and 404 pages in every language', () => {
     expect(existsSync('dist/sitemap-index.xml')).toBe(true);
     const sitemaps = readdirSync('dist').filter((f) => /^sitemap-\d+\.xml$/.test(f));
     expect(sitemaps.length).toBeGreaterThan(0);
-    for (const f of sitemaps) expect(read(f)).not.toContain('/imprint');
-  });
-  it('draft languages are built but kept out of search engines: noindex, no canonical, not in the sitemap or the hreflang links', () => {
-    const sitemap = readdirSync('dist').filter((f) => /^sitemap-\d+\.xml$/.test(f)).map(read).join('');
-    for (const lang of ['da']) {
-      for (const path of [`${lang}/index.html`, `${lang}/imprint/index.html`]) {
-        expect(existsSync(`dist/${path}`), path).toBe(true);
-        const page = parse(read(path));
-        expect(page.querySelector('html')?.getAttribute('lang')).toMatch(new RegExp(`^${lang}-`));
-        expect(page.querySelector('meta[name="robots"]')?.getAttribute('content')).toContain('noindex');
-        expect(page.querySelector('link[rel="canonical"]')).toBeNull();
-      }
-      expect(sitemap).not.toContain(`/${lang}/`);
+    for (const f of sitemaps) {
+      expect(read(f)).not.toContain('/imprint');
+      expect(read(f)).not.toContain('/404');
     }
-    const home = parse(read('index.html'));
-    expect(home.querySelectorAll('link[rel="alternate"]').map((l) => l.getAttribute('hreflang'))).toEqual(['en', 'x-default']);
+  });
+  it('Danish is published: indexable, with a canonical, in the sitemap, and both languages point at each other with hreflang', () => {
+    const sitemap = readdirSync('dist').filter((f) => /^sitemap-\d+\.xml$/.test(f)).map(read).join('');
+    const da = parse(read('da/index.html'));
+    expect(da.querySelector('html')?.getAttribute('lang')).toBe('da-DK');
+    expect(da.querySelector('meta[name="robots"]')).toBeNull();
+    expect(da.querySelector('link[rel="canonical"]')?.getAttribute('href')).toBe(`${site.url}/da/`);
+    expect(sitemap).toContain(`${site.url}/da/`);
+    const hreflangs = (page: ReturnType<typeof parse>) =>
+      Object.fromEntries(page.querySelectorAll('link[rel="alternate"]').map((l) => [l.getAttribute('hreflang'), l.getAttribute('href')]));
+    const expected = { en: `${site.url}/`, da: `${site.url}/da/`, 'x-default': `${site.url}/` };
+    expect(hreflangs(parse(read('index.html')))).toEqual(expected);
+    expect(hreflangs(da)).toEqual(expected);
+    // The imprint stays out of search engines in every language, as a page, not as a language.
+    expect(parse(read('da/imprint/index.html')).querySelector('meta[name="robots"]')?.getAttribute('content')).toContain('noindex');
+  });
+  it('a draft language, if there is one, is built but kept out of search engines: noindex, no canonical, not in the sitemap or the hreflang links', () => {
+    const sitemap = readdirSync('dist').filter((f) => /^sitemap-\d+\.xml$/.test(f)).map(read).join('');
+    const drafts = Object.entries(site.locales).filter(([, locale]) => locale.draft);
+    for (const [lang] of drafts) {
+      const page = parse(read(`${lang}/index.html`));
+      expect(page.querySelector('meta[name="robots"]')?.getAttribute('content')).toContain('noindex');
+      expect(page.querySelector('link[rel="canonical"]')).toBeNull();
+      expect(sitemap).not.toContain(`/${lang}/`);
+      expect(parse(read('index.html')).querySelector(`link[rel="alternate"][hreflang="${site.locales[lang as keyof typeof site.locales].hreflang}"]`)).toBeNull();
+    }
   });
   it('there are no pages in a language that is not in the list', () => {
     expect(existsSync('dist/de')).toBe(false);

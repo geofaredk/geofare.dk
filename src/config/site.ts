@@ -17,10 +17,10 @@ export const site = {
   // Open point in the brief: the real domain is not known yet. Override with SITE_URL at build time.
   url: process.env.SITE_URL ?? 'https://www.geofare.dk',
   defaultLang: 'en' as Lang,
-  // Danish holds placeholder ("blind") copy for now, so it is a draft. Set `draft: false` once the real text is in.
+  // Danish was a draft while its copy was placeholder text; published on 9 November 2026. A new language starts as `draft: true`.
   locales: {
     en: { path: '/', htmlLang: 'en-GB', hreflang: 'en', name: 'English', short: 'EN', draft: false },
-    da: { path: '/da/', htmlLang: 'da-DK', hreflang: 'da', name: 'Dansk', short: 'DA', draft: true },
+    da: { path: '/da/', htmlLang: 'da-DK', hreflang: 'da', name: 'Dansk', short: 'DA', draft: false },
   } as Record<Lang, Locale>,
   // Umami analytics, self-hosted at umami.geofare.dk: the script every page loads, the site it
   // counts for, and where the script reports to (always /api/send next to the script).
@@ -40,5 +40,7 @@ export const site = {
     cvr: '46811461',
     email: 'hej@geofare.dk',
     linkedin: 'https://www.linkedin.com/company/geofare',
+    // Where "Book an introductory call" in the contact section leads.
+    booking: 'https://calendar.proton.me/u/1/bookings#JuuB7gNED1nQsy-nF_ayDCq9iRUi270fRDNqAIedoJQ=',
   },
 };

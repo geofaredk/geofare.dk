@@ -116,20 +116,22 @@ describe('the English landing page', () => {
   it('leaks no placeholder', () => {
     expect(norm(root.querySelector('main')!.textContent)).not.toMatch(/\[[^\]]+\]/);
   });
-  it('is in the sitemap; the Danish draft is not', () => {
+  it('is in the sitemap in both languages', () => {
     const sitemap = readdirSync('dist').filter((f) => /^sitemap-\d+\.xml$/.test(f)).map(read).join('');
     expect(sitemap).toContain(canonical);
-    expect(sitemap).not.toContain(`/da/services/`);
+    expect(sitemap).toContain(`${site.url}/da/services/${SLUG}/`);
   });
 });
 
 describe('the Danish landing page', () => {
   const path = `da/services/${SLUG}/index.html`;
-  it('is built in Danish, kept out of search engines, and switches back to the English page', () => {
+  it('is built in Danish, indexable with its own canonical and hreflang links, and switches back to the English page', () => {
     expect(existsSync(`dist/${path}`)).toBe(true);
     const root = page(path);
     expect(root.querySelector('html')!.getAttribute('lang')).toBe('da-DK');
-    expect(root.querySelector('meta[name="robots"]')!.getAttribute('content')).toContain('noindex');
+    expect(root.querySelector('meta[name="robots"]')).toBeNull();
+    expect(root.querySelector('link[rel="canonical"]')!.getAttribute('href')).toBe(`${site.url}/da/services/${SLUG}/`);
+    expect(root.querySelectorAll('link[rel="alternate"]').map((l) => l.getAttribute('hreflang'))).toEqual(['en', 'da', 'x-default']);
     expect(norm(root.querySelector('h1')!.textContent)).toBe(frontMatter('da').title);
     const toEnglish = root.querySelectorAll('header nav a.site-header__lang').map((a) => a.getAttribute('href'));
     expect(toEnglish).toEqual([`/services/${SLUG}/`]);
