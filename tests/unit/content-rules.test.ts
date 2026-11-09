@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkList, checkSection, checkLab } from '../../src/lib/content-rules';
+import { checkLanding, checkList, checkSection, checkLab } from '../../src/lib/content-rules';
 
 describe('checkSection', () => {
   it('passes a section with its title and text', () => {
@@ -26,6 +26,7 @@ describe('checkSection', () => {
 
   it('needs no text for the sections that show only their title', () => {
     expect(() => checkSection('en', 'approach', { title: 'How we work' }, '')).not.toThrow();
+    expect(() => checkSection('en', 'clients', { title: 'We have previously worked for' }, '')).not.toThrow();
   });
 });
 
@@ -80,5 +81,15 @@ describe('checkLab', () => {
     expect(() => checkLab('en', [project('a', 1), project('b', 1)])).toThrow(
       'src/content/lab/en: src/content/lab/en/a.md and src/content/lab/en/b.md have the same order (1); each needs its own',
     );
+  });
+});
+
+describe('checkLanding', () => {
+  it('passes when every slug exists in every language', () => {
+    expect(() => checkLanding(['en', 'da'], ['en/eo', 'da/eo'])).not.toThrow();
+  });
+
+  it('names the missing file when a slug lacks a language', () => {
+    expect(() => checkLanding(['en', 'da'], ['en/eo'])).toThrow('src/content/landing/da/eo.md');
   });
 });

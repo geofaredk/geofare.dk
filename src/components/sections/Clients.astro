@@ -1,0 +1,135 @@
+---
+import { Image } from 'astro:assets';
+import type { Lang } from '../../config/site';
+import { getClients, getSection, getUi } from '../../lib/content';
+
+interface Props {
+  lang: Lang;
+  /** The line above the logos; by default the one of the home page's clients section. */
+  title?: string;
+  /** `attached` (the default) reaches up into the section above it, as below About; `own` keeps its own distance, as below a hero. */
+  spacing?: 'attached' | 'own';
+}
+
+/** The height every logo file is drawn at, in CSS px; the file is asked for at twice that. */
+const LOGO_HEIGHT = 104;
+
+const { lang } = Astro.props;
+const ui = await getUi(lang);
+const { spacing = 'attached' } = Astro.props;
+const title = Astro.props.title ?? (await getSection(lang, 'clients')).data.title;
+const clients = await getClients();
+---
+
+{/* A line and a row of tiles, one per client. The logo files share a height and keep their own widths, and each brings its own clear space, so the tile adds none. */}
+<section id="clients" class:list={['clients', `clients--${spacing}`]} aria-labelledby="clients-title">
+  <div class="container">
+    <h2 id="clients-title" class="clients__title">{title}</h2>
+    <ul class="clients__list" role="list">
+      {
+        clients.map(({ data }) => {
+          const inside = data.logo ? (
+            /* A PNG is a graphic and is served as it is; a photo-like file becomes WebP. An SVG passes through untouched. */
+            <Image
+              src={data.logo}
+              alt={data.title}
+              height={LOGO_HEIGHT * 2}
+              format={data.logo.format === 'png' ? 'png' : data.logo.format === 'svg' ? 'svg' : 'webp'}
+              class="client__logo"
+            />
+          ) : (
+            <span class="client__name">{data.title}</span>
+          );
+          return (
+            <li class="client">
+              {data.url ? (
+                <a class="client__tile" href={data.url} target="_blank" rel="noopener noreferrer">
+                  {inside}
+                  <span class="sr-only"> {ui.lab.newTab}</span>
+                </a>
+              ) : (
+                <div class="client__tile">{inside}</div>
+              )}
+            </li>
+          );
+        })
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  /* Below, a section's space before whatever follows. */
+  .clients {
+    padding-block: 0 var(--section-space);
+  }
+
+  /* Attached to About: it reaches half-way into About's lower space. */
+  .clients--attached {
+    margin-block-start: calc(var(--section-space) * -0.5);
+  }
+
+  /* On its own, below a hero: half a section's space above it, and none below, so the section after it keeps the usual distance. */
+  .clients--own {
+    padding-block: calc(var(--section-space) * 0.5) 0;
+  }
+
+  /* Set as the sub-headings of About are ("Muddy boots, clean data."). */
+  .clients__title {
+    color: var(--ink);
+    font-size: var(--step-title);
+    line-height: 1.2;
+  }
+
+  /*
+   * The logo files are artboards of one height with the mark inside, a quarter to a third of it,
+   * and clear space around it. The tile is the artboard: one height, no padding of its own.
+   */
+  .clients__list {
+    --logo-height: 6.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-block-start: 1.25rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .client__tile {
+    display: block;
+    border-radius: var(--radius);
+    background-color: var(--tile);
+  }
+
+  .client__tile > :global(.client__logo) {
+    display: block;
+    width: auto;
+    height: var(--logo-height);
+  }
+
+  /* Until there is a logo file, the name stands on the tile at the mark's place. */
+  .client__name {
+    display: block;
+    padding: calc(var(--logo-height) * 0.34) calc(var(--logo-height) * 0.42);
+    color: var(--ink-muted);
+    font-size: var(--step-small);
+    line-height: calc(var(--logo-height) * 0.32);
+    white-space: nowrap;
+  }
+
+  /* A linked tile answers the pointer by turning white. */
+  a.client__tile {
+    text-decoration: none;
+    transition: background-color 120ms;
+  }
+
+  a.client__tile:hover {
+    background-color: white;
+  }
+
+  @media (width < 30rem) {
+    .clients__list {
+      --logo-height: 5rem;
+    }
+  }
+</style>

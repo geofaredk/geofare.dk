@@ -1,0 +1,13 @@
+---
+import Landing from '../../components/pages/Landing.astro';
+import { getLandingSlugs } from '../../lib/content';
+
+// One page per service landing file, in the default language.
+export async function getStaticPaths() {
+  return (await getLandingSlugs()).map((slug) => ({ params: { slug } }));
+}
+
+const { slug } = Astro.params;
+---
+
+<Landing lang="en" slug={slug} />

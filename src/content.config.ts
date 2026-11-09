@@ -37,6 +37,8 @@ const sections = defineCollection({
     back: z.string().optional(),
     // newsletter
     cta: z.string().optional(),
+    // contact: the highlighted invitation to book a call, above the email address
+    booking: z.strictObject({ title: z.string().min(1), cta: z.string().min(1), note: z.string().min(1) }).optional(),
   }),
 });
 
@@ -83,4 +85,63 @@ const lab = defineCollection({
     }),
 });
 
-export const collections = { services, sectors, principles, sections, ui, lab };
+// The clients whose logos stand in the stripe below About: one file each, in no language. The
+// logo is a local image, shown at one height for all; without one the tile shows the name.
+const clients = defineCollection({
+  loader: glob({ base: './src/content/clients', pattern: '*.md', generateId: ({ entry }) => entry.replace(/\.[^.]+$/, '') }),
+  schema: ({ image }) =>
+    z.strictObject({
+      title: z.string().min(1),
+      order: z.number().int().positive(),
+      logo: image().optional(),
+      url: z.string().regex(/^https:\/\/\S+$/, 'a full https address').optional(),
+    }),
+});
+
+// A service landing page: one file per page and language, the whole page in its front matter
+// except the hero's lead, which is the text below it. Strict, so a misspelt key stops the build.
+// The counts keep the layouts honest: the situations grid has room for four, the FAQ needs two.
+const titled = z.strictObject({ title: z.string().min(1), body: z.string().min(1) });
+const text = z.string().min(1);
+const landing = defineCollection({
+  loader: byLanguage('landing'),
+  schema: ({ image }) =>
+    z.strictObject({
+    /** The headline (h1): a sentence. */
+    title: text,
+    /** The service's short name, as people search for it: the structured data's name and type. */
+    service: text.regex(/[^.]$/, 'a name, not a sentence: no full stop'),
+    meta: z.strictObject({
+      title: text.max(70, '70 characters at most: a search result cuts off a longer one'),
+      description: text.max(170, '170 characters at most: a search result cuts off a longer one'),
+    }),
+    hero: z.strictObject({
+      primaryCta: text,
+      secondaryCta: text,
+      // The picture on the right of the hero: a local image file, optimised at build time. Until
+      // there is one, the slot shows a still of the line field. An image needs its description.
+      image: image().optional(),
+      imageAlt: text.optional(),
+    }).refine((hero) => !hero.image || !!hero.imageAlt, { message: 'hero.imageAlt is needed when hero.image is given' }),
+    clients: z.strictObject({ title: text }),
+    situations: z.strictObject({ title: text, intro: text, items: z.array(titled).min(3).max(4) }),
+    offer: z.strictObject({
+      title: text,
+      items: z.array(titled.extend({ tags: z.array(text).min(1) })).min(3).max(6),
+    }),
+    process: z.strictObject({ title: text, steps: z.array(titled).min(3).max(5) }),
+    audiences: z.strictObject({
+      title: text,
+      intro: text,
+      items: z.array(z.strictObject({ title: text, lead: text, points: z.array(text).min(1) })).min(3).max(6),
+    }),
+    why: z.strictObject({ title: text, intro: text, founder: titled, quote: text }),
+    faq: z.strictObject({
+      title: text,
+      items: z.array(z.strictObject({ question: text, answer: text })).min(2).max(8),
+    }),
+    contact: z.strictObject({ title: text, body: text }),
+  }),
+});
+
+export const collections = { services, sectors, principles, sections, ui, lab, clients, landing };

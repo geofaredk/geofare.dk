@@ -1,0 +1,63 @@
+---
+// A service landing page: one content file per language holds the whole page; this component
+// only knows the order of the sections and what each needs.
+import { render } from 'astro:content';
+import { site, type Lang } from '../../config/site';
+import Base from '../../layouts/Base.astro';
+import { getLanding, getUi } from '../../lib/content';
+import { localizePath } from '../../lib/i18n';
+import { landingStructuredData } from '../../lib/landing-seo';
+import founderPhoto from '../../assets/founder.png';
+import Clients from '../sections/Clients.astro';
+import Contact from '../sections/Contact.astro';
+import LandingHero from '../landing/LandingHero.astro';
+import Situations from '../landing/Situations.astro';
+import Offer from '../landing/Offer.astro';
+import Process from '../landing/Process.astro';
+import Audiences from '../landing/Audiences.astro';
+import Why from '../landing/Why.astro';
+import Faq from '../landing/Faq.astro';
+
+interface Props {
+  lang: Lang;
+  slug: string;
+}
+
+const { lang, slug } = Astro.props;
+const ui = await getUi(lang);
+const page = await getLanding(lang, slug);
+const { data } = page;
+const { Content: Lead } = await render(page);
+
+const absolute = (path: string) => new URL(path, site.url).href;
+const structuredData = landingStructuredData({
+  name: data.service,
+  description: data.meta.description,
+  url: absolute(Astro.url.pathname),
+  providerName: site.name,
+  providerUrl: absolute(localizePath('/', lang)),
+  faq: data.faq.items,
+});
+---
+
+<Base lang={lang} title={data.meta.title} description={data.meta.description} structuredData={structuredData} contactHref="#contact" headerTone="accent">
+  <LandingHero
+    title={data.title}
+    primaryCta={data.hero.primaryCta}
+    secondaryCta={data.hero.secondaryCta}
+    primaryHref="#contact"
+    secondaryHref="#offer"
+    image={data.hero.image}
+    imageAlt={data.hero.imageAlt}
+  >
+    <Lead />
+  </LandingHero>
+  <Clients lang={lang} title={data.clients.title} spacing="own" />
+  <Situations data={data.situations} />
+  <Offer data={data.offer} />
+  <Process data={data.process} />
+  <Audiences data={data.audiences} />
+  <Why data={data.why} photo={founderPhoto} photoAlt={ui.about.portraitAlt} />
+  <Faq data={data.faq} />
+  <Contact lang={lang} title={data.contact.title} body={data.contact.body} />
+</Base>

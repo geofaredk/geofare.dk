@@ -1,0 +1,188 @@
+---
+// The hero of a service landing page: a block of the accent colour, set apart from the home
+// page's cream hero and its moving field. Pale type on blue: the headline across the full width,
+// below it the lead and two buttons on the left, so both buttons are on the first screen of a
+// laptop and a phone, and on the right a picture that hangs over the block's lower edge into the
+// cream below.
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import Button from '../Button.astro';
+import LineField from '../LineField.astro';
+
+interface Props {
+  title: string;
+  primaryCta: string;
+  secondaryCta: string;
+  /** Where the two buttons lead, on this page. */
+  primaryHref: string;
+  secondaryHref: string;
+  /** The picture; without one the slot shows a still of the line field. */
+  image?: ImageMetadata;
+  imageAlt?: string;
+}
+
+const { title, primaryCta, secondaryCta, primaryHref, secondaryHref, image, imageAlt = '' } = Astro.props;
+---
+
+<section id="top" class="landing-hero" aria-labelledby="landing-title">
+  <div class="container cols landing-hero__grid">
+    <h1 id="landing-title" class="landing-hero__title">{title}</h1>
+    <div class="landing-hero__lede">
+      <div class="landing-hero__sub"><slot /></div>
+      <p class="landing-hero__actions">
+        <Button href={primaryHref}>{primaryCta}</Button>
+        <Button href={secondaryHref} variant="secondary">{secondaryCta}</Button>
+      </p>
+    </div>
+    <div class="landing-hero__picture">
+      {
+        image ? (
+          /* Shown at up to about 34rem wide; 1200 px covers a double-density screen. */
+          <Image src={image} alt={imageAlt} width={Math.min(1200, image.width)} widths={[600, 900, 1200].filter((w) => w < image.width)} sizes="(min-width: 86rem) 34rem, (min-width: 48rem) 40vw, 100vw" />
+        ) : (
+          /* Until there is a picture: a still of the line field at the hero's scale, pale on a tint of the blue. */
+          <LineField width={1200} height={900} time={27} seed={5} spacing={28} actualSize class="landing-hero__still" />
+        )
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  /* The blue block, continuing the header's blue. Everything on it is --on-accent, the focus ring included. */
+  .landing-hero {
+    padding-block: clamp(3rem, 9vh, 6.5rem) clamp(2.5rem, 7vh, 5rem);
+    background-color: var(--accent);
+    color: var(--on-accent);
+  }
+
+  .landing-hero :global(:focus-visible) {
+    outline-color: var(--on-accent);
+  }
+
+  /*
+   * The headline is a sentence, longer than the home page's, so it is set at the claim size: two
+   * lines on a laptop, four on a phone. It runs across all columns, above the lead and the picture.
+   */
+  .landing-hero__title {
+    grid-column: 1 / -1;
+    max-width: 18em;
+    color: var(--on-accent);
+    font-size: var(--step-claim);
+    font-weight: var(--weight-semibold);
+    line-height: var(--leading-hero);
+    letter-spacing: var(--tracking-hero);
+    text-wrap: balance;
+  }
+
+  .landing-hero__lede {
+    grid-column: 1 / -1;
+    width: fit-content;
+    margin-block-start: clamp(1.75rem, 4vw, 3rem);
+  }
+
+  /*
+   * The picture: a 4:3 box that hangs over the block's lower edge by --overlap into the cream
+   * below. On a phone it stands below the buttons, full width; from 48rem it takes the right
+   * five columns beside the lead, its foot on the block's padding edge, so the overlap is the
+   * same everywhere.
+   */
+  .landing-hero__picture {
+    --overlap: clamp(2rem, 5vw, 4.5rem);
+    grid-column: 1 / -1;
+    aspect-ratio: 4 / 3;
+    margin-block-start: clamp(2rem, 5vw, 3.5rem);
+    overflow: hidden;
+    border-radius: var(--radius);
+    /* A tint of the blue, solid, so what is behind it never shows through. */
+    background-color: color-mix(in srgb, var(--on-accent) 12%, var(--accent));
+  }
+
+  .landing-hero__picture > :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .landing-hero__picture > :global(.landing-hero__still) {
+    width: 100%;
+    height: 100%;
+    --field-line: var(--on-accent);
+    --field-opacity: 0.5;
+  }
+
+  @media (width >= 48rem) {
+    .landing-hero__lede {
+      grid-column: 1 / span 7;
+    }
+
+    .landing-hero__picture {
+      grid-column: 8 / -1;
+      align-self: end;
+      /* Its foot goes past the block's padding edge by --overlap, into the cream of the section below. */
+      margin-block: 0 calc(-1 * var(--overlap) - clamp(2.5rem, 7vh, 5rem));
+    }
+  }
+
+  .landing-hero__sub {
+    max-width: var(--measure);
+    color: var(--on-accent);
+    font-size: var(--step-lead);
+    line-height: 1.45;
+    text-wrap: pretty;
+  }
+
+  .landing-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-block-start: 1.75rem;
+  }
+
+  /*
+   * The buttons, inverted for the blue: the primary is a pale block with blue text and turns
+   * white on hover; the secondary is a pale outline and fills pale on hover. The button's own
+   * styles are in the base layer, so these win.
+   */
+  .landing-hero__actions > :global(.button) {
+    border-color: var(--on-accent);
+  }
+
+  .landing-hero__actions > :global(.button--primary) {
+    background-color: var(--on-accent);
+    color: var(--accent);
+  }
+
+  .landing-hero__actions > :global(.button--primary:hover),
+  .landing-hero__actions > :global(.button--primary:active) {
+    border-color: white;
+    background-color: white;
+    color: var(--accent);
+  }
+
+  .landing-hero__actions > :global(.button--secondary) {
+    color: var(--on-accent);
+  }
+
+  .landing-hero__actions > :global(.button--secondary:hover),
+  .landing-hero__actions > :global(.button--secondary:active) {
+    background-color: var(--on-accent);
+    color: var(--accent);
+  }
+
+  /* Phones: both buttons share one row and fill it; where even that is too narrow they stack, full width. */
+  @media (width < 30rem) {
+    .landing-hero__lede {
+      width: auto;
+    }
+
+    .landing-hero__actions {
+      gap: 0.5rem;
+    }
+
+    .landing-hero__actions > :global(.button) {
+      flex: 1 1 auto;
+      padding-inline: 1rem;
+    }
+  }
+</style>

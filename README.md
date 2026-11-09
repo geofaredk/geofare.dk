@@ -103,7 +103,7 @@ The container sends no HSTS header, so set it in the proxy once HTTPS works. The
 | --- | --- |
 | All page text: sections, services, sectors, principles, lab projects | `src/content/` |
 | Interface text (menu, buttons, footer labels) and page metadata (title, description, share-image text) | `src/content/ui/en.yaml` |
-| Company details: name, address, CVR number, email, LinkedIn, domain | `src/config/site.ts` |
+| Company details: name, address, CVR number, email, LinkedIn, booking link, domain | `src/config/site.ts` |
 | Menu links | `src/config/navigation.ts` |
 | Content schemas (what front matter is allowed) | `src/content.config.ts` |
 | One component per page section | `src/components/sections/` |
@@ -115,6 +115,8 @@ The container sends no HSTS header, so set it in the proxy once HTTPS works. The
 | Logo files | `src/assets/` |
 
 The content folders are `src/content/sections/en/` (one file per block of text), `src/content/services/en/`, `src/content/sectors/en/`, `src/content/principles/en/` and `src/content/lab/en/` (the projects in the Lab section). Each has the same folder for Danish (`da`). Services, sectors and principles are ordered by `order` in the front matter.
+
+The logo stripe below About ("We have previously worked for") lists the files in `src/content/clients/`, one per client and shared by both languages, ordered by `order`. Each has a `title` (the name, also the logo's alternative text) and may have a `logo`, a path to an image under `src/assets/` (SVG, PNG or JPEG), and a `url`, which makes the tile a link. The file is the whole tile: it is drawn as it is, 104 px tall at its own width, on a tile with no padding of its own, so give the files the same clear space around the mark. Without a `logo` the name stands on the tile. The line above the tiles is the title of `src/content/sections/<lang>/clients.md`.
 
 The newsletter box in the lower right corner of every page takes its title, text and button text from `src/content/sections/<lang>/newsletter.md`; the address its button opens is `newsletter.url` in `src/config/site.ts`. It starts folded to a round button, opens by itself once the visitor has scrolled past the hero, and stays closed once closed; nothing about it is remembered between pages.
 
@@ -152,20 +154,22 @@ status: Launching soon
 
 **A page.** Create a file in `src/pages/`; a file named `src/pages/projects.astro` becomes `/projects`. Copy `src/pages/imprint.astro` as a starting point: it uses the shared layout, so header, footer and metadata come with it. The routes planned for later are:
 
-- `/services/[slug]` and `/sectors/[slug]`: add `src/pages/services/[slug].astro` and `src/pages/sectors/[slug].astro`. Every service and sector already has a `slug`, so each page can be generated from the collection with `getStaticPaths()`.
+- `/services/[slug]` exists: the service landing pages (see below). `/sectors/[slug]`: add `src/pages/sectors/[slug].astro`; every sector already has a `slug`, so each page can be generated from the collection with `getStaticPaths()`.
 - `/projects`, `/insights`, `/about`: one page each in `src/pages/`.
 - `/imprint` exists. Its text is in `src/content/sections/en/imprint.md`. A privacy page, if one is needed later, is one more page in `src/pages/`.
 
 To turn a menu anchor into a page link, change its `href` in `src/config/navigation.ts`.
 
+**A service landing page.** One page per service, at `/services/<slug>/` (Danish: `/da/services/<slug>/`), for people who search for that service by name. The whole page is one file per language, `src/content/landing/<lang>/<slug>.md`: the front matter holds every section (the headline, the metadata, the situations, the deliverables with their tags, the process steps, the audiences, the founder text and quote, the questions and the contact line), and the text below it is the hero's lead. The file names are the slug and must match across languages: a page that exists in one language and not the other stops the build, because the language switcher would lead to a missing page. The schema in `src/content.config.ts` names the fields and how many items each list takes; a misspelt key or a list outside those counts stops the build with the file name. The page component, `src/components/pages/Landing.astro`, only sets the order of the sections; the sections are in `src/components/landing/`. Each page carries its own title and description, a `Service` and a `FAQPage` in the structured data, and is in the sitemap once its language is published. The hero's picture is `hero.image` in the front matter, a local file under `src/assets/` (landscape, 4:3 works best, at least 1200 px wide; the slot crops whatever does not fit) with its description in `hero.imageAlt`; without one the slot shows a still of the line field. To add a page, copy the two files of `earth-observation-remote-sensing` and change the text. The first page's copy was written for the build and is listed under "To confirm".
+
 **Languages.** The site has two: English at `/` and Danish at `/da/`. The language switcher in the main menu (EN, DA) leads to the same page in the other language. The languages are listed in `src/config/site.ts` under `locales`.
 
-Danish is a **draft** for now. Its menu, buttons and other interface text are translated (`src/content/ui/da.yaml`), but the page copy in `src/content/*/da/` is placeholder text (lorem ipsum, one word for each English word). A draft language is built and reachable through the switcher, but every page of it carries `noindex`, and it is left out of the sitemap and of the `hreflang` links, so search engines never see the placeholder text.
+Both languages are published: every page is indexed, listed in the sitemap, and linked from its counterpart in the other language with `hreflang` (`x-default` points at English). The imprint and the 404 page stay out of search engines in every language.
 
-To publish a language:
+A language can be kept as a **draft** (`draft: true` in `src/config/site.ts`) while its copy is still placeholder text: it is built and reachable through the switcher, but every page of it carries `noindex`, and it is left out of the sitemap and of the `hreflang` links. Danish was a draft until 9 November 2026. To publish a draft language:
 
-1. Replace the placeholder text in its files under `src/content/services/`, `sectors/`, `principles/`, `sections/` and `lab/` with the real translation. Keep the file names, and `order` and `slug` as they are.
-2. Check the interface text in `src/content/ui/<language>.yaml`; the translations there were written for the build and should be confirmed (see "To confirm" below).
+1. Replace the placeholder text in its files under `src/content/services/`, `sectors/`, `principles/`, `sections/`, `lab/` and `landing/` with the real translation. Keep the file names, and `order` and `slug` as they are.
+2. Check the interface text in `src/content/ui/<language>.yaml`.
 3. In `src/config/site.ts`, set `draft: false` for that language. From the next build it is indexed, listed in the sitemap, and linked from the other languages with `hreflang`.
 
 To add a further language: add it to the `Lang` type and to `locales` in `src/config/site.ts`, copy each `en` content folder and `src/content/ui/en.yaml` under the new language code, and translate. The pages come from `src/pages/[lang]/`, which builds the home page and the imprint for every language in the list, so no page file is needed. If a section or interface file is missing, the build stops and names it. A missing service, sector, principle or project file does not stop the build, so check the page.
@@ -193,6 +197,8 @@ Filling in these points needs no change to the tests: they accept either the pla
 
 **The imprint page** is kept out of search engines until its text is written: it carries `noindex`, and it is left out of the sitemap. When the text is in, change both: remove `noindex` from `<Base … noindex>` in `src/pages/imprint.astro`, and remove `'/imprint'` from `excludedFromSitemap` in `astro.config.mjs`. Then update the two checks in `tests/build/seo.test.ts` that expect it to be left out.
 
+The contact section's booking block (the line above the email address, its button and the note under it) takes its text from `booking` in `src/content/sections/<lang>/contact.md`; the address the button opens is `company.booking` in `src/config/site.ts`.
+
 To confirm with the team, not fill in: the four "How we work" principles (`src/content/principles/en/`), the word "our network" in the team paragraph (`src/content/sections/en/about-team.md`), the new contact text (`src/content/sections/en/contact.md`) and the page metadata (`meta` in `src/content/ui/en.yaml`).
 
 ### To confirm: wording written for the build
@@ -210,7 +216,8 @@ The brief does not give these words; they were written so the site works. Change
 | "geofare home" | Name of the header logo link for screen readers | `src/content/ui/en.yaml` (`home`) |
 | "Language" | Name of the language switcher for screen readers | `src/content/ui/en.yaml` (`lang.label`) |
 | "(opens in a new tab)" | Read out after each project link in the Lab section | `src/content/ui/en.yaml` (`lab.newTab`) |
-| All Danish interface text, including the headings "Ydelser", "Sådan arbejder vi", "Kolofon" | Menu, buttons, labels and three section headings in the draft language | `src/content/ui/da.yaml`; `src/content/sections/da/` |
+| All Danish interface text, including the headings "Ydelser", "Sådan arbejder vi", "Kolofon" | Menu, buttons, labels and three section headings of the Danish site | `src/content/ui/da.yaml`; `src/content/sections/da/` |
+| The whole Earth observation landing page, in both languages: in particular the founder's EUMETSAT background, the delivery times and the pricing lines in the questions | `/services/earth-observation-remote-sensing/` | `src/content/landing/en/earth-observation-remote-sensing.md`, `src/content/landing/da/…` |
 
 ## Replace the portrait
 

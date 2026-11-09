@@ -1,0 +1,119 @@
+---
+// Why geofare: the claim and lead across the top, then the founder's photo in its field window
+// beside one column of text and his words, as the home page's About spread, shortened.
+import type { ImageMetadata } from 'astro';
+import Portrait from '../Portrait.astro';
+
+interface Props {
+  data: { title: string; intro: string; founder: { title: string; body: string }; quote: string };
+  photo: ImageMetadata;
+  photoAlt: string;
+}
+
+const { data, photo, photoAlt } = Astro.props;
+---
+
+<section id="why" class="section" aria-labelledby="why-title">
+  <div class="container cols">
+    <h2 id="why-title" class="claim why__claim">{data.title}</h2>
+    <p class="lead why__intro">{data.intro}</p>
+
+    <div class="why__portrait">
+      <Portrait src={photo} alt={photoAlt} />
+    </div>
+
+    <div class="why__column">
+      <div class="why__text">
+        <h3>{data.founder.title}</h3>
+        <p>{data.founder.body}</p>
+      </div>
+      <figure class="why__quote">
+        <blockquote>
+          <p>{data.quote}</p>
+        </blockquote>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<style>
+  .why__intro {
+    max-width: var(--measure);
+    margin-block-start: 1.75rem;
+  }
+
+  .why__portrait {
+    max-width: 16rem;
+    margin-block-start: calc(var(--section-space) * 0.6);
+  }
+
+  .why__column {
+    margin-block-start: 2rem;
+  }
+
+  .why__column > * + * {
+    margin-block-start: clamp(2.5rem, 4.5vw, 3.5rem);
+  }
+
+  .why__text {
+    max-width: var(--measure);
+    text-wrap: pretty;
+  }
+
+  .why__text h3 {
+    margin-block-end: 0.75rem;
+    color: var(--ink);
+    font-size: var(--step-title);
+    line-height: 1.2;
+  }
+
+  /* The founder's own words; the opening mark hangs in the margin. */
+  .why__quote {
+    color: var(--accent);
+    font-size: var(--step-claim-s);
+    font-weight: var(--weight-medium);
+    line-height: 1.18;
+    letter-spacing: var(--tracking-claim);
+    text-wrap: balance;
+  }
+
+  .why__quote p {
+    text-indent: -0.33em;
+  }
+
+  @media (width >= 48rem) {
+    .why__claim {
+      grid-column: 1 / span 10;
+    }
+
+    .why__intro,
+    .why__column {
+      grid-column: 7 / -1;
+    }
+
+    .why__intro {
+      margin-block-start: 2.5rem;
+    }
+
+    .why__portrait {
+      grid-column: 1 / span 5;
+      align-self: start;
+      max-width: none;
+    }
+
+    .why__column {
+      margin-block-start: calc(var(--section-space) * 0.6);
+    }
+
+    .why__quote {
+      font-size: clamp(1.5rem, 2.4vw, 2rem);
+      line-height: 1.22;
+    }
+  }
+
+  @media (width >= 64rem) {
+    .why__claim {
+      grid-column: 1 / span 9;
+    }
+  }
+</style>

@@ -1,20 +1,25 @@
 ---
-// The supplied logo, used as-is: never redrawn, recoloured or distorted.
+// The supplied logo, used as-is: never redrawn, recoloured or distorted. On a blue background
+// the brief allows a copy with the fill set to the pale colour, which is the only other file.
 import brandWithName from '../assets/brand-with-name.svg';
+import brandWithNamePale from '../assets/brand-with-name-pale.svg';
 
 interface Props {
   /** Empty when the surrounding text already names geofare. */
   alt: string;
   class?: string;
+  /** `pale` on the accent colour; `accent` (the default) on cream. */
+  tone?: 'accent' | 'pale';
 }
 
-const { alt, class: className } = Astro.props;
+const { alt, class: className, tone = 'accent' } = Astro.props;
+const file = tone === 'pale' ? brandWithNamePale : brandWithName;
 ---
 
 <img
-  src={brandWithName.src}
-  width={brandWithName.width}
-  height={brandWithName.height}
+  src={file.src}
+  width={file.width}
+  height={file.height}
   alt={alt}
   class:list={['logo', className]}
 />

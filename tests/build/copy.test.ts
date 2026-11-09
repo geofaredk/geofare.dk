@@ -32,6 +32,13 @@ describe('copy matches the brief word for word', () => {
     const t = sectionText('about'); const a = copy.about;
     for (const s of [a.mission.title, a.mission.body, a.founder.title, a.founder.body, a.quote, a.team.title, a.team.body]) expectCopy(t, s);
   });
+  it('clients: the line and one tile per client, each with a logo or, until there is one, the name', () => {
+    const t = sectionText('clients');
+    expect(t).toContain(copy.clients.title);
+    const tiles = root.querySelectorAll('#clients .client__tile');
+    expect(tiles.length).toBeGreaterThan(0);
+    for (const tile of tiles) expect(tile.querySelector('img.client__logo') ?? tile.querySelector('.client__name')).not.toBeNull();
+  });
   it('principles', () => {
     const t = sectionText('approach');
     expect(t).toContain(copy.approach.title);
@@ -99,7 +106,7 @@ describe('copy matches the brief word for word', () => {
   });
   it('section order answers what, who, how, for whom', () => {
     const ids = root.querySelectorAll('main > section, main > div[id]').map((e) => e.id).filter(Boolean);
-    expect(ids).toEqual(['top', 'services', 'about', 'approach', 'sectors', 'lab', 'contact']);
+    expect(ids).toEqual(['top', 'services', 'about', 'clients', 'approach', 'sectors', 'lab', 'contact']);
   });
   it('the brand name is lowercase in running text', () => { expect(text).not.toMatch(/\bGeofare\b|\bGEOFARE\b/); });
 });

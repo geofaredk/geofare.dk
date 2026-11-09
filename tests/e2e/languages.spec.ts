@@ -42,7 +42,7 @@ test.describe('the language switcher at 1280', () => {
     for (const path of ['/da/']) {
       await page.goto(path);
       const ids = await page.locator('main > section').evaluateAll((sections) => sections.map((section) => section.id));
-      expect(ids).toEqual(['top', 'services', 'about', 'approach', 'sectors', 'lab', 'contact']);
+      expect(ids).toEqual(['top', 'services', 'about', 'clients', 'approach', 'sectors', 'lab', 'contact']);
       await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     }

@@ -6,7 +6,7 @@
 /** Sections with no heading of their own: the hero has its headline fields, the quote is a quote. */
 const UNTITLED = new Set(['hero', 'about-quote']);
 /** Sections that show only their title; their text is the list below them. */
-const NO_BODY = new Set(['services', 'approach']);
+const NO_BODY = new Set(['services', 'approach', 'clients']);
 
 const isBlank = (value: string | undefined | null) => !value?.trim();
 
@@ -67,6 +67,22 @@ export function checkList(collection: string, lang: string, entries: ListEntry[]
         );
       }
       seen.set(value, entry);
+    }
+  }
+}
+
+/**
+ * Throws if a landing page exists in one language but not another: the language switcher on
+ * every page leads to the same page in the other language, which must not be a missing page.
+ * `ids` are the collection's entry ids, `<lang>/<slug>`.
+ */
+export function checkLanding(langs: string[], ids: string[]): void {
+  const slugs = new Set(ids.map((id) => id.slice(id.indexOf('/') + 1)));
+  for (const slug of slugs) {
+    for (const lang of langs) {
+      if (!ids.includes(`${lang}/${slug}`)) {
+        throw new Error(`src/content/landing/${lang}/${slug}.md is missing: the page exists in another language, and every page needs every language`);
+      }
     }
   }
 }

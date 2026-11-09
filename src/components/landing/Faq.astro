@@ -1,0 +1,134 @@
+---
+// The questions people ask before they get in touch: openable rows, the question as the row,
+// the answer as one paragraph. All in the HTML, so it opens without JavaScript and is what the
+// FAQPage structured data says it is.
+interface Props {
+  data: { title: string; items: { question: string; answer: string }[] };
+}
+
+const { data } = Astro.props;
+---
+
+<section id="faq" class="section" aria-labelledby="faq-title">
+  <div class="container">
+    <h2 id="faq-title" class="signpost">{data.title}</h2>
+    <div class="faq">
+      {
+        data.items.map((item) => (
+          <details class="question">
+            <summary class="question__summary">
+              <h3 class="question__name">{item.question}</h3>
+              <span class="question__sign" aria-hidden="true" />
+            </summary>
+            <p class="question__answer">{item.answer}</p>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq {
+    margin-block-start: calc(var(--section-space) / 3);
+    border-block-end: 1px solid var(--rule);
+  }
+
+  .question {
+    border-block-start: 1px solid var(--rule);
+  }
+
+  .question__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    min-height: 4rem;
+    padding-block: clamp(0.875rem, 1.6vw, 1.25rem);
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .question__summary::-webkit-details-marker {
+    display: none;
+  }
+
+  /* A question is a line of text, not a claim: title size, medium weight. */
+  .question__name {
+    color: var(--ink);
+    font-size: var(--step-title);
+    font-weight: var(--weight-medium);
+    line-height: 1.25;
+    text-wrap: pretty;
+    transition: color 120ms;
+  }
+
+  .question__sign {
+    position: relative;
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--ink);
+    transition: color 120ms;
+  }
+
+  .question__sign::before,
+  .question__sign::after {
+    content: '';
+    position: absolute;
+    background-color: currentColor;
+  }
+
+  .question__sign::before {
+    inset: calc(50% - 1px) 0 auto;
+    height: 2px;
+  }
+
+  .question__sign::after {
+    inset: 0 auto 0 calc(50% - 1px);
+    width: 2px;
+  }
+
+  .question[open] .question__sign::after {
+    display: none;
+  }
+
+  @media (forced-colors: active) {
+    .question__sign::before,
+    .question__sign::after {
+      background-color: CanvasText;
+      forced-color-adjust: none;
+    }
+  }
+
+  .question__summary:hover > *,
+  .question[open] > .question__summary > * {
+    color: var(--accent);
+  }
+
+  .question__answer {
+    max-width: var(--measure);
+    padding-block: 0.25rem clamp(1.5rem, 3vw, 2.5rem);
+    text-wrap: pretty;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (interpolate-size: allow-keywords) and selector(::details-content) {
+      .question {
+        interpolate-size: allow-keywords;
+      }
+
+      .question::details-content {
+        block-size: 0;
+        overflow: clip;
+        transition:
+          block-size 240ms ease-out,
+          content-visibility 240ms allow-discrete;
+      }
+
+      .question[open]::details-content {
+        block-size: auto;
+      }
+    }
+  }
+</style>
