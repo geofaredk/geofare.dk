@@ -1,0 +1,26 @@
+---
+import Landing from '../../../components/pages/Landing.astro';
+import { site, type Lang } from '../../../config/site';
+import { getLandingPages } from '../../../lib/content';
+
+// One page per landing file and language other than the default one, which lives at the top
+// level. The middle part of the URL is the language's own word for services (`/da/ydelser/`).
+export async function getStaticPaths() {
+  const pages = await getLandingPages();
+  return pages
+    .filter((page) => page.lang !== site.defaultLang)
+    .map(({ lang, slug, name }) => ({
+      params: { lang: site.locales[lang].path.replaceAll('/', ''), services: site.locales[lang].routes.services, slug },
+      props: { lang, name },
+    }));
+}
+
+interface Props {
+  lang: Lang;
+  name: string;
+}
+
+const { lang, name } = Astro.props;
+---
+
+<Landing lang={lang} name={name} />

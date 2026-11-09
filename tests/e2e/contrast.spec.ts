@@ -136,7 +136,7 @@ for (const viewport of [
         // Let the 120 ms colour transitions finish.
         await settle(page);
         const label = ((await target.textContent()) ?? '').replace(/\s+/g, ' ').trim().slice(0, 60);
-        // A language link's name continues out of sight ("DA Dansk"); what is drawn is its start.
+        // A label may be longer than what is drawn in one piece; what is drawn is its start.
         const samples = (await measure(page)).filter((s) => s.text === label || label.startsWith(`${s.text} `));
         expect(samples.length, `found the hovered text of target ${i}`).toBeGreaterThan(0);
         for (const s of samples) {

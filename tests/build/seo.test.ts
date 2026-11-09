@@ -69,6 +69,7 @@ describe('crawl files', () => {
     expect(sitemaps.length).toBeGreaterThan(0);
     for (const f of sitemaps) {
       expect(read(f)).not.toContain('/imprint');
+      expect(read(f)).not.toContain('/kolofon');
       expect(read(f)).not.toContain('/404');
     }
   });
@@ -85,7 +86,7 @@ describe('crawl files', () => {
     expect(hreflangs(parse(read('index.html')))).toEqual(expected);
     expect(hreflangs(da)).toEqual(expected);
     // The imprint stays out of search engines in every language, as a page, not as a language.
-    expect(parse(read('da/imprint/index.html')).querySelector('meta[name="robots"]')?.getAttribute('content')).toContain('noindex');
+    expect(parse(read('da/kolofon/index.html')).querySelector('meta[name="robots"]')?.getAttribute('content')).toContain('noindex');
   });
   it('a draft language, if there is one, is built but kept out of search engines: noindex, no canonical, not in the sitemap or the hreflang links', () => {
     const sitemap = readdirSync('dist').filter((f) => /^sitemap-\d+\.xml$/.test(f)).map(read).join('');
@@ -98,29 +99,31 @@ describe('crawl files', () => {
       expect(parse(read('index.html')).querySelector(`link[rel="alternate"][hreflang="${site.locales[lang as keyof typeof site.locales].hreflang}"]`)).toBeNull();
     }
   });
-  it('there are no pages in a language that is not in the list', () => {
+  it('there are no pages in a language that is not in the list, and no Danish page under an English path', () => {
     expect(existsSync('dist/de')).toBe(false);
+    expect(existsSync('dist/da/imprint')).toBe(false);
+    expect(existsSync('dist/da/services')).toBe(false);
   });
-  it('every page offers the same page in the other languages, and marks the language it is in', () => {
-    const cases: [string, string, Record<string, string>][] = [
-      ['index.html', 'EN', { DA: '/da/' }],
-      ['da/index.html', 'DA', { EN: '/' }],
-      ['da/imprint/index.html', 'DA', { EN: '/imprint/' }],
+  it('every page offers the same page in the other languages only, each link named in its own language', () => {
+    const cases: [string, Record<string, string>][] = [
+      ['index.html', { Dansk: '/da/' }],
+      ['da/index.html', { English: '/' }],
+      // The imprint has its own word in each language's URL.
+      ['imprint/index.html', { Dansk: '/da/kolofon/' }],
+      ['da/kolofon/index.html', { English: '/imprint/' }],
       // The 404 pages have no header, so no switcher.
     ];
-    for (const [path, current, others] of cases) {
+    for (const [path, others] of cases) {
       const items = parse(read(path)).querySelectorAll('header nav .site-header__lang');
-      expect(items).toHaveLength(2);
-      const here = items.filter((item) => item.getAttribute('aria-current'));
-      expect(here).toHaveLength(1);
-      expect(here[0].tagName).toBe('SPAN');
-      expect(here[0].textContent.trim().startsWith(current), path).toBe(true);
-      const links = Object.fromEntries(items.filter((item) => item.tagName === 'A').map((a) => [a.textContent.trim().slice(0, 2), a.getAttribute('href')]));
+      // The language the page is in is not offered: nothing marks it, nothing links to it.
+      expect(items.filter((item) => item.tagName !== 'A' || item.getAttribute('aria-current')), path).toHaveLength(0);
+      const links = Object.fromEntries(items.map((a) => [a.textContent.trim(), a.getAttribute('href')]));
       expect(links, path).toEqual(others);
+      for (const a of items) expect(a.getAttribute('lang'), path).toBe(site.locales[a.getAttribute('hreflang') as keyof typeof site.locales].htmlLang);
     }
   });
   it('404 and imprint pages exist and are noindex', () => {
-    for (const path of ['404.html', 'da/404/index.html', 'imprint/index.html']) {
+    for (const path of ['404.html', 'da/404/index.html', 'imprint/index.html', 'da/kolofon/index.html']) {
       expect(existsSync(`dist/${path}`)).toBe(true);
       expect(parse(read(path)).querySelector('meta[name="robots"]')?.getAttribute('content')).toContain('noindex');
     }

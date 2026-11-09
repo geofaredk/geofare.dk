@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { site } from '../../src/config/site';
-import { alternates, localizePath, publishedLocales, switchPath } from '../../src/lib/i18n';
+import { alternates, alternatesFor, anchorId, anchorPath, localizePath, publishedLocales, routePath, switchPath } from '../../src/lib/i18n';
 
 describe('localizePath', () => {
   it('leaves default-language paths unprefixed', () => {
@@ -63,5 +63,45 @@ describe('with a prefixed locale (Danish at /da/), built here so the real config
       { hreflang: 'da', href: `${site.url}/da/` },
       { hreflang: 'x-default', href: `${site.url}/` },
     ]);
+  });
+});
+
+describe('routePath', () => {
+  it('builds a page path from the route words of the language', () => {
+    expect(routePath('imprint', 'en')).toBe('/imprint/');
+    expect(routePath('imprint', 'da')).toBe('/da/kolofon/');
+    expect(routePath('services', 'en', 'earth-observation-remote-sensing')).toBe('/services/earth-observation-remote-sensing/');
+    expect(routePath('services', 'da', 'jordobservation-og-fjernmaaling')).toBe('/da/ydelser/jordobservation-og-fjernmaaling/');
+  });
+});
+
+describe('alternatesFor', () => {
+  it('turns one path per language into hreflang links, published languages only, plus x-default', () => {
+    const locales = { en: { path: '/', hreflang: 'en' }, da: { path: '/da/', hreflang: 'da' } };
+    expect(alternatesFor({ en: '/imprint/', da: '/da/kolofon/' }, locales, 'en')).toEqual([
+      { hreflang: 'en', href: `${site.url}/imprint/` },
+      { hreflang: 'da', href: `${site.url}/da/kolofon/` },
+      { hreflang: 'x-default', href: `${site.url}/imprint/` },
+    ]);
+  });
+});
+
+describe('anchorId and anchorPath', () => {
+  it('give a section its id in the language, and the home page link to it', () => {
+    expect(anchorId('services', 'en')).toBe('services');
+    expect(anchorId('services', 'da')).toBe('ydelser');
+    expect(anchorId('about', 'da')).toBe('om-os');
+    expect(anchorPath('contact', 'en')).toBe('/#contact');
+    expect(anchorPath('contact', 'da')).toBe('/da/#kontakt');
+  });
+
+  it('every language names every section, in URL-safe lower-case words', () => {
+    const [first, ...others] = Object.values(site.locales).map((locale) => locale.anchors);
+    for (const anchors of [first, ...others]) {
+      expect(Object.keys(anchors).sort()).toEqual(Object.keys(first).sort());
+      for (const word of Object.values(anchors)) expect(word).toMatch(/^[a-z0-9]+(-[a-z0-9]+)*$/);
+      // Two sections of one page may not share a word.
+      expect(new Set(Object.values(anchors)).size).toBe(Object.values(anchors).length);
+    }
   });
 });

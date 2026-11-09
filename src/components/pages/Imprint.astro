@@ -3,6 +3,7 @@ import { render } from 'astro:content';
 import { site, type Lang } from '../../config/site';
 import Base from '../../layouts/Base.astro';
 import { getSection } from '../../lib/content';
+import { routePath } from '../../lib/i18n';
 
 interface Props {
   lang: Lang;
@@ -11,9 +12,11 @@ interface Props {
 const { lang } = Astro.props;
 const page = await getSection(lang, 'imprint');
 const { Content } = await render(page);
+// The imprint has its own word in each language's URL.
+const paths = Object.fromEntries((Object.keys(site.locales) as Lang[]).map((other) => [other, routePath('imprint', other)])) as Record<Lang, string>;
 ---
 
-<Base lang={lang} title={`${page.data.title} | ${site.name}`} noindex>
+<Base lang={lang} title={`${page.data.title} | ${site.name}`} noindex paths={paths}>
   <section class="section">
     <div class="container">
       <h1 class="claim">{page.data.title}</h1>

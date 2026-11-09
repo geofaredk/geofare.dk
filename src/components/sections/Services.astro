@@ -3,6 +3,7 @@ import { render } from 'astro:content';
 import type { Lang } from '../../config/site';
 import { getSection, getServices } from '../../lib/content';
 import Tag from '../Tag.astro';
+import { anchorId } from '../../lib/i18n';
 
 interface Props {
   lang: Lang;
@@ -16,7 +17,7 @@ const services = await Promise.all(
 const number = (order: number) => String(order).padStart(2, '0');
 ---
 
-<section id="services" class="section" aria-labelledby="services-title">
+<section id={anchorId('services', lang)} class="section" aria-labelledby="services-title">
   <div class="container">
     <h2 id="services-title" class="signpost">{section.data.title}</h2>
     {/* role="list": Safari drops list semantics once the markers are styled away. */}

@@ -4,6 +4,7 @@ import type { Lang } from '../../config/site';
 import { getSection, getUi } from '../../lib/content';
 import Portrait from '../Portrait.astro';
 import founderPhoto from '../../assets/founder.png';
+import { anchorId } from '../../lib/i18n';
 
 interface Props {
   lang: Lang;
@@ -19,7 +20,7 @@ const [mission, founder, quote, team] = await Promise.all(
 );
 ---
 
-<section id="about" class="section" aria-labelledby="about-title">
+<section id={anchorId('about', lang)} class="section" aria-labelledby="about-title">
   <div class="container cols">
     <h2 id="about-title" class="claim about__claim">{mission.title}</h2>
     <div class="lead about__mission">

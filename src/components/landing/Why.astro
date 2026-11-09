@@ -3,17 +3,20 @@
 // beside one column of text and his words, as the home page's About spread, shortened.
 import type { ImageMetadata } from 'astro';
 import Portrait from '../Portrait.astro';
+import type { Lang } from '../../config/site';
+import { anchorId } from '../../lib/i18n';
 
 interface Props {
+  lang: Lang;
   data: { title: string; intro: string; founder: { title: string; body: string }; quote: string };
   photo: ImageMetadata;
   photoAlt: string;
 }
 
-const { data, photo, photoAlt } = Astro.props;
+const { lang, data, photo, photoAlt } = Astro.props;
 ---
 
-<section id="why" class="section" aria-labelledby="why-title">
+<section id={anchorId('why', lang)} class="section" aria-labelledby="why-title">
   <div class="container cols">
     <h2 id="why-title" class="claim why__claim">{data.title}</h2>
     <p class="lead why__intro">{data.intro}</p>

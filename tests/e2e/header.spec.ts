@@ -9,8 +9,8 @@ const links = [
   { name: 'Lab', anchor: '#lab' },
 ];
 
-/** The other languages in the switcher, as their links are named: short form and full name. */
-const otherLanguages = ['DA Dansk'];
+/** The other languages in the switcher, as their links are named: each language's own name. */
+const otherLanguages = ['Dansk'];
 
 const nav = (page: Page) => page.getByRole('navigation', { name: 'Main navigation' });
 const headerBottom = (page: Page) => page.evaluate(() => document.querySelector('header')!.getBoundingClientRect().bottom);

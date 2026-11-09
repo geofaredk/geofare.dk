@@ -21,26 +21,28 @@ const pages = [
 describe.each(pages)('the booking block on %s', (_name, lang, path) => {
   const root = parse(readFileSync(`dist/${path}`, 'utf8'));
   const copy = booking(lang);
+  // The contact section's id in the page's language: `contact` in English, `kontakt` in Danish.
+  const contact = `#${site.locales[lang].anchors.contact}`;
 
   it('says its three lines, from the contact section file', () => {
-    const block = root.querySelector('#contact .contact__booking');
+    const block = root.querySelector(`${contact} .contact__booking`);
     expect(block).not.toBeNull();
     const text = norm(block!.textContent);
     for (const s of [copy.title, copy.cta, copy.note]) expect(text).toContain(norm(s));
   });
 
   it('links to the booking page and stands above the email address', () => {
-    const hrefs = root.querySelectorAll('#contact a[href]').map((a) => a.getAttribute('href')!);
+    const hrefs = root.querySelectorAll(`${contact} a[href]`).map((a) => a.getAttribute('href')!);
     expect(hrefs.indexOf(site.company.booking)).toBeGreaterThanOrEqual(0);
     expect(hrefs.indexOf(site.company.booking)).toBeLessThan(hrefs.findIndex((h) => h.startsWith('mailto:')));
-    const link = root.querySelector(`#contact .contact__booking a[href="${site.company.booking}"]`)!;
+    const link = root.querySelector(`${contact} .contact__booking a[href="${site.company.booking}"]`)!;
     // The visible label alone: the link's own text, without the hidden "(opens in a new tab)".
     const visible = link.childNodes.filter((n) => n.nodeType === 3).map((n) => n.textContent).join('');
     expect(norm(visible)).toBe(norm(copy.cta));
   });
 
   it('opens the booking page in a new tab and says so to a screen reader', () => {
-    const link = root.querySelector(`#contact .contact__booking a[href="${site.company.booking}"]`)!;
+    const link = root.querySelector(`${contact} .contact__booking a[href="${site.company.booking}"]`)!;
     expect(link.getAttribute('target')).toBe('_blank');
     expect(link.getAttribute('rel')).toBe('noopener noreferrer');
     const ui = parseYaml(readFileSync(`src/content/ui/${lang}.yaml`, 'utf8'));

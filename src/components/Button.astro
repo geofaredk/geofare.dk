@@ -1,6 +1,9 @@
 ---
 // A link that looks like a button. Rectangular, no arrow, no icon; colour is the only thing that moves.
-interface Props {
+import type { HTMLAttributes } from 'astro/types';
+
+// Any further attribute of a link (`target`, `rel`, ...) is passed through.
+interface Props extends Omit<HTMLAttributes<'a'>, 'href' | 'class'> {
   href: string;
   variant?: 'primary' | 'secondary';
   class?: string;

@@ -2,14 +2,18 @@
 // The questions people ask before they get in touch: openable rows, the question as the row,
 // the answer as one paragraph. All in the HTML, so it opens without JavaScript and is what the
 // FAQPage structured data says it is.
+import type { Lang } from '../../config/site';
+import { anchorId } from '../../lib/i18n';
+
 interface Props {
+  lang: Lang;
   data: { title: string; items: { question: string; answer: string }[] };
 }
 
-const { data } = Astro.props;
+const { lang, data } = Astro.props;
 ---
 
-<section id="faq" class="section" aria-labelledby="faq-title">
+<section id={anchorId('faq', lang)} class="section" aria-labelledby="faq-title">
   <div class="container">
     <h2 id="faq-title" class="signpost">{data.title}</h2>
     <div class="faq">

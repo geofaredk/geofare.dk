@@ -6,10 +6,13 @@
 // cream below.
 import type { ImageMetadata } from 'astro';
 import { Image } from 'astro:assets';
+import type { Lang } from '../../config/site';
+import { anchorId } from '../../lib/i18n';
 import Button from '../Button.astro';
 import LineField from '../LineField.astro';
 
 interface Props {
+  lang: Lang;
   title: string;
   primaryCta: string;
   secondaryCta: string;
@@ -21,10 +24,10 @@ interface Props {
   imageAlt?: string;
 }
 
-const { title, primaryCta, secondaryCta, primaryHref, secondaryHref, image, imageAlt = '' } = Astro.props;
+const { lang, title, primaryCta, secondaryCta, primaryHref, secondaryHref, image, imageAlt = '' } = Astro.props;
 ---
 
-<section id="top" class="landing-hero" aria-labelledby="landing-title">
+<section id={anchorId('top', lang)} class="landing-hero" aria-labelledby="landing-title" data-hero>
   <div class="container cols landing-hero__grid">
     <h1 id="landing-title" class="landing-hero__title">{title}</h1>
     <div class="landing-hero__lede">

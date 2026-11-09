@@ -7,15 +7,21 @@ import { site } from '../../src/config/site';
 // The service landing pages, checked against their own content files: one page per language,
 // the whole page in the right order, the metadata and structured data a search engine reads.
 const SLUG = 'earth-observation-remote-sensing';
-const SECTIONS = ['top', 'clients', 'situations', 'offer', 'process', 'audiences', 'why', 'faq', 'contact'];
+const SECTIONS = {
+  en: ['top', 'clients', 'situations', 'offer', 'process', 'audiences', 'why', 'faq', 'contact'],
+  da: ['top', 'kunder', 'situationer', 'leverancer', 'proces', 'maalgrupper', 'hvorfor', 'faq', 'kontakt'],
+};
 
 const read = (path: string) => readFileSync(`dist/${path}`, 'utf8');
 const norm = (s: string) => s.replace(/\s+/g, ' ').trim();
 /** The front matter of a landing page file, as the page's expected values. */
-const frontMatter = (lang: string) => {
+function frontMatterOf(lang: string) {
   const file = readFileSync(`src/content/landing/${lang}/${SLUG}.md`, 'utf8');
   return parseYaml(file.split(/^---$/m)[1]) as Record<string, any>;
-};
+}
+const frontMatter = frontMatterOf;
+// The Danish page has its own URL: the Danish word for services and the slug set in the Danish file.
+const DA_PATH = `/da/ydelser/${frontMatterOf('da').slug}/`;
 const page = (path: string) => parse(read(path));
 
 describe('the English landing page', () => {
@@ -38,7 +44,7 @@ describe('the English landing page', () => {
   });
   it('has the sections in order, each named by its heading', () => {
     const ids = root.querySelectorAll('main section[id]').map((s) => s.id);
-    expect(ids).toEqual(SECTIONS);
+    expect(ids).toEqual(SECTIONS.en);
     for (const section of root.querySelectorAll('main section')) {
       const labelledBy = section.getAttribute('aria-labelledby');
       expect(labelledBy, section.id).toBeTruthy();
@@ -83,7 +89,7 @@ describe('the English landing page', () => {
     const levels = root.querySelectorAll('main h1, main h2, main h3').map((h) => Number(h.tagName[1]));
     expect(levels[0]).toBe(1);
     for (let i = 1; i < levels.length; i++) expect(levels[i] - levels[i - 1], `heading ${i}`).toBeLessThanOrEqual(1);
-    expect(root.querySelectorAll('main h2')).toHaveLength(SECTIONS.length - 1); // the hero has the h1
+    expect(root.querySelectorAll('main h2')).toHaveLength(SECTIONS.en.length - 1); // the hero has the h1
   });
   it('has a picture slot in the hero: the image named in the file, or a still of the line field until there is one', () => {
     const slot = root.querySelector('#top .landing-hero__picture');
@@ -119,23 +125,34 @@ describe('the English landing page', () => {
   it('is in the sitemap in both languages', () => {
     const sitemap = readdirSync('dist').filter((f) => /^sitemap-\d+\.xml$/.test(f)).map(read).join('');
     expect(sitemap).toContain(canonical);
-    expect(sitemap).toContain(`${site.url}/da/services/${SLUG}/`);
+    expect(sitemap).toContain(`${site.url}${DA_PATH}`);
+  });
+  it('links to its Danish counterpart under the Danish URL, in the hreflang links and the switcher', () => {
+    expect(root.querySelector('link[rel="alternate"][hreflang="da"]')!.getAttribute('href')).toBe(`${site.url}${DA_PATH}`);
+    expect(root.querySelectorAll('header nav a.site-header__lang').map((a) => a.getAttribute('href'))).toEqual([DA_PATH]);
   });
 });
 
 describe('the Danish landing page', () => {
-  const path = `da/services/${SLUG}/index.html`;
+  const path = `${DA_PATH.slice(1)}index.html`;
   it('is built in Danish, indexable with its own canonical and hreflang links, and switches back to the English page', () => {
     expect(existsSync(`dist/${path}`)).toBe(true);
     const root = page(path);
     expect(root.querySelector('html')!.getAttribute('lang')).toBe('da-DK');
     expect(root.querySelector('meta[name="robots"]')).toBeNull();
-    expect(root.querySelector('link[rel="canonical"]')!.getAttribute('href')).toBe(`${site.url}/da/services/${SLUG}/`);
+    expect(root.querySelector('link[rel="canonical"]')!.getAttribute('href')).toBe(`${site.url}${DA_PATH}`);
+    expect(root.querySelector('link[rel="alternate"][hreflang="en"]')!.getAttribute('href')).toBe(`${site.url}/services/${SLUG}/`);
     expect(root.querySelectorAll('link[rel="alternate"]').map((l) => l.getAttribute('hreflang'))).toEqual(['en', 'da', 'x-default']);
     expect(norm(root.querySelector('h1')!.textContent)).toBe(frontMatter('da').title);
     const toEnglish = root.querySelectorAll('header nav a.site-header__lang').map((a) => a.getAttribute('href'));
     expect(toEnglish).toEqual([`/services/${SLUG}/`]);
     const toDanish = page(`services/${SLUG}/index.html`).querySelectorAll('header nav a.site-header__lang').map((a) => a.getAttribute('href'));
-    expect(toDanish).toEqual([`/da/services/${SLUG}/`]);
+    expect(toDanish).toEqual([DA_PATH]);
+  });
+  it('has the same sections in the same order, under Danish ids, and its hero buttons lead to them', () => {
+    const root = page(path);
+    expect(root.querySelectorAll('main section[id]').map((s) => s.id)).toEqual(SECTIONS.da);
+    expect(root.querySelectorAll('#top .landing-hero__actions a').map((a) => a.getAttribute('href'))).toEqual(['#kontakt', '#leverancer']);
+    expect(root.querySelector('header nav .button')!.getAttribute('href')).toBe('#kontakt');
   });
 });

@@ -107,6 +107,8 @@ const landing = defineCollection({
   loader: byLanguage('landing'),
   schema: ({ image }) =>
     z.strictObject({
+    /** The last part of this language's URL, when it differs from the file name: `jordobservation-og-fjernmaaling`. */
+    slug: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, 'lower-case words joined with hyphens').optional(),
     /** The headline (h1): a sentence. */
     title: text,
     /** The service's short name, as people search for it: the structured data's name and type. */

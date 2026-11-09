@@ -2,16 +2,19 @@
 // What the service delivers: the home page's numbered services, two by two, with their tags.
 // This is the page's keyword core, so each item has its own heading.
 import Tag from '../Tag.astro';
+import type { Lang } from '../../config/site';
+import { anchorId } from '../../lib/i18n';
 
 interface Props {
+  lang: Lang;
   data: { title: string; items: { title: string; body: string; tags: string[] }[] };
 }
 
-const { data } = Astro.props;
+const { lang, data } = Astro.props;
 const number = (i: number) => String(i + 1).padStart(2, '0');
 ---
 
-<section id="offer" class="section" aria-labelledby="offer-title">
+<section id={anchorId('offer', lang)} class="section" aria-labelledby="offer-title">
   <div class="container">
     <h2 id="offer-title" class="signpost">{data.title}</h2>
     {/* role="list": Safari drops list semantics once the markers are styled away. */}

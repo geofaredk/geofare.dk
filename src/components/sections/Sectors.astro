@@ -2,6 +2,7 @@
 import { render } from 'astro:content';
 import type { Lang } from '../../config/site';
 import { getSection, getSectors } from '../../lib/content';
+import { anchorId } from '../../lib/i18n';
 
 interface Props {
   lang: Lang;
@@ -15,7 +16,7 @@ const sectors = await Promise.all(
 );
 ---
 
-<section id="sectors" class="section" aria-labelledby="sectors-title">
+<section id={anchorId('sectors', lang)} class="section" aria-labelledby="sectors-title">
   <div class="container">
     <h2 id="sectors-title" class="claim">{section.data.title}</h2>
     <div class="lead sectors__intro">

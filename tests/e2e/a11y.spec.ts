@@ -58,7 +58,7 @@ for (const viewport of [
   });
 }
 
-for (const path of ['/da/', '/da/imprint']) {
+for (const path of ['/da/', '/da/kolofon']) {
   test(`the page in another language has no violations: ${path}`, async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await settle(page, path);

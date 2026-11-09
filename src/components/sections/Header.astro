@@ -2,7 +2,7 @@
 import { site, type Lang } from '../../config/site';
 import { contactCta, mainNav } from '../../config/navigation';
 import { getUi } from '../../lib/content';
-import { localizePath, switchPath } from '../../lib/i18n';
+import { anchorPath, localizePath } from '../../lib/i18n';
 import Button from '../Button.astro';
 import Logo from '../Logo.astro';
 
@@ -12,18 +12,18 @@ interface Props {
   contactHref?: string;
   /** `accent`: the bar is part of a blue block below it, with pale links and logo. `cream` (the default) is the home page's. */
   tone?: 'cream' | 'accent';
+  /** This page's path in every language, where the switcher leads. */
+  paths: Record<Lang, string>;
 }
 
-const { lang, contactHref = localizePath(contactCta.href, lang), tone = 'cream' } = Astro.props;
+const { lang, contactHref = anchorPath(contactCta.anchor, lang), tone = 'cream', paths } = Astro.props;
 const ui = await getUi(lang);
 
-// The language switcher leads to the same page in the other language.
-const here = Astro.url.pathname;
-const languages = (Object.keys(site.locales) as Lang[]).map((code) => ({
-  code,
-  locale: site.locales[code],
-  href: switchPath(here, code),
-}));
+// The language switcher offers the other languages only, each by its own name ("Dansk" on an
+// English page, "English" on a Danish one), leading to the same page under that language's URL.
+const otherLanguages = (Object.keys(site.locales) as Lang[])
+  .filter((code) => code !== lang)
+  .map((code) => ({ code, locale: site.locales[code], href: paths[code] }));
 ---
 
 <header class:list={['site-header', `site-header--${tone}`]}>
@@ -45,7 +45,7 @@ const languages = (Object.keys(site.locales) as Lang[]).map((code) => ({
         {
           mainNav.map((item) => (
             <li>
-              <a href={localizePath(item.href, lang)}>{ui.nav[item.id]}</a>
+              <a href={anchorPath(item.anchor, lang)}>{ui.nav[item.id]}</a>
             </li>
           ))
         }
@@ -53,19 +53,11 @@ const languages = (Object.keys(site.locales) as Lang[]).map((code) => ({
       <Button href={contactHref}>{ui.nav[contactCta.id]}</Button>
       <ul class="site-header__langs" aria-label={ui.lang.label}>
         {
-          languages.map(({ code, locale, href }) => (
+          otherLanguages.map(({ locale, href }) => (
             <li>
-              {code === lang ? (
-                <span class="site-header__lang" aria-current="true" lang={locale.htmlLang}>
-                  {locale.short}
-                  <span class="sr-only"> {locale.name}</span>
-                </span>
-              ) : (
-                <a class="site-header__lang" href={href} lang={locale.htmlLang} hreflang={locale.hreflang}>
-                  {locale.short}
-                  <span class="sr-only"> {locale.name}</span>
-                </a>
-              )}
+              <a class="site-header__lang" href={href} lang={locale.htmlLang} hreflang={locale.hreflang}>
+                {locale.name}
+              </a>
             </li>
           ))
         }
@@ -159,7 +151,7 @@ const languages = (Object.keys(site.locales) as Lang[]).map((code) => ({
     color: var(--accent);
   }
 
-  /* The language switcher: short names side by side, the current one in the accent colour. */
+  /* The language switcher: the other language's name, muted until hovered. */
   .site-header__langs {
     display: flex;
     align-items: center;
@@ -181,10 +173,6 @@ const languages = (Object.keys(site.locales) as Lang[]).map((code) => ({
   }
 
   a.site-header__lang:hover {
-    color: var(--accent);
-  }
-
-  .site-header__lang[aria-current] {
     color: var(--accent);
   }
 
@@ -293,15 +281,9 @@ const languages = (Object.keys(site.locales) as Lang[]).map((code) => ({
 
   .site-header--accent .site-header__links a,
   .site-header--accent .site-header__toggle,
-  .site-header--accent .site-header__lang,
-  .site-header--accent .site-header__lang[aria-current] {
+  .site-header--accent .site-header__lang {
+    /* Pale, not fainter: a muted tone would fail contrast on blue. */
     color: var(--on-accent);
-  }
-
-  /* Both languages pale (a fainter one would fail contrast on blue); the current one is underlined. */
-  .site-header--accent .site-header__lang[aria-current] {
-    text-decoration: underline;
-    text-underline-offset: 0.3em;
   }
 
   .site-header--accent .site-header__links a:hover,

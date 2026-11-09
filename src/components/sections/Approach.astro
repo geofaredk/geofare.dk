@@ -3,6 +3,7 @@ import { render } from 'astro:content';
 import type { Lang } from '../../config/site';
 import { getPrinciples, getSection } from '../../lib/content';
 import FieldWindow from '../FieldWindow.astro';
+import { anchorId } from '../../lib/i18n';
 
 interface Props {
   lang: Lang;
@@ -15,7 +16,7 @@ const principles = await Promise.all(
 );
 ---
 
-<section id="approach" class="approach" aria-labelledby="approach-title">
+<section id={anchorId('approach', lang)} class="approach" aria-labelledby="approach-title">
   <div class="container">
     <h2 id="approach-title" class="signpost">{section.data.title}</h2>
     {/* role="list": Safari drops list semantics once the markers are styled away. */}

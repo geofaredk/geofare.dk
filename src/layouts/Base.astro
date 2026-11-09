@@ -6,7 +6,7 @@ import figtreeLatin from '@fontsource-variable/figtree/files/figtree-latin-wght-
 import { site, type Lang } from '../config/site';
 import { getUi } from '../lib/content';
 import { emailLink, linkedinLink, postalAddress } from '../lib/contact';
-import { alternates, localizePath } from '../lib/i18n';
+import { alternatesFor, localizePath, switchPath } from '../lib/i18n';
 import Header from '../components/sections/Header.astro';
 import Footer from '../components/sections/Footer.astro';
 import NewsletterBox from '../components/NewsletterBox.astro';
@@ -24,9 +24,12 @@ interface Props {
   contactHref?: string;
   /** The header's tone: `accent` when the page starts with a blue block. */
   headerTone?: 'cream' | 'accent';
+  /** This page's path in every language, when the URL differs between them. By default the same path under each language's prefix. */
+  paths?: Record<Lang, string>;
 }
 
 const { lang, bare = false, structuredData: extra = [], contactHref, headerTone } = Astro.props;
+const paths = Astro.props.paths ?? (Object.fromEntries((Object.keys(site.locales) as Lang[]).map((other) => [other, switchPath(Astro.url.pathname, other)])) as Record<Lang, string>);
 const ui = await getUi(lang);
 const title = Astro.props.title ?? ui.meta.title;
 const description = Astro.props.description ?? ui.meta.description;
@@ -66,7 +69,7 @@ const jsonLd = toJsonLd(structuredData);
     <meta name="description" content={description} />
     {noindex && <meta name="robots" content="noindex" />}
     {!noindex && <link rel="canonical" href={canonical} />}
-    {!noindex && alternates(Astro.url.pathname).map((alt) => <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />)}
+    {!noindex && alternatesFor(paths).map((alt) => <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />)}
     <link rel="preload" href={figtreeLatin} as="font" type="font/woff2" crossorigin />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
@@ -89,7 +92,7 @@ const jsonLd = toJsonLd(structuredData);
   </head>
   <body>
     {!bare && <a href="#main" class="skip-link">{ui.skip}</a>}
-    {!bare && <Header lang={lang} contactHref={contactHref} tone={headerTone} />}
+    {!bare && <Header lang={lang} contactHref={contactHref} tone={headerTone} paths={paths} />}
     <main id="main" tabindex="-1">
       <slot />
     </main>

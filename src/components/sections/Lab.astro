@@ -5,6 +5,7 @@ import type { Lang } from '../../config/site';
 import { getLab, getSection, getUi } from '../../lib/content';
 import LineField from '../LineField.astro';
 import Tag from '../Tag.astro';
+import { anchorId } from '../../lib/i18n';
 
 interface Props {
   lang: Lang;
@@ -17,7 +18,7 @@ const { Content: Intro } = await render(section);
 const projects = await getLab(lang);
 ---
 
-<section id="lab" class="section" aria-labelledby="lab-title">
+<section id={anchorId('lab', lang)} class="section" aria-labelledby="lab-title">
   <div class="container">
     <h2 id="lab-title" class="claim">{section.data.title}</h2>
     <div class="lead lab__intro">

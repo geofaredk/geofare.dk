@@ -1,13 +1,20 @@
 ---
 import Landing from '../../components/pages/Landing.astro';
-import { getLandingSlugs } from '../../lib/content';
+import { site } from '../../config/site';
+import { getLandingPages } from '../../lib/content';
 
-// One page per service landing file, in the default language.
+// One page per service landing file, in the default language. This folder's name is the default
+// language's `routes.services`; the other languages take theirs from the config.
 export async function getStaticPaths() {
-  return (await getLandingSlugs()).map((slug) => ({ params: { slug } }));
+  const pages = await getLandingPages();
+  return pages.filter((page) => page.lang === site.defaultLang).map(({ slug, name }) => ({ params: { slug }, props: { name } }));
 }
 
-const { slug } = Astro.params;
+interface Props {
+  name: string;
+}
+
+const { name } = Astro.props;
 ---
 
-<Landing lang="en" slug={slug} />
+<Landing lang={site.defaultLang} name={name} />

@@ -3,10 +3,11 @@ import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 import { site } from './src/config/site.ts';
 
-// Pages that stay out of the sitemap, in every language: `/imprint`, `/da/imprint`, and so on.
-const excludedFromSitemap = ['/imprint', '/404'].flatMap((page) =>
-  Object.values(site.locales).map((locale) => locale.path.replace(/\/$/, '') + page),
-);
+// Pages that stay out of the sitemap, in every language: `/imprint`, `/da/kolofon`, `/404`, `/da/404`.
+const excludedFromSitemap = Object.values(site.locales).flatMap((locale) => {
+  const prefix = locale.path.replace(/\/$/, '');
+  return [`${prefix}/${locale.routes.imprint}`, `${prefix}/404`];
+});
 // Draft languages (placeholder copy) stay out of the sitemap altogether.
 const draftPaths = Object.values(site.locales).filter((locale) => locale.draft).map((locale) => locale.path);
 

@@ -1,14 +1,18 @@
 ---
 // Who the service is for: openable rows as the home page's sectors, one per audience, each with
 // the sentence that names their question and the points that answer it. The first starts open.
+import type { Lang } from '../../config/site';
+import { anchorId } from '../../lib/i18n';
+
 interface Props {
+  lang: Lang;
   data: { title: string; intro: string; items: { title: string; lead: string; points: string[] }[] };
 }
 
-const { data } = Astro.props;
+const { lang, data } = Astro.props;
 ---
 
-<section id="audiences" class="section" aria-labelledby="audiences-title">
+<section id={anchorId('audiences', lang)} class="section" aria-labelledby="audiences-title">
   <div class="container">
     <h2 id="audiences-title" class="claim">{data.title}</h2>
     <p class="lead audiences__intro">{data.intro}</p>

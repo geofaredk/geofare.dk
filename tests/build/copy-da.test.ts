@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { parse } from 'node-html-parser';
 import { describe, expect, it } from 'vitest';
 import copy from '../fixtures/copy.da.json';
+import { site, type Anchor } from '../../src/config/site';
 import { copyPattern } from './copy-match';
 
 // The Danish page against the Danish copy as it was supplied (tests/fixtures/copy.da.json).
@@ -10,7 +11,9 @@ const norm = (s: string) =>
   s.replace(/[‘’]/g, "'").replace(/[“”„]/g, '"').replace(/\u00a0/g, ' ').replace(/\s+/g, ' ').trim();
 
 const root = parse(readFileSync('dist/da/index.html', 'utf8'));
-const sectionText = (id: string) => norm(root.querySelector(`#${id}`)!.textContent);
+// The sections carry Danish ids: `#services` is `#ydelser` here.
+const id = (anchor: Anchor) => site.locales.da.anchors[anchor];
+const sectionText = (anchor: Anchor) => norm(root.querySelector(`#${id(anchor)}`)!.textContent);
 /** Every piece is in the text, in the order given. */
 const expectInOrder = (text: string, pieces: string[]) => {
   let at = -1;
@@ -34,7 +37,7 @@ describe('the Danish page carries the Danish copy word for word', () => {
   });
   it('hero: the h1 is the fixed part and the last ending; all endings wait in order', () => {
     expect(norm(root.querySelector('h1')!.textContent)).toBe(`${copy.hero.fixed} ${copy.hero.endings.at(-1)}`);
-    expect(root.querySelectorAll('#top .hero__ending').map((e) => norm(e.textContent))).toEqual(copy.hero.endings);
+    expect(root.querySelectorAll(`#${id('top')} .hero__ending`).map((e) => norm(e.textContent))).toEqual(copy.hero.endings);
     expectInOrder(sectionText('top'), [copy.hero.subline, copy.hero.primaryCta, copy.hero.secondaryCta]);
   });
   it('services', () => {
@@ -54,7 +57,7 @@ describe('the Danish page carries the Danish copy word for word', () => {
     expectInOrder(sectionText('sectors'), [copy.sectors.title, copy.sectors.intro, ...copy.sectors.items.flatMap((s) => [s.title, s.lead, ...s.bullets])]);
   });
   it('lab', () => {
-    const cards = root.querySelectorAll('#lab .project');
+    const cards = root.querySelectorAll(`#${id('lab')} .project`);
     expect(cards).toHaveLength(copy.lab.projects.length);
     expectInOrder(sectionText('lab'), [copy.lab.title, copy.lab.intro]);
     copy.lab.projects.forEach((project, i) => {
@@ -68,7 +71,7 @@ describe('the Danish page carries the Danish copy word for word', () => {
     expectInOrder(sectionText('contact'), [copy.contact.title, copy.contact.body]);
   });
   it('newsletter', () => {
-    expectInOrder(sectionText('newsletter'), [copy.newsletter.title, copy.newsletter.body, copy.newsletter.cta]);
+    expectInOrder(norm(root.querySelector('#newsletter')!.textContent), [copy.newsletter.title, copy.newsletter.body, copy.newsletter.cta]);
     expect(root.querySelector('#newsletter a')!.getAttribute('href')).toBe(copy.newsletter.url);
   });
   it('no placeholder filler is left on the page', () => {

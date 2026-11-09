@@ -96,11 +96,15 @@ test.describe('the language switcher on the landing page', () => {
   test('leads to the Danish page and back', async ({ page }) => {
     await page.goto(PATH);
     const nav = page.locator('header nav');
-    await nav.getByRole('link', { name: 'DA Dansk', exact: true }).click();
-    await expect(page).toHaveURL(/\/da\/services\/earth-observation-remote-sensing\/?$/);
+    await nav.getByRole('link', { name: 'Dansk', exact: true }).click();
+    await expect(page).toHaveURL(/\/da\/ydelser\/jordobservation-og-fjernmaaling\/?$/);
     await expect(page.locator('html')).toHaveAttribute('lang', 'da-DK');
     await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
-    await nav.getByRole('link', { name: 'EN English', exact: true }).click();
+    // Its sections and the buttons that lead to them carry Danish ids.
+    await expect(page.locator('#top a[href="#kontakt"]')).toBeVisible();
+    await page.locator('#top a[href="#leverancer"]').click();
+    await expect(page.locator('#leverancer')).toBeInViewport();
+    await nav.getByRole('link', { name: 'English', exact: true }).click();
     await expect(page).toHaveURL(/\/services\/earth-observation-remote-sensing\/?$/);
     await expect(page.locator('html')).toHaveAttribute('lang', 'en-GB');
   });

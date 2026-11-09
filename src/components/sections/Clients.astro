@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import type { Lang } from '../../config/site';
 import { getClients, getSection, getUi } from '../../lib/content';
+import { anchorId } from '../../lib/i18n';
 
 interface Props {
   lang: Lang;
@@ -22,7 +23,7 @@ const clients = await getClients();
 ---
 
 {/* A line and a row of tiles, one per client. The logo files share a height and keep their own widths, and each brings its own clear space, so the tile adds none. */}
-<section id="clients" class:list={['clients', `clients--${spacing}`]} aria-labelledby="clients-title">
+<section id={anchorId('clients', lang)} class:list={['clients', `clients--${spacing}`]} aria-labelledby="clients-title">
   <div class="container">
     <h2 id="clients-title" class="clients__title">{title}</h2>
     <ul class="clients__list" role="list">

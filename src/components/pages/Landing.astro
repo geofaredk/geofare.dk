@@ -4,8 +4,8 @@
 import { render } from 'astro:content';
 import { site, type Lang } from '../../config/site';
 import Base from '../../layouts/Base.astro';
-import { getLanding, getUi } from '../../lib/content';
-import { localizePath } from '../../lib/i18n';
+import { getLanding, getLandingPages, getUi } from '../../lib/content';
+import { anchorId, localizePath, routePath } from '../../lib/i18n';
 import { landingStructuredData } from '../../lib/landing-seo';
 import founderPhoto from '../../assets/founder.png';
 import Clients from '../sections/Clients.astro';
@@ -20,14 +20,23 @@ import Faq from '../landing/Faq.astro';
 
 interface Props {
   lang: Lang;
-  slug: string;
+  /** The file name, shared by the languages. */
+  name: string;
 }
 
-const { lang, slug } = Astro.props;
+const { lang, name } = Astro.props;
 const ui = await getUi(lang);
-const page = await getLanding(lang, slug);
+const page = await getLanding(lang, name);
 const { data } = page;
 const { Content: Lead } = await render(page);
+// This page in every language, each under its own URL, for the switcher and the hreflang links.
+const paths = Object.fromEntries(
+  (await getLandingPages()).filter((other) => other.name === name).map((other) => [other.lang, routePath('services', other.lang, other.slug)]),
+) as Record<Lang, string>;
+
+// The sections this page's buttons lead to, under their ids in this language.
+const contactAnchor = `#${anchorId('contact', lang)}`;
+const offerAnchor = `#${anchorId('offer', lang)}`;
 
 const absolute = (path: string) => new URL(path, site.url).href;
 const structuredData = landingStructuredData({
@@ -40,24 +49,25 @@ const structuredData = landingStructuredData({
 });
 ---
 
-<Base lang={lang} title={data.meta.title} description={data.meta.description} structuredData={structuredData} contactHref="#contact" headerTone="accent">
+<Base lang={lang} title={data.meta.title} description={data.meta.description} structuredData={structuredData} contactHref={contactAnchor} headerTone="accent" paths={paths}>
   <LandingHero
+    lang={lang}
     title={data.title}
     primaryCta={data.hero.primaryCta}
     secondaryCta={data.hero.secondaryCta}
-    primaryHref="#contact"
-    secondaryHref="#offer"
+    primaryHref={contactAnchor}
+    secondaryHref={offerAnchor}
     image={data.hero.image}
     imageAlt={data.hero.imageAlt}
   >
     <Lead />
   </LandingHero>
   <Clients lang={lang} title={data.clients.title} spacing="own" />
-  <Situations data={data.situations} />
-  <Offer data={data.offer} />
-  <Process data={data.process} />
-  <Audiences data={data.audiences} />
-  <Why data={data.why} photo={founderPhoto} photoAlt={ui.about.portraitAlt} />
-  <Faq data={data.faq} />
+  <Situations lang={lang} data={data.situations} />
+  <Offer lang={lang} data={data.offer} />
+  <Process lang={lang} data={data.process} />
+  <Audiences lang={lang} data={data.audiences} />
+  <Why lang={lang} data={data.why} photo={founderPhoto} photoAlt={ui.about.portraitAlt} />
+  <Faq lang={lang} data={data.faq} />
   <Contact lang={lang} title={data.contact.title} body={data.contact.body} />
 </Base>

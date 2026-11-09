@@ -9,7 +9,7 @@
  * tab is hidden, and never while the box is open.
  */
 const motion = matchMedia('(prefers-reduced-motion: no-preference)');
-const hero = document.querySelector('#top');
+const hero = document.querySelector('[data-hero]');
 const EVERY = 9000;
 const FIRST = 3000;
 

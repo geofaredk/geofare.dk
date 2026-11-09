@@ -5,6 +5,7 @@ import { getSection, getUi } from '../../lib/content';
 import { emailLink, linkedinLink } from '../../lib/contact';
 import Button from '../Button.astro';
 import FieldWindow from '../FieldWindow.astro';
+import { anchorId } from '../../lib/i18n';
 
 interface Props {
   lang: Lang;
@@ -25,7 +26,7 @@ const ui = await getUi(lang);
 {/* A band of the line field marks the turn from "who we work with" to "talk to us": a window onto the moving field. Its still is drawn at the hero's scale, wider than any screen. */}
 <FieldWindow width={2560} height={192} time={8} class="contact__band" />
 
-<section id="contact" class="section" aria-labelledby="contact-title">
+<section id={anchorId('contact', lang)} class="section" aria-labelledby="contact-title">
   <div class="container">
     <h2 id="contact-title" class="claim">{title}</h2>
     <div class="lead contact__body">{body ? <p>{body}</p> : <Content />}</div>

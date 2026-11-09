@@ -1,4 +1,5 @@
 ---
+slug: jordobservation-og-fjernmaaling
 title: Jordobservation og fjernmåling, der besvarer jeres spørgsmål.
 service: Jordobservation og fjernmåling
 meta:

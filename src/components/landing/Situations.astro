@@ -1,14 +1,18 @@
 ---
 // The situations a visitor will recognise: a claim, a lead, then a grid of named situations,
 // set as the principles of the home page's blue section are, on cream.
+import type { Lang } from '../../config/site';
+import { anchorId } from '../../lib/i18n';
+
 interface Props {
+  lang: Lang;
   data: { title: string; intro: string; items: { title: string; body: string }[] };
 }
 
-const { data } = Astro.props;
+const { lang, data } = Astro.props;
 ---
 
-<section id="situations" class="section" aria-labelledby="situations-title">
+<section id={anchorId('situations', lang)} class="section" aria-labelledby="situations-title">
   <div class="container">
     <h2 id="situations-title" class="claim">{data.title}</h2>
     <p class="lead situations__intro">{data.intro}</p>

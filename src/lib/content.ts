@@ -58,16 +58,41 @@ export const getSectors = (lang: Lang) => getList('sectors', lang);
 export const getPrinciples = (lang: Lang) => getList('principles', lang);
 
 /** A service landing page in one language. The body of the file is the hero's lead and must not be empty. */
-export async function getLanding(lang: Lang, slug: string): Promise<CollectionEntry<'landing'>> {
-  const entry = await getEntry('landing', `${lang}/${slug}`);
-  if (!entry) throw new Error(`Missing landing page: src/content/landing/${lang}/${slug}.md`);
-  if (!entry.body?.trim()) throw new Error(`src/content/landing/${lang}/${slug}.md needs text below the front matter (the hero's lead)`);
+/** A landing page by its file name (`name`, the same in every language), in one language. */
+export async function getLanding(lang: Lang, name: string): Promise<CollectionEntry<'landing'>> {
+  const entry = await getEntry('landing', `${lang}/${name}`);
+  if (!entry) throw new Error(`Missing landing page: src/content/landing/${lang}/${name}.md`);
+  if (!entry.body?.trim()) throw new Error(`src/content/landing/${lang}/${name}.md needs text below the front matter (the hero's lead)`);
   return entry;
 }
 
-/** The slugs of the landing pages, each of which must exist in every language, so that the switcher never leads to a missing page. */
-export async function getLandingSlugs(): Promise<string[]> {
-  const ids = (await getCollection('landing')).map((entry) => entry.id);
-  checkLanding(Object.keys(site.locales), ids);
-  return [...new Set(ids.map((id) => id.slice(id.indexOf('/') + 1)))].sort();
+export interface LandingPage {
+  /** The file name without `.md`, shared by the languages. */
+  name: string;
+  lang: Lang;
+  /** The last part of the URL in this language: the file's `slug`, or the file name. */
+  slug: string;
+}
+
+/**
+ * Every landing page in every language. A page must exist in every language, so that the switcher
+ * never leads to a missing page; two files of one language may not share a slug.
+ */
+export async function getLandingPages(): Promise<LandingPage[]> {
+  const entries = await getCollection('landing');
+  checkLanding(
+    Object.keys(site.locales),
+    entries.map((entry) => entry.id),
+  );
+  const pages = entries
+    .map((entry) => {
+      const [lang, name] = [entry.id.slice(0, entry.id.indexOf('/')) as Lang, entry.id.slice(entry.id.indexOf('/') + 1)];
+      return { name, lang, slug: entry.data.slug ?? name };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name) || a.lang.localeCompare(b.lang));
+  for (const page of pages) {
+    const twin = pages.find((other) => other !== page && other.lang === page.lang && other.slug === page.slug);
+    if (twin) throw new Error(`src/content/landing/${page.lang}/${page.name}.md and ${twin.name}.md share the slug "${page.slug}"`);
+  }
+  return pages;
 }

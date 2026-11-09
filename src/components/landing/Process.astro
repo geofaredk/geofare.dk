@@ -2,16 +2,19 @@
 // How a project runs: the one blue band of the page, as the home page's "How we work", with
 // numbered steps and the window onto the field along its foot.
 import FieldWindow from '../FieldWindow.astro';
+import type { Lang } from '../../config/site';
+import { anchorId } from '../../lib/i18n';
 
 interface Props {
+  lang: Lang;
   data: { title: string; steps: { title: string; body: string }[] };
 }
 
-const { data } = Astro.props;
+const { lang, data } = Astro.props;
 const number = (i: number) => String(i + 1).padStart(2, '0');
 ---
 
-<section id="process" class="process" aria-labelledby="process-title">
+<section id={anchorId('process', lang)} class="process" aria-labelledby="process-title">
   <div class="container">
     <h2 id="process-title" class="signpost">{data.title}</h2>
     {/* role="list": Safari drops list semantics once the markers are styled away. */}
